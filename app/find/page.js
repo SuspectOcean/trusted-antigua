@@ -33,6 +33,14 @@ function EmptyState() {
   );
 }
 
+// Never let a slow/failed network hang the UI: resolve to a fallback after `ms`.
+function withTimeout(promise, ms, fallback) {
+  return Promise.race([
+    Promise.resolve(promise).catch(() => fallback),
+    new Promise((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
 function FindInner() {
   const router = useRouter();
   const params = useSearchParams();
@@ -42,22 +50,34 @@ function FindInner() {
   const [rows, setRows] = useState(null);
   const [counts, setCounts] = useState({});
   const [input, setInput] = useState(q);
+  const [error, setError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => { setInput(q); }, [q]);
 
   useEffect(() => {
     let active = true;
     setRows(null);
-    Promise.all([api.providers({ category: cat, q }), api.recCounts()]).then(([r, c]) => {
-      if (active) { setRows(r); setCounts(c); }
-    });
+    setError(false);
+    Promise.all([
+      withTimeout(api.providers({ category: cat, q }), 12000, null),
+      withTimeout(api.recCounts(), 12000, {}),
+    ])
+      .then(([r, c]) => {
+        if (!active) return;
+        if (r === null) { setRows([]); setError(true); }
+        else { setRows(r); setCounts(c || {}); }
+      })
+      .catch(() => { if (active) { setRows([]); setError(true); } });
     return () => { active = false; };
-  }, [cat, q]);
+  }, [cat, q, reloadKey]);
 
   function onSearch(e) {
     e.preventDefault();
     router.push("/find?q=" + encodeURIComponent(input.trim()));
   }
+
+  const retry = () => setReloadKey((k) => k + 1);
 
   const title = cat ? `${CAT[cat]?.emoji || ""} ${CAT[cat]?.name || ""}` : q ? `Results for "${q}"` : "All providers";
 
@@ -77,7 +97,7 @@ function FindInner() {
         </svg>
       </form>
 
-      <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
+      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4">
         {cat ? (
           <Link href="/find" className="whitespace-nowrap text-[13px] px-3 py-1.5 rounded-full bg-amber text-navy font-medium">✕ Clear</Link>
         ) : null}
@@ -98,6 +118,13 @@ function FindInner() {
 
       {rows === null ? (
         <SkeletonList />
+      ) : error ? (
+        <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
+          <div className="text-3xl mb-2">📶</div>
+          <p className="text-[14px] text-slate2">Couldn&apos;t load the directory.</p>
+          <p className="text-[13px] text-muted mt-1">Check your connection and try again.</p>
+          <button onClick={retry} className="inline-block mt-3 bg-amber text-navy font-semibold text-sm px-4 py-2 rounded-full">Retry</button>
+        </div>
       ) : (
         <div className="space-y-2.5">
           {rows.length ? rows.map((p) => <ProviderCard key={p.id} p={p} counts={counts} />) : <EmptyState />}
