@@ -6,23 +6,27 @@ import { CATEGORIES, CAT } from "@/lib/categories";
 import { api } from "@/lib/data";
 import ProviderCard from "@/components/ProviderCard";
 
-function Loading() {
+function SkeletonList() {
   return (
-    <div className="flex justify-center py-16">
-      <svg className="spin text-teal" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-        <path d="M21 12a9 9 0 1 1-6.2-8.5" />
-      </svg>
+    <div className="space-y-2.5">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+          <div className="skel h-4 w-1/2" />
+          <div className="skel h-3 w-1/3 mt-2" />
+          <div className="skel h-3 w-2/5 mt-3" />
+        </div>
+      ))}
     </div>
   );
 }
 
 function EmptyState() {
   return (
-    <div className="bg-white rounded-2xl p-6 text-center card-shadow">
+    <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
       <div className="text-3xl mb-2">🔍</div>
-      <p className="text-[14px] text-ink/70">No providers listed here yet.</p>
-      <p className="text-[13px] text-ink/50 mt-1">Know someone reliable? Be the first to recommend them.</p>
-      <Link href="/recommend" className="inline-block mt-3 bg-teal text-white font-semibold text-sm px-4 py-2 rounded-full">
+      <p className="text-[14px] text-slate2">No providers listed here yet.</p>
+      <p className="text-[13px] text-muted mt-1">Know someone reliable? Be the first to recommend them.</p>
+      <Link href="/recommend" className="inline-block mt-3 bg-amber text-navy font-semibold text-sm px-4 py-2 rounded-full">
         Recommend someone
       </Link>
     </div>
@@ -65,9 +69,9 @@ function FindInner() {
           onChange={(e) => setInput(e.target.value)}
           type="search"
           placeholder="Search name, trade or area"
-          className="w-full rounded-full border border-black/10 bg-white pl-11 pr-4 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal/40"
+          className="w-full rounded-full border border-white/15 bg-surface2 text-ink placeholder-muted pl-11 pr-4 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30"
         />
-        <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-ink/40" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <circle cx="11" cy="11" r="7" />
           <path d="M21 21l-4-4" />
         </svg>
@@ -75,25 +79,25 @@ function FindInner() {
 
       <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
         {cat ? (
-          <Link href="/find" className="whitespace-nowrap text-[13px] px-3 py-1.5 rounded-full bg-navy text-white">✕ Clear</Link>
+          <Link href="/find" className="whitespace-nowrap text-[13px] px-3 py-1.5 rounded-full bg-amber text-navy font-medium">✕ Clear</Link>
         ) : null}
         {CATEGORIES.map((c) => (
           <Link
             key={c.id}
             href={`/find?cat=${c.id}`}
-            className={`whitespace-nowrap text-[13px] px-3 py-1.5 rounded-full border ${cat === c.id ? "bg-teal text-white border-teal" : "bg-white text-navy border-black/10"}`}
+            className={`whitespace-nowrap text-[13px] px-3 py-1.5 rounded-full border ${cat === c.id ? "bg-amber text-navy border-amber font-medium" : "bg-surface2 text-ink border-white/15"}`}
           >
             {c.emoji} {c.name}
           </Link>
         ))}
       </div>
 
-      <h2 className="font-bold text-navy mt-1 mb-2">
-        {title} <span className="text-ink/40 font-normal">{rows ? `(${rows.length})` : ""}</span>
+      <h2 className="font-bold text-ink mt-1 mb-2">
+        {title} <span className="text-muted font-normal">{rows ? `(${rows.length})` : ""}</span>
       </h2>
 
       {rows === null ? (
-        <Loading />
+        <SkeletonList />
       ) : (
         <div className="space-y-2.5">
           {rows.length ? rows.map((p) => <ProviderCard key={p.id} p={p} counts={counts} />) : <EmptyState />}
@@ -106,7 +110,7 @@ function FindInner() {
 
 export default function FindPage() {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<SkeletonList />}>
       <FindInner />
     </Suspense>
   );
