@@ -12,14 +12,17 @@ export const useAuth = () => useContext(AuthCtx);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showSignIn, setShowSignIn] = useState(false);
   const [signInMsg, setSignInMsg] = useState(null); // optional context message
 
   const loadProfile = useCallback(async (uid) => {
-    if (!uid) { setProfile(null); return; }
+    if (!uid) { setProfile(null); setIsAdmin(false); return; }
     const { data } = await supabase.from("profiles").select("*").eq("id", uid).single();
     setProfile(data || null);
+    const { data: adm } = await supabase.rpc("is_admin");
+    setIsAdmin(!!adm);
   }, []);
 
   useEffect(() => {
@@ -45,7 +48,7 @@ export function AuthProvider({ children }) {
   const needsProfile = !!user && (!profile || !profile.first_name || !profile.area);
 
   return (
-    <AuthCtx.Provider value={{ user, profile, loading, openSignIn, signOut, refreshProfile }}>
+    <AuthCtx.Provider value={{ user, profile, isAdmin, loading, openSignIn, signOut, refreshProfile }}>
       {children}
       {showSignIn && !user ? <SignInSheet msg={signInMsg} onClose={() => setShowSignIn(false)} /> : null}
       {needsProfile ? <CompleteProfile user={user} onDone={refreshProfile} /> : null}

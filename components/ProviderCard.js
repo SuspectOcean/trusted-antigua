@@ -1,6 +1,20 @@
 import Link from "next/link";
 import { CAT } from "@/lib/categories";
 import { pct } from "@/lib/helpers";
+import TrustBadge from "@/components/TrustBadge";
+
+function Avatar({ src, name }) {
+  const initial = (name || "?").trim().charAt(0).toUpperCase();
+  if (src) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt="" className="w-11 h-11 rounded-xl object-cover shrink-0 border border-white/10" />;
+  }
+  return (
+    <div className="w-11 h-11 rounded-xl shrink-0 bg-surface2 border border-white/10 flex items-center justify-center text-slate2 font-bold">
+      {initial}
+    </div>
+  );
+}
 
 export default function ProviderCard({ p, counts }) {
   const c = counts[p.id] || { count: 0, yes: 0 };
@@ -9,12 +23,18 @@ export default function ProviderCard({ p, counts }) {
   return (
     <Link href={`/provider?id=${encodeURIComponent(p.id)}`} className="block bg-surface border border-white/10 rounded-2xl p-4 shadow-card active:scale-[.99] transition">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="font-semibold text-ink truncate">{p.alias || p.name}</div>
-          {p.alias ? <div className="text-xs text-muted truncate">{p.name}</div> : null}
-          <div className="mt-1 text-[13px] text-slate2">
-            {cat ? `${cat.emoji} ${cat.name}` : ""}
-            {p.area ? ` · ${p.area}` : ""}
+        <div className="flex items-start gap-3 min-w-0">
+          <Avatar src={p.photo_url} name={p.alias || p.name} />
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold text-ink truncate">{p.alias || p.name}</span>
+              <TrustBadge level={p.trust_level} size="sm" />
+            </div>
+            {p.alias ? <div className="text-xs text-muted truncate">{p.name}</div> : null}
+            <div className="mt-1 text-[13px] text-slate2">
+              {cat ? `${cat.emoji} ${cat.name}` : ""}
+              {p.area ? ` · ${p.area}` : ""}
+            </div>
           </div>
         </div>
         <div className="text-right shrink-0">
