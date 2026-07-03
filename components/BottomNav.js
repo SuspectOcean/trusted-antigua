@@ -19,10 +19,10 @@ export default function BottomNav() {
     { href: "/recommend", label: "Recommend", active: path.startsWith("/recommend"), icon: <Icon d="M12 5v14M5 12h14" /> },
   ];
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-30 bg-white border-t border-black/10" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+    <nav className="fixed bottom-0 inset-x-0 z-30 bg-navy border-t border-white/10" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
       <div className="max-w-xl mx-auto grid grid-cols-3 text-center text-[11px]">
         {items.map((it) => (
-          <Link key={it.href} href={it.href} className={`py-2.5 flex flex-col items-center gap-0.5 ${it.active ? "text-teal font-semibold" : "text-navy/60"}`}>
+          <Link key={it.href} href={it.href} className={`py-2.5 flex flex-col items-center gap-0.5 ${it.active ? "text-amber font-semibold" : "text-slate2/70"}`}>
             {it.icon}
             {it.label}
           </Link>
