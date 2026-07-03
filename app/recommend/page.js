@@ -4,9 +4,11 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/categories";
 import { api } from "@/lib/data";
+import { useAuth } from "@/components/AuthProvider";
 
 function RecommendInner() {
   const params = useSearchParams();
+  const { user, profile, openSignIn } = useAuth();
   const presetPid = params.get("pid") || "";
   const presetName = params.get("pname") || "";
   const presetCat = params.get("cat") || "";
@@ -22,23 +24,35 @@ function RecommendInner() {
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const inputCls = "w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30";
 
+  if (!user) {
+    return (
+      <div className="pt-6">
+        <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
+          <div className="text-3xl mb-2">🤝</div>
+          <h1 className="text-lg font-bold text-ink">Recommend someone</h1>
+          <p className="text-[14px] text-slate2 mt-1">Create a free profile to recommend a tradesperson. It keeps recommendations honest and accountable.</p>
+          <button onClick={() => openSignIn("Sign in to recommend a tradesperson.")} className="mt-4 bg-amber text-navy font-semibold px-5 py-2.5 rounded-full text-[15px]">Sign in / Create profile</button>
+        </div>
+      </div>
+    );
+  }
+
   async function submit(e) {
     e.preventDefault();
     const name = form.name.trim();
-    if (!name || !form.category_id || !form.would) {
-      setMsg({ ok: false, node: "Please fill in the three required fields." });
-      return;
-    }
-    setBusy(true);
-    setMsg(null);
+    if (!name || !form.category_id || !form.would) { setMsg({ ok: false, node: "Please fill in the three required fields." }); return; }
+    setBusy(true); setMsg(null);
     try {
       let providerId = presetPid;
       if (!providerId) {
         const prov = await api.findOrCreateProvider({ name, category_id: form.category_id, area: form.area, contact: form.contact });
         providerId = prov.id;
       }
+      const display = profile ? `${profile.first_name} — ${profile.area}` : "A resident";
       await api.addRecommendation({
-        provider_id: providerId, recommender_display: null,
+        provider_id: providerId,
+        recommender_id: user.id,
+        recommender_display: display,
         reason: form.reason.trim() || null, job_type: form.job_type.trim() || null,
         would_hire_again: form.would === "yes",
         reliable: form.reliable, punctual: form.punctual, communication: form.communication, fair_price: form.fair_price,
@@ -51,9 +65,7 @@ function RecommendInner() {
     } catch (err) {
       console.error(err);
       setMsg({ ok: false, node: "Sorry, something went wrong saving that. Please try again." });
-    } finally {
-      setBusy(false);
-    }
+    } finally { setBusy(false); }
   }
 
   const tag = (k, label) => (
@@ -75,12 +87,10 @@ function RecommendInner() {
             {CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
           </select>
         </div>
-
         <div>
           <label className="block text-[13px] font-semibold text-ink mb-1.5">Their name or nickname <span className="text-err">*</span></label>
           <input value={form.name} onChange={(e) => set("name", e.target.value)} required placeholder="e.g. Ricky the AC Man" className={inputCls} />
         </div>
-
         <div>
           <label className="block text-[13px] font-semibold text-ink mb-1.5">Would you recommend them? <span className="text-err">*</span></label>
           <div className="grid grid-cols-2 gap-2">
@@ -90,7 +100,7 @@ function RecommendInner() {
             </label>
             <label className="cursor-pointer">
               <input type="radio" name="would" value="no" checked={form.would === "no"} onChange={() => set("would", "no")} className="peer sr-only" />
-              <span className="block text-center py-2.5 rounded-xl border border-white/15 bg-surface2 text-ink peer-checked:bg-surface2 peer-checked:text-ink peer-checked:border-amber text-[14px] font-semibold">Not sure</span>
+              <span className="block text-center py-2.5 rounded-xl border border-white/15 bg-surface2 text-ink peer-checked:border-amber text-[14px] font-semibold">Not sure</span>
             </label>
           </div>
         </div>
@@ -98,30 +108,13 @@ function RecommendInner() {
         <details className="bg-surface border border-white/10 rounded-xl p-3">
           <summary className="text-[13px] font-semibold text-amber cursor-pointer">Add more (optional)</summary>
           <div className="space-y-3 mt-3">
-            <div>
-              <label className="block text-[13px] text-slate2 mb-1">Phone / WhatsApp</label>
-              <input value={form.contact} onChange={(e) => set("contact", e.target.value)} inputMode="tel" placeholder="+1 268 …" className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-[13px] text-slate2 mb-1">Area they serve</label>
-              <input value={form.area} onChange={(e) => set("area", e.target.value)} placeholder="e.g. Jolly Harbour" className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-[13px] text-slate2 mb-1">Why do you recommend them?</label>
-              <textarea value={form.reason} onChange={(e) => set("reason", e.target.value)} rows={2} placeholder="e.g. Built my wall neatly, fair price" className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-[13px] text-slate2 mb-1">What job did they do?</label>
-              <input value={form.job_type} onChange={(e) => set("job_type", e.target.value)} placeholder="e.g. AC repair" className={inputCls} />
-            </div>
+            <div><label className="block text-[13px] text-slate2 mb-1">Phone / WhatsApp</label><input value={form.contact} onChange={(e) => set("contact", e.target.value)} inputMode="tel" placeholder="+1 268 …" className={inputCls} /></div>
+            <div><label className="block text-[13px] text-slate2 mb-1">Area they serve</label><input value={form.area} onChange={(e) => set("area", e.target.value)} placeholder="e.g. Jolly Harbour" className={inputCls} /></div>
+            <div><label className="block text-[13px] text-slate2 mb-1">Why do you recommend them?</label><textarea value={form.reason} onChange={(e) => set("reason", e.target.value)} rows={2} placeholder="e.g. Built my wall neatly, fair price" className={inputCls} /></div>
+            <div><label className="block text-[13px] text-slate2 mb-1">What job did they do?</label><input value={form.job_type} onChange={(e) => set("job_type", e.target.value)} placeholder="e.g. AC repair" className={inputCls} /></div>
             <div>
               <label className="block text-[13px] text-slate2 mb-1">What was good?</label>
-              <div className="flex flex-wrap gap-2">
-                {tag("reliable", "Reliable")}
-                {tag("punctual", "Punctual")}
-                {tag("communication", "Good communication")}
-                {tag("fair_price", "Fair price")}
-              </div>
+              <div className="flex flex-wrap gap-2">{tag("reliable", "Reliable")}{tag("punctual", "Punctual")}{tag("communication", "Good communication")}{tag("fair_price", "Fair price")}</div>
             </div>
             <div className="border-t border-white/10 pt-3">
               <label className="block text-[13px] text-slate2 mb-1">Private note or warning</label>
@@ -131,9 +124,7 @@ function RecommendInner() {
           </div>
         </details>
 
-        <button type="submit" disabled={busy} className="w-full bg-amber text-navy font-bold py-3 rounded-full text-[15px] disabled:opacity-60">
-          {busy ? "Saving…" : "Add recommendation"}
-        </button>
+        <button type="submit" disabled={busy} className="w-full bg-amber text-navy font-bold py-3 rounded-full text-[15px] disabled:opacity-60">{busy ? "Saving…" : "Add recommendation"}</button>
         {msg ? <p className={`text-center text-[13px] ${msg.ok ? "text-ok" : "text-err"}`}>{msg.node}</p> : null}
       </form>
       <div className="h-4" />
