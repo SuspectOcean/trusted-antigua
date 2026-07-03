@@ -6,6 +6,8 @@ import { CAT } from "@/lib/categories";
 import { api } from "@/lib/data";
 import { pct, waLink } from "@/lib/helpers";
 import { useAuth } from "@/components/AuthProvider";
+import TrustBadge from "@/components/TrustBadge";
+import { isClaimed } from "@/lib/trust";
 
 const STAT_TAGS = [
   ["reliable_count", "Reliable"],
@@ -37,6 +39,15 @@ function RecCard({ r }) {
       {tags.length ? <div className="mt-2 flex flex-wrap gap-1.5">{tags}</div> : null}
     </div>
   );
+}
+
+function Avatar({ src, name }) {
+  const initial = (name || "?").trim().charAt(0).toUpperCase();
+  if (src) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt="" className="w-16 h-16 rounded-2xl object-cover border border-white/10 shrink-0" />;
+  }
+  return <div className="w-16 h-16 rounded-2xl bg-surface2 border border-white/10 flex items-center justify-center text-slate2 text-2xl font-bold shrink-0">{initial}</div>;
 }
 
 function WarningModal({ provider, onClose }) {
@@ -71,6 +82,8 @@ function ProviderInner() {
   const [stats, setStats] = useState(null);
   const [contact, setContact] = useState(null);
   const [recs, setRecs] = useState([]);
+  const [isOwner, setIsOwner] = useState(false);
+  const [myClaim, setMyClaim] = useState(null);
   const [showWarn, setShowWarn] = useState(false);
 
   useEffect(() => {
@@ -85,9 +98,11 @@ function ProviderInner() {
   }, [id]);
 
   useEffect(() => {
-    if (!id || !user) { setContact(null); setRecs([]); return; }
+    if (!id || !user) { setContact(null); setRecs([]); setIsOwner(false); setMyClaim(null); return; }
     api.providerContact(id).then(setContact);
     api.recommendations(id).then(setRecs);
+    api.providerOwner(id).then((owner) => setIsOwner(!!owner && owner === user.id));
+    api.myClaimForProvider(id, user.id).then(setMyClaim);
   }, [id, user]);
 
   if (p === undefined) return <Spinner />;
@@ -101,14 +116,26 @@ function ProviderInner() {
     return n ? <span key={k} className="text-[12px] bg-teal/15 text-teal px-2.5 py-1 rounded-full">{label} · {n}</span> : null;
   }).filter(Boolean);
   const wa = waLink(contact);
+  const claimed = isClaimed(p.trust_level);
+  const pendingClaim = myClaim && myClaim.status === "pending";
 
   return (
     <>
       <Link href="/find" className="inline-flex items-center gap-1 text-[13px] text-slate2 mb-3">‹ Back</Link>
       <div className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
-        <h1 className="text-xl font-extrabold text-ink leading-tight">{p.alias || p.name}</h1>
-        {p.alias ? <div className="text-[13px] text-muted">{p.name}</div> : null}
-        <div className="mt-1 text-[14px] text-slate2">{cat ? `${cat.emoji} ${cat.name}` : ""}{p.area ? ` · ${p.area}` : ""}</div>
+        <div className="flex items-start gap-3">
+          <Avatar src={p.photo_url} name={p.alias || p.name} />
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl font-extrabold text-ink leading-tight">{p.alias || p.name}</h1>
+              <TrustBadge level={p.trust_level} size="md" tappable />
+            </div>
+            {p.alias ? <div className="text-[13px] text-muted">{p.name}</div> : null}
+            <div className="mt-1 text-[14px] text-slate2">{cat ? `${cat.emoji} ${cat.name}` : ""}{p.area ? ` · ${p.area}` : ""}</div>
+          </div>
+        </div>
+
+        {p.description ? <p className="mt-3 text-[14px] text-slate2 leading-relaxed">{p.description}</p> : null}
 
         <div className="mt-3 grid grid-cols-2 gap-3">
           <div className="bg-surface2 rounded-xl p-3 text-center">
@@ -143,6 +170,26 @@ function ProviderInner() {
           <button onClick={() => openSignIn("Sign in to add your recommendation.")} className="block w-full text-center mt-2 text-[13px] text-amber font-semibold">+ Add your recommendation</button>
         )}
       </div>
+
+      {/* Claim / manage strip */}
+      {isOwner ? (
+        <Link href={`/manage?id=${encodeURIComponent(p.id)}`} className="mt-3 block bg-surface2 border border-amber/30 rounded-2xl p-3 text-center text-[13px] text-amber font-semibold">
+          You manage this profile · Edit ›
+        </Link>
+      ) : pendingClaim ? (
+        <div className="mt-3 bg-surface border border-white/10 rounded-2xl p-3 text-center text-[13px] text-slate2">
+          ⏳ Your claim for this profile is awaiting review.
+        </div>
+      ) : !claimed ? (
+        <div className="mt-3 bg-surface border border-white/10 rounded-2xl p-3 flex items-center justify-between gap-2">
+          <span className="text-[13px] text-slate2">Is this your business?</span>
+          {user ? (
+            <Link href={`/claim?id=${encodeURIComponent(p.id)}`} className="text-[13px] bg-amber text-navy font-semibold px-3 py-1.5 rounded-full whitespace-nowrap">Claim this profile</Link>
+          ) : (
+            <button onClick={() => openSignIn("Sign in to claim your business profile.")} className="text-[13px] bg-amber text-navy font-semibold px-3 py-1.5 rounded-full whitespace-nowrap">Claim this profile</button>
+          )}
+        </div>
+      ) : null}
 
       <h2 className="font-bold text-ink mt-5 mb-2">Recommendations</h2>
       {!user ? (
