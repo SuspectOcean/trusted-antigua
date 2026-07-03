@@ -3,22 +3,28 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/lib/supabase";
+import { api } from "@/lib/data";
 import { AREAS, CAT } from "@/lib/categories";
+import { TRUST } from "@/lib/trust";
 
 export default function AccountPage() {
-  const { user, profile, loading, openSignIn, signOut, refreshProfile } = useAuth();
+  const { user, profile, isAdmin, loading, openSignIn, signOut, refreshProfile } = useAuth();
   const [editing, setEditing] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [area, setArea] = useState("");
   const [mine, setMine] = useState(null);
+  const [managed, setManaged] = useState(null);
+  const [pendingClaims, setPendingClaims] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => { if (profile) { setFirstName(profile.first_name || ""); setArea(profile.area || ""); } }, [profile]);
 
   useEffect(() => {
-    if (!user) { setMine(null); return; }
+    if (!user) { setMine(null); setManaged(null); setPendingClaims([]); return; }
     supabase.from("recommendations").select("*").eq("recommender_id", user.id).order("created_at", { ascending: false })
       .then(({ data }) => setMine(data || []));
+    api.myManagedProviders(user.id).then(setManaged);
+    api.myClaims(user.id).then((cs) => setPendingClaims((cs || []).filter((c) => c.status === "pending")));
   }, [user]);
 
   if (loading) return <div className="py-16 text-center text-muted">Loading…</div>;
@@ -82,6 +88,35 @@ export default function AccountPage() {
           </div>
         )}
       </div>
+
+      {isAdmin ? (
+        <Link href="/admin" className="mt-4 block bg-surface2 border border-amber/30 rounded-2xl p-3 text-center text-[13px] text-amber font-semibold">
+          Admin console · review claims ›
+        </Link>
+      ) : null}
+
+      {(managed && managed.length) || pendingClaims.length ? (
+        <>
+          <h2 className="font-bold text-ink mt-6 mb-2">Profiles you manage</h2>
+          <div className="space-y-2.5">
+            {(managed || []).map((m) => (
+              <Link key={m.id} href={`/manage?id=${encodeURIComponent(m.id)}`} className="block bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+                <div className="flex items-center justify-between">
+                  <div className="font-semibold text-ink">{m.alias || m.name}</div>
+                  <span className="text-[11px] text-slate2">{TRUST[m.trust_level]?.label || m.trust_level}</span>
+                </div>
+                <div className="text-[12px] text-muted mt-0.5">{CAT[m.category_id]?.name || m.category_id} · Edit ›</div>
+              </Link>
+            ))}
+            {pendingClaims.map((c) => (
+              <div key={c.id} className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+                <div className="font-semibold text-ink">{c.providers?.alias || c.providers?.name || "Provider"}</div>
+                <div className="text-[12px] text-muted mt-0.5">⏳ Claim awaiting review</div>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : null}
 
       <h2 className="font-bold text-ink mt-6 mb-2">My recommendations</h2>
       {mine === null ? (
