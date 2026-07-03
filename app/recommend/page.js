@@ -6,6 +6,14 @@ import { CATEGORIES } from "@/lib/categories";
 import { api } from "@/lib/data";
 import { useAuth } from "@/components/AuthProvider";
 
+// Reject if a call hasn't resolved in `ms` (mobile networks can hang silently).
+function withTimeout(promise, ms) {
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise((_, reject) => setTimeout(() => reject(new Error("timed out")), ms)),
+  ]);
+}
+
 function RecommendInner() {
   const params = useSearchParams();
   const { user, profile, openSignIn } = useAuth();
@@ -40,31 +48,66 @@ function RecommendInner() {
   async function submit(e) {
     e.preventDefault();
     const name = form.name.trim();
-    if (!name || !form.category_id || !form.would) { setMsg({ ok: false, node: "Please fill in the three required fields." }); return; }
+    if (!form.category_id || (!presetPid && !name) || !form.would) {
+      setMsg({ ok: false, node: "Please fill in the three required fields." });
+      return;
+    }
     setBusy(true); setMsg(null);
+    const log = (...a) => console.log("[recommend]", ...a);
     try {
-      let providerId = presetPid;
-      if (!providerId) {
-        const prov = await api.findOrCreateProvider({ name, category_id: form.category_id, area: form.area, contact: form.contact });
-        providerId = prov.id;
+      log("submit start", { presetPid, name, category: form.category_id });
+
+      // 1) Confirm we still have a valid session (mobile tabs suspend / tokens expire).
+      const session = await api.ensureSession();
+      log("session present?", !!session, "uid:", session?.user?.id);
+      if (!session) {
+        setMsg({ ok: false, node: "Your session has expired. Please sign in again, then resubmit." });
+        openSignIn("Please sign in again to post your recommendation.");
+        setBusy(false);
+        return;
       }
+
       const display = profile ? `${profile.first_name} — ${profile.area}` : "A resident";
-      await api.addRecommendation({
-        provider_id: providerId,
-        recommender_id: user.id,
-        recommender_display: display,
-        reason: form.reason.trim() || null, job_type: form.job_type.trim() || null,
-        would_hire_again: form.would === "yes",
-        reliable: form.reliable, punctual: form.punctual, communication: form.communication, fair_price: form.fair_price,
-      });
+
+      // 2) One atomic call creates provider (if needed) AND recommendation together.
+      const providerId = await withTimeout(
+        api.submitRecommendation({
+          provider_id: presetPid || null,
+          name,
+          category_id: form.category_id,
+          area: form.area,
+          contact: form.contact,
+          recommender_display: display,
+          reason: form.reason,
+          job_type: form.job_type,
+          would_hire_again: form.would === "yes",
+          reliable: form.reliable, punctual: form.punctual, communication: form.communication, fair_price: form.fair_price,
+        }),
+        15000
+      );
+      log("saved OK, providerId:", providerId);
+
+      // 3) Optional private note (non-fatal).
       if (form.private_note.trim()) {
-        await api.addWarning({ provider_id: providerId, provider_name: name, warning: form.private_note.trim() });
+        try { await api.addWarning({ provider_id: providerId, provider_name: name, warning: form.private_note.trim() }); }
+        catch (w) { console.warn("[recommend] private note failed (non-fatal)", w); }
       }
+
       setMsg({ ok: true, node: (<>✅ Thank you! Your recommendation has been added. <Link className="text-amber underline" href={`/provider?id=${encodeURIComponent(providerId)}`}>View profile</Link></>) });
       setForm({ category_id: "", name: "", would: "", contact: "", area: "", reason: "", job_type: "", reliable: false, punctual: false, communication: false, fair_price: false, private_note: "" });
     } catch (err) {
-      console.error(err);
-      setMsg({ ok: false, node: "Sorry, something went wrong saving that. Please try again." });
+      console.error("[recommend] submit failed", err);
+      const text = `${err?.code || ""} ${err?.message || ""}`.toLowerCase();
+      let node = "Sorry, something went wrong saving that. Please try again.";
+      if (text.includes("not_signed_in") || text.includes("28000") || text.includes("jwt")) {
+        node = "Your session has expired. Please sign in again, then resubmit.";
+        openSignIn("Please sign in again to post your recommendation.");
+      } else if (text.includes("timed out") || text.includes("timeout")) {
+        node = "That took too long — check your connection and try again.";
+      } else if (err?.message) {
+        node = `Couldn't save: ${err.message}`;
+      }
+      setMsg({ ok: false, node });
     } finally { setBusy(false); }
   }
 
