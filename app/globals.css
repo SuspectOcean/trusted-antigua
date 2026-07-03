@@ -11,6 +11,10 @@ html, body { background: #0C1526; color: #EEF2F8; -webkit-tap-highlight-color: t
 
 .spin { animation: spin 1s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }
 
+/* Hide horizontal scrollbar on the category chip row (still scrollable) */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
 @media (prefers-reduced-motion: reduce) {
   .skel, .spin { animation: none; }
   * { transition: none !important; }
