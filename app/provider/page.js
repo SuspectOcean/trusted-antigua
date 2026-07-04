@@ -7,7 +7,9 @@ import { api } from "@/lib/data";
 import { pct, waLink, withTimeout } from "@/lib/helpers";
 import { useAuth } from "@/components/AuthProvider";
 import TrustBadge from "@/components/TrustBadge";
+import CategoryIcon from "@/components/CategoryIcon";
 import { isClaimed } from "@/lib/trust";
+import { CORE_DIMENSIONS, DIMENSION_THRESHOLD, timeframeLabel as tfLabel } from "@/lib/reviews";
 
 const STAT_TAGS = [
   ["reliable_count", "Reliable"],
@@ -28,14 +30,17 @@ function Spinner() {
 
 function RecCard({ r }) {
   const tags = REC_TAGS.filter(([k]) => r[k]).map(([, l]) => <span key={l} className="text-[11px] bg-teal/15 text-teal px-2 py-0.5 rounded-full">{l}</span>);
+  const works = Array.isArray(r.work_types) ? r.work_types : [];
   return (
     <div className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
       <div className="flex items-center justify-between">
-        <div className="text-[13px] font-semibold text-ink">{r.recommender_display || "A resident"}</div>
+        <div className="text-[13px] font-display font-semibold text-ink">{r.recommender_display || "A resident"}</div>
         {r.would_hire_again ? <span className="text-[11px] text-ok font-semibold">👍 Would hire again</span> : null}
       </div>
+      {r.score_finished != null ? <div className="text-[12px] text-amber font-semibold mt-1">Finished work {r.score_finished}/10</div> : null}
       {r.reason ? <p className="text-[14px] text-slate2 mt-1">{r.reason}</p> : null}
-      {r.job_type ? <div className="text-[12px] text-muted mt-1">Job: {r.job_type}</div> : null}
+      {works.length ? <div className="text-[12px] text-muted mt-1">Work: {works.join(", ")}</div> : (r.job_type ? <div className="text-[12px] text-muted mt-1">Job: {r.job_type}</div> : null)}
+      {r.timeframe ? <div className="text-[11px] text-muted mt-0.5">{tfLabel(r.timeframe)}</div> : null}
       {tags.length ? <div className="mt-2 flex flex-wrap gap-1.5">{tags}</div> : null}
     </div>
   );
@@ -130,6 +135,9 @@ function ProviderInner() {
   const wa = waLink(contact);
   const claimed = isClaimed(p.trust_level);
   const pendingClaim = myClaim && myClaim.status === "pending";
+  const households = stats?.households || 0;
+  const scored = stats?.scored_count || 0;
+  const showDimensions = scored >= DIMENSION_THRESHOLD;
 
   return (
     <>
@@ -139,11 +147,14 @@ function ProviderInner() {
           <Avatar src={p.photo_url} name={p.alias || p.name} />
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-extrabold text-ink leading-tight">{p.alias || p.name}</h1>
+              <h1 className="text-xl font-display font-semibold text-ink leading-tight">{p.alias || p.name}</h1>
               <TrustBadge level={p.trust_level} size="md" tappable />
             </div>
             {p.alias ? <div className="text-[13px] text-muted">{p.name}</div> : null}
-            <div className="mt-1 text-[14px] text-slate2">{cat ? `${cat.emoji} ${cat.name}` : ""}{p.area ? ` · ${p.area}` : ""}</div>
+            <div className="mt-1 flex items-center gap-1.5 text-[14px] text-slate2">
+              {cat ? <CategoryIcon id={cat.id} className="w-4 h-4 shrink-0 text-muted" /> : null}
+              <span>{cat ? cat.name : ""}{p.area ? ` · ${p.area}` : ""}</span>
+            </div>
           </div>
         </div>
 
@@ -152,13 +163,36 @@ function ProviderInner() {
         <div className="mt-3 grid grid-cols-2 gap-3">
           <div className="bg-surface2 rounded-xl p-3 text-center">
             <div className="text-lg font-bold text-amber">{count}</div>
-            <div className="text-[10px] uppercase tracking-wide text-muted">recommendation{count === 1 ? "" : "s"}</div>
+            <div className="text-[10px] uppercase tracking-wide text-muted">review{count === 1 ? "" : "s"}</div>
           </div>
           <div className="bg-surface2 rounded-xl p-3 text-center">
             <div className="text-lg font-bold text-ok">{count ? wha + "%" : "—"}</div>
             <div className="text-[10px] uppercase tracking-wide text-muted">would hire again</div>
           </div>
         </div>
+        {households ? <div className="mt-2 text-[12px] text-muted text-center">{households} household{households === 1 ? "" : "s"} served</div> : null}
+
+        {/* Per-dimension averages appear only once there are enough scored reviews. */}
+        {count ? (
+          showDimensions ? (
+            <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5">
+              {CORE_DIMENSIONS.map((d) => {
+                const v = stats?.[`avg_${d.key}`];
+                return v != null ? (
+                  <div key={d.key} className="flex items-center justify-between text-[13px]">
+                    <span className="text-slate2">{d.label}</span>
+                    <span className="text-ink font-semibold">{Number(v).toFixed(1)}/10</span>
+                  </div>
+                ) : null;
+              })}
+            </div>
+          ) : (
+            <div className="mt-3 text-[12px] text-muted bg-surface2 rounded-xl p-2.5 text-center">
+              Building reputation — detailed scores appear once there are a few reviews.
+            </div>
+          )
+        ) : null}
+
         {summaryTags.length ? <div className="mt-3 flex flex-wrap gap-1.5">{summaryTags}</div> : null}
 
         {/* Contact — real buttons when signed in; gated otherwise */}
@@ -177,9 +211,9 @@ function ProviderInner() {
         )}
 
         {user ? (
-          <Link href={`/recommend?pid=${encodeURIComponent(p.id)}&pname=${encodeURIComponent(p.name)}&cat=${p.category_id}`} className="block text-center mt-2 text-[13px] text-amber font-semibold">+ Add your recommendation</Link>
+          <Link href={`/recommend?pid=${encodeURIComponent(p.id)}&pname=${encodeURIComponent(p.name)}&cat=${p.category_id}`} className="block text-center mt-2 text-[13px] text-amber font-semibold">★ Write / update your review</Link>
         ) : (
-          <button onClick={() => openSignIn("Sign in to add your recommendation.")} className="block w-full text-center mt-2 text-[13px] text-amber font-semibold">+ Add your recommendation</button>
+          <button onClick={() => openSignIn("Sign in to review this tradesperson.")} className="block w-full text-center mt-2 text-[13px] text-amber font-semibold">★ Write a review</button>
         )}
       </div>
 
@@ -203,10 +237,10 @@ function ProviderInner() {
         </div>
       ) : null}
 
-      <h2 className="font-bold text-ink mt-5 mb-2">Recommendations</h2>
+      <h2 className="font-display font-semibold text-[17px] text-ink mt-5 mb-2">Reviews</h2>
       {!user ? (
         <div className="bg-surface border border-white/10 rounded-2xl p-5 text-center shadow-card">
-          <p className="text-[14px] text-slate2">{count ? `${count} recommendation${count === 1 ? "" : "s"} — sign in to read what people said.` : "No recommendations yet."}</p>
+          <p className="text-[14px] text-slate2">{count ? `${count} review${count === 1 ? "" : "s"} — sign in to read what people said.` : "No reviews yet."}</p>
           {count ? <button onClick={() => openSignIn("Sign in to read recommendations.")} className="mt-3 bg-amber text-navy font-semibold text-sm px-4 py-2 rounded-full">Sign in to read</button> : null}
         </div>
       ) : (
