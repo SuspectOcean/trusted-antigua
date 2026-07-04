@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CAT } from "@/lib/categories";
 import { api } from "@/lib/data";
+import { withTimeout } from "@/lib/helpers";
 import { useAuth } from "@/components/AuthProvider";
 import { isClaimed } from "@/lib/trust";
 
@@ -22,10 +23,12 @@ function ClaimInner() {
 
   useEffect(() => {
     if (!id) { setP(null); return; }
-    api.provider(id).then((prov) => {
-      setP(prov || null);
-      if (prov) setForm((f) => ({ ...f, name: prov.alias || prov.name || "", description: prov.description || "" }));
-    });
+    withTimeout(api.provider(id))
+      .then((prov) => {
+        setP(prov || null);
+        if (prov) setForm((f) => ({ ...f, name: prov.alias || prov.name || "", description: prov.description || "" }));
+      })
+      .catch((e) => { console.error("[claim] load failed", e); setP(null); });
   }, [id]);
 
   useEffect(() => {
