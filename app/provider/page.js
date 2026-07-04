@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CAT } from "@/lib/categories";
 import { api } from "@/lib/data";
-import { pct, waLink } from "@/lib/helpers";
+import { pct, waLink, withTimeout } from "@/lib/helpers";
 import { useAuth } from "@/components/AuthProvider";
 import TrustBadge from "@/components/TrustBadge";
 import { isClaimed } from "@/lib/trust";
@@ -85,17 +85,22 @@ function ProviderInner() {
   const [isOwner, setIsOwner] = useState(false);
   const [myClaim, setMyClaim] = useState(null);
   const [showWarn, setShowWarn] = useState(false);
+  const [err, setErr] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!id) { setP(null); return; }
     let active = true;
-    Promise.all([api.provider(id), api.providerStats(id)]).then(([prov, st]) => {
-      if (!active) return;
-      setP(prov || null);
-      setStats(st);
-    });
+    setP(undefined); setErr(false);
+    Promise.all([withTimeout(api.provider(id)), withTimeout(api.providerStats(id))])
+      .then(([prov, st]) => {
+        if (!active) return;
+        setP(prov || null);
+        setStats(st);
+      })
+      .catch((e) => { console.error("[provider] load failed", e); if (active) { setP(undefined); setErr(true); } });
     return () => { active = false; };
-  }, [id]);
+  }, [id, reloadKey]);
 
   useEffect(() => {
     if (!id || !user) { setContact(null); setRecs([]); setIsOwner(false); setMyClaim(null); return; }
@@ -105,6 +110,13 @@ function ProviderInner() {
     api.myClaimForProvider(id, user.id).then(setMyClaim);
   }, [id, user]);
 
+  if (err) return (
+    <div className="py-16 text-center">
+      <div className="text-3xl mb-2">📶</div>
+      <p className="text-[14px] text-slate2">Couldn&apos;t load this provider.</p>
+      <button onClick={() => setReloadKey((k) => k + 1)} className="mt-3 bg-amber text-navy font-semibold text-sm px-4 py-2 rounded-full">Retry</button>
+    </div>
+  );
   if (p === undefined) return <Spinner />;
   if (p === null) return <div className="py-16 text-center text-slate2">Provider not found. <Link className="text-amber underline" href="/find">Back to directory</Link></div>;
 
