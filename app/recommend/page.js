@@ -4,15 +4,8 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/categories";
 import { api } from "@/lib/data";
+import { withTimeout } from "@/lib/helpers";
 import { useAuth } from "@/components/AuthProvider";
-
-// Reject if a call hasn't resolved in `ms` (mobile networks can hang silently).
-function withTimeout(promise, ms) {
-  return Promise.race([
-    Promise.resolve(promise),
-    new Promise((_, reject) => setTimeout(() => reject(new Error("timed out")), ms)),
-  ]);
-}
 
 function RecommendInner() {
   const params = useSearchParams();
