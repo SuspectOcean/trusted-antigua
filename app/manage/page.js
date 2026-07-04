@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CATEGORIES, CAT, SELECTABLE_AREAS } from "@/lib/categories";
 import { api } from "@/lib/data";
+import { withTimeout } from "@/lib/helpers";
 import { useAuth } from "@/components/AuthProvider";
 import { TRUST } from "@/lib/trust";
 
@@ -31,19 +32,21 @@ function ManageInner() {
 
   useEffect(() => {
     if (!id || !user) return;
-    api.manageProvider(id).then((prov) => {
-      setP(prov || null);
-      if (prov) {
-        setForm({
-          alias: prov.alias || prov.name || "",
-          description: prov.description || "",
-          contact: prov.contact || "",
-          area_scope: prov.area_scope || (prov.area === "Island-wide" ? "islandwide" : "selected"),
-          service_areas: prov.service_areas || [],
-        });
-      }
-    });
-    api.myCategoryRequest(id, user.id).then(setExistingCatReq);
+    withTimeout(api.manageProvider(id))
+      .then((prov) => {
+        setP(prov || null);
+        if (prov) {
+          setForm({
+            alias: prov.alias || prov.name || "",
+            description: prov.description || "",
+            contact: prov.contact || "",
+            area_scope: prov.area_scope || (prov.area === "Island-wide" ? "islandwide" : "selected"),
+            service_areas: prov.service_areas || [],
+          });
+        }
+      })
+      .catch((e) => { console.error("[manage] load failed", e); setP(null); });
+    api.myCategoryRequest(id, user.id).then(setExistingCatReq).catch(() => {});
   }, [id, user]);
 
   if (loading || (user && p === undefined)) return <div className="py-16 text-center text-muted">Loading…</div>;
