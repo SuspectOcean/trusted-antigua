@@ -9,7 +9,7 @@ import { TRUST } from "@/lib/trust";
 function Section({ title, children }) {
   return (
     <div className="mt-5">
-      <h2 className="font-bold text-ink mb-2">{title}</h2>
+      <h2 className="font-display font-semibold text-[17px] text-ink mb-2">{title}</h2>
       {children}
     </div>
   );
@@ -72,7 +72,7 @@ export default function AdminPage() {
 
   return (
     <div className="pt-2">
-      <h1 className="text-xl font-extrabold text-ink">Admin</h1>
+      <h1 className="text-xl font-display font-semibold text-ink">Admin</h1>
       <p className="text-[13px] text-muted mt-0.5">Review claims and category changes. Reputation data is never editable here.</p>
       {flash ? <div className="mt-3 bg-surface2 border border-white/10 rounded-xl p-2.5 text-[13px] text-slate2">{flash}</div> : null}
 
@@ -82,7 +82,7 @@ export default function AdminPage() {
             {claims.map((c) => (
               <div key={c.id} className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
                 <div className="flex items-center justify-between">
-                  <Link href={`/provider?id=${encodeURIComponent(c.provider_id)}`} className="font-semibold text-ink">{c.providers?.alias || c.providers?.name || "Provider"}</Link>
+                  <Link href={`/provider?id=${encodeURIComponent(c.provider_id)}`} className="font-display font-semibold text-ink">{c.providers?.alias || c.providers?.name || "Provider"}</Link>
                   <span className="text-[11px] text-muted">{CAT[c.providers?.category_id]?.name || ""}</span>
                 </div>
                 {c.submitted_name ? <div className="text-[13px] text-slate2 mt-1">Name: {c.submitted_name}</div> : null}
@@ -107,7 +107,7 @@ export default function AdminPage() {
               return (
                 <div key={c.id} className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
                   <div className="flex items-center justify-between">
-                    <Link href={`/provider?id=${encodeURIComponent(c.provider_id)}`} className="font-semibold text-ink">{c.providers?.alias || c.providers?.name}</Link>
+                    <Link href={`/provider?id=${encodeURIComponent(c.provider_id)}`} className="font-display font-semibold text-ink">{c.providers?.alias || c.providers?.name}</Link>
                     <span className="text-[11px] text-slate2">{TRUST[lvl]?.label || lvl}</span>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -131,7 +131,7 @@ export default function AdminPage() {
           <div className="space-y-2.5">
             {cats.map((k) => (
               <div key={k.id} className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
-                <Link href={`/provider?id=${encodeURIComponent(k.provider_id)}`} className="font-semibold text-ink">{k.providers?.alias || k.providers?.name}</Link>
+                <Link href={`/provider?id=${encodeURIComponent(k.provider_id)}`} className="font-display font-semibold text-ink">{k.providers?.alias || k.providers?.name}</Link>
                 <div className="text-[13px] text-slate2 mt-1">{CAT[k.current_category]?.name || k.current_category} → <b>{CAT[k.requested_category]?.name || k.requested_category}</b></div>
                 <div className="mt-3 flex gap-2">
                   <button disabled={busyId === k.id} onClick={() => decideCat(k.id, true)} className="flex-1 py-2 rounded-full bg-ok text-white font-semibold text-[13px] disabled:opacity-60">Approve</button>
