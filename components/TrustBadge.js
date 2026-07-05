@@ -8,10 +8,15 @@ const TONES = {
   slate: "bg-white/5 text-slate2 border-white/15",
 };
 
-function Check() {
+// The seal — the platform's one signature mark. A tilted stamp rather than a stock
+// checkmark, reserved for tiers that mean something was actually verified.
+function Seal({ size = "sm" }) {
+  const d = size === "md" ? 16 : 13;
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-      <path d="M20 6L9 17l-5-5" />
+    <svg width={d} height={d} viewBox="0 0 24 24" fill="none" stroke="currentColor" style={{ transform: "rotate(-12deg)" }}>
+      <circle cx="12" cy="12" r="10" strokeWidth="1.3" />
+      <circle cx="12" cy="12" r="6.6" strokeWidth="0.9" strokeDasharray="1.6 2.1" />
+      <path d="M8.6 12.3l2.2 2.2 4.6-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -28,7 +33,7 @@ export default function TrustBadge({ level, size = "sm", tappable = false }) {
 
   const chip = (
     <span className={`inline-flex items-center gap-1 rounded-full border font-semibold ${tone} ${pad}`}>
-      {showCheck ? <Check /> : null}
+      {showCheck ? <Seal size={size} /> : null}
       {t.chip}
     </span>
   );

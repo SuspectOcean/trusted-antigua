@@ -90,7 +90,7 @@ function SignInSheet({ msg, onClose }) {
     <div className="fixed inset-0 z-[60] bg-black/55 flex items-end sm:items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-surface border border-white/10 w-full max-w-xl rounded-t-2xl sm:rounded-2xl p-5 shadow-pop">
         <div className="flex items-center justify-between">
-          <h3 className="font-bold text-ink text-lg">Create your free profile</h3>
+          <h3 className="font-display font-semibold text-ink text-lg">Create your free profile</h3>
           <button onClick={onClose} className="text-muted text-xl leading-none px-2">×</button>
         </div>
         <p className="text-[13px] text-slate2 mt-1">{msg || "Create a free profile to contact trusted tradespeople and leave recommendations."}</p>
@@ -158,7 +158,7 @@ function CompleteProfile({ user, onDone }) {
   return (
     <div className="fixed inset-0 z-[70] bg-black/60 flex items-end sm:items-center justify-center">
       <div className="bg-surface border border-white/10 w-full max-w-xl rounded-t-2xl sm:rounded-2xl p-5 shadow-pop">
-        <h3 className="font-bold text-ink text-lg">Almost there — set up your profile</h3>
+        <h3 className="font-display font-semibold text-ink text-lg">Almost there — set up your profile</h3>
         <p className="text-[13px] text-slate2 mt-1">Just two things. This is how you&apos;ll appear on recommendations.</p>
         <form onSubmit={save} className="mt-4 space-y-3">
           <div>

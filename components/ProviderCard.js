@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CAT } from "@/lib/categories";
 import { pct } from "@/lib/helpers";
 import TrustBadge from "@/components/TrustBadge";
+import CategoryIcon from "@/components/CategoryIcon";
 
 function Avatar({ src, name }) {
   const initial = (name || "?").trim().charAt(0).toUpperCase();
@@ -27,13 +28,13 @@ export default function ProviderCard({ p, counts }) {
           <Avatar src={p.photo_url} name={p.alias || p.name} />
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-ink truncate">{p.alias || p.name}</span>
+              <span className="font-display font-semibold text-ink truncate">{p.alias || p.name}</span>
               <TrustBadge level={p.trust_level} size="sm" />
             </div>
             {p.alias ? <div className="text-xs text-muted truncate">{p.name}</div> : null}
-            <div className="mt-1 text-[13px] text-slate2">
-              {cat ? `${cat.emoji} ${cat.name}` : ""}
-              {p.area ? ` · ${p.area}` : ""}
+            <div className="mt-1 flex items-center gap-1 text-[13px] text-slate2">
+              {cat ? <CategoryIcon id={cat.id} className="w-3.5 h-3.5 shrink-0 text-muted" /> : null}
+              <span className="truncate">{cat ? cat.name : ""}{p.area ? ` · ${p.area}` : ""}</span>
             </div>
           </div>
         </div>
