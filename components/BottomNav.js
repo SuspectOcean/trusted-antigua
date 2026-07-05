@@ -16,7 +16,7 @@ export default function BottomNav() {
   const items = [
     { href: "/", label: "Home", active: path === "/", icon: <Icon d="M3 11l9-8 9 8M5 10v10h14V10" /> },
     { href: "/find", label: "Find", active: path.startsWith("/find") || path.startsWith("/provider"), icon: <Icon d="M21 21l-4-4" extra={<circle cx="11" cy="11" r="7" />} /> },
-    { href: "/recommend", label: "Recommend", active: path.startsWith("/recommend"), icon: <Icon d="M12 5v14M5 12h14" /> },
+    { href: "/recommend", label: "Review", active: path.startsWith("/recommend"), icon: <Icon d="M12 5v14M5 12h14" /> },
     { href: "/account", label: "Account", active: path.startsWith("/account"), icon: <Icon d="M12 11c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zM4 21c0-4 3.6-6 8-6s8 2 8 6" /> },
   ];
   return (

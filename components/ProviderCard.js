@@ -40,7 +40,7 @@ export default function ProviderCard({ p, counts }) {
         </div>
         <div className="text-right shrink-0">
           <div className="text-[15px] font-bold text-amber">{c.count}</div>
-          <div className="text-[10px] uppercase tracking-wide text-muted">rec{c.count === 1 ? "" : "s"}</div>
+          <div className="text-[10px] uppercase tracking-wide text-muted">review{c.count === 1 ? "" : "s"}</div>
         </div>
       </div>
       {c.count ? (
