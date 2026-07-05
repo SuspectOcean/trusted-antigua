@@ -42,6 +42,9 @@ function RecCard({ r }) {
       {works.length ? <div className="text-[12px] text-muted mt-1">Work: {works.join(", ")}</div> : (r.job_type ? <div className="text-[12px] text-muted mt-1">Job: {r.job_type}</div> : null)}
       {r.timeframe ? <div className="text-[11px] text-muted mt-0.5">{tfLabel(r.timeframe)}</div> : null}
       {tags.length ? <div className="mt-2 flex flex-wrap gap-1.5">{tags}</div> : null}
+      {r.updated_at && r.created_at && new Date(r.updated_at) - new Date(r.created_at) > 60000 ? (
+        <div className="text-[10px] text-muted mt-2">updated {new Date(r.updated_at).toLocaleDateString()}</div>
+      ) : null}
     </div>
   );
 }
@@ -67,7 +70,7 @@ function WarningModal({ provider, onClose }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/55 flex items-end sm:items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-surface border border-white/10 w-full max-w-xl rounded-t-2xl sm:rounded-2xl p-4 shadow-pop">
-        <h3 className="font-bold text-ink">Share a private concern</h3>
+        <h3 className="font-display font-semibold text-ink">Share a private concern</h3>
         <p className="text-[12px] text-muted mt-1">This goes only to our team for review. We never post public complaints about anyone.</p>
         <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} className="w-full mt-3 rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px]" placeholder="What happened?" />
         <div className="flex gap-2 mt-3">
