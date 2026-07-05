@@ -35,7 +35,7 @@ export default function RootLayout({ children }) {
                 <span className="font-display font-semibold tracking-wide">Trusted Antigua</span>
               </Link>
               <Link href="/recommend" className="text-xs bg-amber hover:bg-amber-600 text-navy font-semibold px-3 py-1.5 rounded-full">
-                + Recommend
+                + Review
               </Link>
             </div>
           </header>
