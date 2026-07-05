@@ -81,7 +81,7 @@ function RecommendInner() {
       <div className="pt-6">
         <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
           <div className="text-3xl mb-2">🤝</div>
-          <h1 className="text-lg font-bold text-ink">Review a tradesperson</h1>
+          <h1 className="text-lg font-display font-semibold text-ink">Review a tradesperson</h1>
           <p className="text-[14px] text-slate2 mt-1">Create a free profile to leave a review. It keeps reviews honest and accountable.</p>
           <button onClick={() => openSignIn("Sign in to review a tradesperson.")} className="mt-4 bg-amber text-navy font-semibold px-5 py-2.5 rounded-full text-[15px]">Sign in / Create profile</button>
         </div>
@@ -163,7 +163,7 @@ function RecommendInner() {
 
   return (
     <>
-      <h1 className="text-xl font-extrabold text-ink mt-1">{title}</h1>
+      <h1 className="text-xl font-display font-semibold text-ink mt-1">{title}</h1>
       <p className="text-[13px] text-muted mt-1 mb-4">Quick to start — score the details if you have time. You can update this later.</p>
       <form onSubmit={submit} className="space-y-4">
         {!presetPid ? (
