@@ -26,9 +26,9 @@ function EmptyState() {
     <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
       <div className="text-3xl mb-2">🔍</div>
       <p className="text-[14px] text-slate2">No providers listed here yet.</p>
-      <p className="text-[13px] text-muted mt-1">Know someone reliable? Be the first to recommend them.</p>
+      <p className="text-[13px] text-muted mt-1">Know someone reliable? Be the first to review them.</p>
       <Link href="/recommend" className="inline-block mt-3 bg-amber text-navy font-semibold text-sm px-4 py-2 rounded-full">
-        Recommend someone
+        Write a review
       </Link>
     </div>
   );
