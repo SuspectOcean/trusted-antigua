@@ -20,17 +20,19 @@ export default function AdminPage() {
   const [claims, setClaims] = useState([]);
   const [cats, setCats] = useState([]);
   const [approved, setApproved] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [busyId, setBusyId] = useState(null);
   const [note, setNote] = useState("");
   const [flash, setFlash] = useState(null);
 
   const reload = useCallback(async () => {
-    const [c, k, a] = await Promise.all([
+    const [c, k, a, rv] = await Promise.all([
       api.adminClaims("pending"),
       api.adminCategoryRequests("pending"),
       api.adminClaims("approved"),
+      api.adminReviews(),
     ]);
-    setClaims(c); setCats(k); setApproved(a);
+    setClaims(c); setCats(k); setApproved(a); setReviews(rv);
   }, []);
 
   useEffect(() => { if (isAdmin) reload(); }, [isAdmin, reload]);
@@ -66,6 +68,18 @@ export default function AdminPage() {
   async function decideCat(reqId, approve) {
     setBusyId(reqId);
     try { await api.adminDecideCategory(reqId, approve, null); setFlash(approve ? "Category updated." : "Request rejected."); await reload(); }
+    catch (e) { console.error(e); setFlash("Action failed."); }
+    finally { setBusyId(null); }
+  }
+  async function removeReview(id) {
+    setBusyId(id);
+    try { await api.adminRemoveReview(id, null); setFlash("Review removed."); await reload(); }
+    catch (e) { console.error(e); setFlash("Action failed."); }
+    finally { setBusyId(null); }
+  }
+  async function restoreReview(id) {
+    setBusyId(id);
+    try { await api.adminRestoreReview(id); setFlash("Review restored."); await reload(); }
     catch (e) { console.error(e); setFlash("Action failed."); }
     finally { setBusyId(null); }
   }
@@ -139,6 +153,33 @@ export default function AdminPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+      </Section>
+
+      <Section title={`Reviews (${reviews.length})`}>
+        {reviews.length === 0 ? <div className="text-[13px] text-muted">No reviews yet.</div> : (
+          <div className="space-y-2.5">
+            {reviews.map((r) => {
+              const removed = !!r.deleted_at;
+              return (
+                <div key={r.id} className={`bg-surface rounded-2xl p-4 shadow-card border ${removed ? "border-err/30 opacity-70" : "border-white/10"}`}>
+                  <div className="flex items-center justify-between">
+                    <Link href={`/provider?id=${encodeURIComponent(r.provider_id)}`} className="font-display font-semibold text-ink">{r.providers?.alias || r.providers?.name || "Provider"}</Link>
+                    <span className="text-[11px] text-muted">{r.recommender_display || "A resident"}</span>
+                  </div>
+                  {r.reason ? <p className="text-[13px] text-slate2 mt-1">{r.reason}</p> : null}
+                  {removed ? <div className="text-[11px] text-err mt-1">Removed ({r.deleted_reason || "admin"})</div> : null}
+                  <div className="mt-3">
+                    {removed ? (
+                      <button disabled={busyId === r.id} onClick={() => restoreReview(r.id)} className="py-2 px-3 rounded-full border border-white/15 text-ink text-[13px] disabled:opacity-60">Restore</button>
+                    ) : (
+                      <button disabled={busyId === r.id} onClick={() => removeReview(r.id)} className="py-2 px-3 rounded-full border border-err/40 text-err text-[13px] disabled:opacity-60">Remove</button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </Section>
