@@ -121,7 +121,7 @@ function ManageInner() {
     <div className="pt-2">
       <Link href={`/provider?id=${encodeURIComponent(p.id)}`} className="text-[13px] text-slate2">‹ Back to profile</Link>
       <div className="flex items-center justify-between mt-2">
-        <h1 className="text-xl font-extrabold text-ink">Manage profile</h1>
+        <h1 className="text-xl font-display font-semibold text-ink">Manage profile</h1>
         <span className="text-[12px] text-muted">Status: <span className="text-slate2 font-medium">{level}</span></span>
       </div>
 
