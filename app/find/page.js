@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CATEGORIES, CAT } from "@/lib/categories";
 import { api } from "@/lib/data";
 import ProviderCard from "@/components/ProviderCard";
+import CategoryIcon from "@/components/CategoryIcon";
 
 function SkeletonList() {
   return (
@@ -79,7 +80,7 @@ function FindInner() {
 
   const retry = () => setReloadKey((k) => k + 1);
 
-  const title = cat ? `${CAT[cat]?.emoji || ""} ${CAT[cat]?.name || ""}` : q ? `Results for "${q}"` : "All providers";
+  const title = cat ? CAT[cat]?.name || "" : q ? `Results for "${q}"` : "All providers";
 
   return (
     <>
@@ -105,15 +106,15 @@ function FindInner() {
           <Link
             key={c.id}
             href={`/find?cat=${c.id}`}
-            className={`whitespace-nowrap text-[13px] px-3 py-1.5 rounded-full border ${cat === c.id ? "bg-amber text-navy border-amber font-medium" : "bg-surface2 text-ink border-white/15"}`}
+            className={`whitespace-nowrap inline-flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-full border ${cat === c.id ? "bg-amber text-navy border-amber font-medium" : "bg-surface2 text-ink border-white/15"}`}
           >
-            {c.emoji} {c.name}
+            <CategoryIcon id={c.id} className="w-3.5 h-3.5" /> {c.name}
           </Link>
         ))}
       </div>
 
-      <h2 className="font-bold text-ink mt-1 mb-2">
-        {title} <span className="text-muted font-normal">{rows ? `(${rows.length})` : ""}</span>
+      <h2 className="font-display font-semibold text-[17px] text-ink mt-1 mb-2">
+        {title} <span className="text-muted font-sans font-normal text-[14px]">{rows ? `(${rows.length})` : ""}</span>
       </h2>
 
       {rows === null ? (
