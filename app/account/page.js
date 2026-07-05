@@ -36,7 +36,7 @@ export default function AccountPage() {
           <div className="w-12 h-12 rounded-full bg-amber/15 mx-auto flex items-center justify-center mb-3">
             <svg width="24" height="24" fill="none" stroke="#DD9048" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M12 11c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zM4 21c0-4 3.6-6 8-6s8 2 8 6" /></svg>
           </div>
-          <h1 className="text-lg font-bold text-ink">Your free profile</h1>
+          <h1 className="text-lg font-display font-semibold text-ink">Your free profile</h1>
           <p className="text-[14px] text-slate2 mt-1">Sign in to contact tradespeople, see full ratings, and leave recommendations.</p>
           <button onClick={() => openSignIn()} className="mt-4 bg-amber text-navy font-semibold px-5 py-2.5 rounded-full text-[15px]">Sign in / Create profile</button>
         </div>
@@ -59,13 +59,13 @@ export default function AccountPage() {
 
   return (
     <div className="pt-2">
-      <h1 className="text-xl font-extrabold text-ink mb-3">Your account</h1>
+      <h1 className="text-xl font-display font-semibold text-ink mb-3">Your account</h1>
 
       <div className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
         {!editing ? (
           <>
             <div className="text-[13px] text-muted">You appear on recommendations as</div>
-            <div className="text-ink font-semibold text-lg">{profile?.first_name} — {profile?.area}</div>
+            <div className="text-ink font-display font-semibold text-lg">{profile?.first_name} — {profile?.area}</div>
             <div className="text-[13px] text-slate2 mt-2">{user.email || user.phone}</div>
             <button onClick={() => setEditing(true)} className="mt-3 text-[13px] text-amber font-semibold">Edit profile</button>
           </>
@@ -97,12 +97,12 @@ export default function AccountPage() {
 
       {(managed && managed.length) || pendingClaims.length ? (
         <>
-          <h2 className="font-bold text-ink mt-6 mb-2">Profiles you manage</h2>
+          <h2 className="font-display font-semibold text-[17px] text-ink mt-6 mb-2">Profiles you manage</h2>
           <div className="space-y-2.5">
             {(managed || []).map((m) => (
               <Link key={m.id} href={`/manage?id=${encodeURIComponent(m.id)}`} className="block bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
                 <div className="flex items-center justify-between">
-                  <div className="font-semibold text-ink">{m.alias || m.name}</div>
+                  <div className="font-display font-semibold text-ink">{m.alias || m.name}</div>
                   <span className="text-[11px] text-slate2">{TRUST[m.trust_level]?.label || m.trust_level}</span>
                 </div>
                 <div className="text-[12px] text-muted mt-0.5">{CAT[m.category_id]?.name || m.category_id} · Edit ›</div>
@@ -110,7 +110,7 @@ export default function AccountPage() {
             ))}
             {pendingClaims.map((c) => (
               <div key={c.id} className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
-                <div className="font-semibold text-ink">{c.providers?.alias || c.providers?.name || "Provider"}</div>
+                <div className="font-display font-semibold text-ink">{c.providers?.alias || c.providers?.name || "Provider"}</div>
                 <div className="text-[12px] text-muted mt-0.5">⏳ Claim awaiting review</div>
               </div>
             ))}
@@ -118,7 +118,7 @@ export default function AccountPage() {
         </>
       ) : null}
 
-      <h2 className="font-bold text-ink mt-6 mb-2">My recommendations</h2>
+      <h2 className="font-display font-semibold text-[17px] text-ink mt-6 mb-2">My recommendations</h2>
       {mine === null ? (
         <div className="text-muted text-[13px]">Loading…</div>
       ) : mine.length === 0 ? (
