@@ -13,6 +13,7 @@ export default function AccountPage() {
   const [firstName, setFirstName] = useState("");
   const [area, setArea] = useState("");
   const [mine, setMine] = useState(null);
+  const [delId, setDelId] = useState(null);
   const [managed, setManaged] = useState(null);
   const [pendingClaims, setPendingClaims] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -21,11 +22,15 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (!user) { setMine(null); setManaged(null); setPendingClaims([]); return; }
-    supabase.from("recommendations").select("*").eq("recommender_id", user.id).order("created_at", { ascending: false })
-      .then(({ data }) => setMine(data || []));
+    api.myReviews(user.id).then(setMine).catch(() => setMine([]));
     api.myManagedProviders(user.id).then(setManaged);
     api.myClaims(user.id).then((cs) => setPendingClaims((cs || []).filter((c) => c.status === "pending")));
   }, [user]);
+
+  async function removeMine(id) {
+    try { await api.deleteMyReview(id); setMine((m) => (m || []).filter((x) => x.id !== id)); setDelId(null); }
+    catch (e) { console.error(e); }
+  }
 
   if (loading) return <div className="py-16 text-center text-muted">Loading…</div>;
 
@@ -37,7 +42,7 @@ export default function AccountPage() {
             <svg width="24" height="24" fill="none" stroke="#DD9048" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M12 11c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zM4 21c0-4 3.6-6 8-6s8 2 8 6" /></svg>
           </div>
           <h1 className="text-lg font-display font-semibold text-ink">Your free profile</h1>
-          <p className="text-[14px] text-slate2 mt-1">Sign in to contact tradespeople, see full ratings, and leave recommendations.</p>
+          <p className="text-[14px] text-slate2 mt-1">Sign in to contact tradespeople, see full ratings, and leave reviews.</p>
           <button onClick={() => openSignIn()} className="mt-4 bg-amber text-navy font-semibold px-5 py-2.5 rounded-full text-[15px]">Sign in / Create profile</button>
         </div>
       </div>
@@ -64,7 +69,7 @@ export default function AccountPage() {
       <div className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
         {!editing ? (
           <>
-            <div className="text-[13px] text-muted">You appear on recommendations as</div>
+            <div className="text-[13px] text-muted">You appear on reviews as</div>
             <div className="text-ink font-display font-semibold text-lg">{profile?.first_name} — {profile?.area}</div>
             <div className="text-[13px] text-slate2 mt-2">{user.email || user.phone}</div>
             <button onClick={() => setEditing(true)} className="mt-3 text-[13px] text-amber font-semibold">Edit profile</button>
@@ -118,22 +123,39 @@ export default function AccountPage() {
         </>
       ) : null}
 
-      <h2 className="font-display font-semibold text-[17px] text-ink mt-6 mb-2">My recommendations</h2>
+      <h2 className="font-display font-semibold text-[17px] text-ink mt-6 mb-2">My reviews</h2>
       {mine === null ? (
         <div className="text-muted text-[13px]">Loading…</div>
       ) : mine.length === 0 ? (
-        <div className="bg-surface border border-white/10 rounded-2xl p-4 text-[13px] text-slate2 shadow-card">You haven&apos;t recommended anyone yet. <Link href="/recommend" className="text-amber underline">Recommend someone</Link>.</div>
+        <div className="bg-surface border border-white/10 rounded-2xl p-4 text-[13px] text-slate2 shadow-card">You haven&apos;t reviewed anyone yet. <Link href="/recommend" className="text-amber underline">Write a review</Link>.</div>
       ) : (
         <div className="space-y-2.5">
-          {mine.map((r) => (
-            <div key={r.id} className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
-              <div className="flex items-center justify-between">
-                <div className="text-[13px] text-slate2">{CAT[r.category_id]?.name || ""}</div>
-                {r.would_hire_again ? <span className="text-[11px] text-ok font-semibold">👍 Would hire again</span> : null}
+          {mine.map((r) => {
+            const pv = r.providers || {};
+            const nm = pv.alias || pv.name || "Provider";
+            return (
+              <div key={r.id} className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+                <div className="flex items-center justify-between">
+                  <div className="font-display font-semibold text-ink text-[15px]">{nm}</div>
+                  {r.would_hire_again ? <span className="text-[11px] text-ok font-semibold">👍 Would hire again</span> : null}
+                </div>
+                <div className="text-[12px] text-muted">{CAT[pv.category_id]?.name || ""}</div>
+                {r.reason ? <p className="text-[14px] text-slate2 mt-1">{r.reason}</p> : null}
+                {delId === r.id ? (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-[12px] text-err">Delete this review?</span>
+                    <button onClick={() => removeMine(r.id)} className="text-[12px] font-semibold text-err">Yes, delete</button>
+                    <button onClick={() => setDelId(null)} className="text-[12px] text-muted">Cancel</button>
+                  </div>
+                ) : (
+                  <div className="mt-2 flex items-center gap-4">
+                    <Link href={`/recommend?pid=${encodeURIComponent(r.provider_id)}&pname=${encodeURIComponent(pv.name || "")}&cat=${pv.category_id || ""}`} className="text-[12px] text-amber font-semibold">Edit</Link>
+                    <button onClick={() => setDelId(r.id)} className="text-[12px] text-muted">Delete</button>
+                  </div>
+                )}
               </div>
-              {r.reason ? <p className="text-[14px] text-ink mt-1">{r.reason}</p> : null}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
