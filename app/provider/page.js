@@ -28,7 +28,38 @@ function Spinner() {
   return <div className="flex justify-center py-16"><svg className="spin text-amber" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.2-8.5" /></svg></div>;
 }
 
-function RecCard({ r }) {
+function ReplyForm({ reviewId, existing, onSaved }) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState(existing?.body || "");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
+  async function save() {
+    const t = text.trim();
+    if (!t) { setErr("Write a short reply first."); return; }
+    setBusy(true); setErr(null);
+    try { await api.replyToReview(reviewId, t); setOpen(false); onSaved(); }
+    catch (e) {
+      console.error("[reply] failed", e);
+      setErr(String(e?.message || "").includes("moderation") ? "This reply was removed by moderation and can't be edited." : "Couldn't save your reply. Please try again.");
+    }
+    finally { setBusy(false); }
+  }
+  if (!open) {
+    return <button onClick={() => { setText(existing?.body || ""); setOpen(true); }} className="text-[12px] text-amber font-semibold mt-2">{existing ? "Edit your reply" : "Reply publicly"}</button>;
+  }
+  return (
+    <div className="mt-2">
+      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2} maxLength={1000} placeholder="Your public response as the business…" className="w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2 text-[13px]" />
+      <div className="flex gap-2 mt-1.5">
+        <button disabled={busy} onClick={save} className="px-3 py-1.5 rounded-full bg-amber text-navy font-semibold text-[12px] disabled:opacity-60">{busy ? "Saving…" : "Post reply"}</button>
+        <button disabled={busy} onClick={() => setOpen(false)} className="px-3 py-1.5 rounded-full border border-white/15 text-ink text-[12px]">Cancel</button>
+      </div>
+      {err ? <p className="text-[12px] text-err mt-1">{err}</p> : null}
+    </div>
+  );
+}
+
+function RecCard({ r, providerLabel, reply, isOwner, isMine, reported, onReport, onReplySaved }) {
   const tags = REC_TAGS.filter(([k]) => r[k]).map(([, l]) => <span key={l} className="text-[11px] bg-teal/15 text-teal px-2 py-0.5 rounded-full">{l}</span>);
   const works = Array.isArray(r.work_types) ? r.work_types : [];
   return (
@@ -45,6 +76,78 @@ function RecCard({ r }) {
       {r.updated_at && r.created_at && new Date(r.updated_at) - new Date(r.created_at) > 60000 ? (
         <div className="text-[10px] text-muted mt-2">updated {new Date(r.updated_at).toLocaleDateString()}</div>
       ) : null}
+
+      {/* Right of reply: the business's single public response */}
+      {reply ? (
+        <div className="mt-3 ml-3 pl-3 border-l-2 border-amber/40">
+          <div className="text-[11px] font-semibold text-amber">Response from {providerLabel}</div>
+          <p className="text-[13px] text-slate2 mt-0.5">{reply.body}</p>
+        </div>
+      ) : null}
+      {isOwner ? <ReplyForm reviewId={r.id} existing={reply} onSaved={onReplySaved} /> : null}
+
+      {/* Report / dispute — never shown on the user's own review */}
+      {!isMine ? (
+        <div className="mt-2 text-right">
+          {reported ? (
+            <span className="text-[11px] text-muted">Reported (under review)</span>
+          ) : (
+            <button onClick={() => onReport(r)} className="text-[11px] text-muted underline decoration-white/20">
+              {isOwner ? "Dispute this review" : "Report"}
+            </button>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+const REPORT_REASONS = [
+  ["not_genuine", "Not a genuine customer experience"],
+  ["abusive", "Abusive or a personal attack"],
+  ["personal_info", "Shares private personal information"],
+  ["conflict_of_interest", "Conflict of interest (self/competitor review)"],
+  ["other", "Something else"],
+];
+
+function ReportModal({ review, isOwner, onClose, onDone }) {
+  const [reason, setReason] = useState("");
+  const [details, setDetails] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState(null);
+  async function send() {
+    if (!reason) { setMsg({ ok: false, text: "Please choose a reason." }); return; }
+    setBusy(true); setMsg(null);
+    try {
+      await api.reportReview(review.id, reason, details.trim() || null);
+      setMsg({ ok: true, text: "✅ Sent to our moderation team. The review stays visible while we assess it." });
+      setTimeout(() => { onDone(review.id); onClose(); }, 1600);
+    } catch (e) {
+      console.error("[report] failed", e);
+      setMsg({ ok: false, text: "Could not send. Please try again." });
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="fixed inset-0 z-50 bg-black/55 flex items-end sm:items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="bg-surface border border-white/10 w-full max-w-xl rounded-t-2xl sm:rounded-2xl p-4 shadow-pop">
+        <h3 className="font-display font-semibold text-ink">{isOwner ? "Dispute this review" : "Report this review"}</h3>
+        <p className="text-[12px] text-muted mt-1">
+          {isOwner
+            ? "Our team will check it against the Review Guidelines. Reviews stay visible while under review. Disputes are a request for moderation, not a delete button."
+            : "Tell us what's wrong and our team will take a look."}
+        </p>
+        <select value={reason} onChange={(e) => setReason(e.target.value)} className="w-full mt-3 rounded-xl border border-white/15 bg-surface2 text-ink px-3 py-2.5 text-[14px]">
+          <option value="">Choose a reason…</option>
+          {REPORT_REASONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+        </select>
+        <textarea value={details} onChange={(e) => setDetails(e.target.value)} rows={3} maxLength={2000} className="w-full mt-2 rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[14px]" placeholder="Anything that helps us assess it (optional)" />
+        <div className="flex gap-2 mt-3">
+          <button disabled={busy} onClick={onClose} className="flex-1 py-2.5 rounded-full border border-white/15 text-ink text-[14px]">Cancel</button>
+          <button disabled={busy} onClick={send} className="flex-1 py-2.5 rounded-full bg-amber text-navy font-semibold text-[14px] disabled:opacity-60">{busy ? "Sending…" : "Send"}</button>
+        </div>
+        {msg ? <p className={`text-center text-[13px] mt-2 ${msg.ok ? "text-ok" : "text-err"}`}>{msg.text}</p> : null}
+      </div>
     </div>
   );
 }
@@ -64,7 +167,7 @@ function WarningModal({ provider, onClose }) {
   async function send() {
     const t = text.trim();
     if (!t) { setMsg({ ok: false, text: "Please write a short note." }); return; }
-    try { await api.addWarning({ provider_id: provider.id, provider_name: provider.name, warning: t }); setMsg({ ok: true, text: "✅ Thank you — sent privately to our team." }); setTimeout(onClose, 1400); }
+    try { await api.addWarning({ provider_id: provider.id, provider_name: provider.name, warning: t }); setMsg({ ok: true, text: "✅ Thank you. Sent privately to our team." }); setTimeout(onClose, 1400); }
     catch { setMsg({ ok: false, text: "Could not send. Please try again." }); }
   }
   return (
@@ -95,6 +198,9 @@ function ProviderInner() {
   const [showWarn, setShowWarn] = useState(false);
   const [err, setErr] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [replies, setReplies] = useState({});
+  const [reportedIds, setReportedIds] = useState(new Set());
+  const [reporting, setReporting] = useState(null); // review being reported, or null
 
   useEffect(() => {
     if (!id) { setP(null); return; }
@@ -111,11 +217,13 @@ function ProviderInner() {
   }, [id, reloadKey]);
 
   useEffect(() => {
-    if (!id || !user) { setContact(null); setRecs([]); setIsOwner(false); setMyClaim(null); return; }
+    if (!id || !user) { setContact(null); setRecs([]); setIsOwner(false); setMyClaim(null); setReplies({}); setReportedIds(new Set()); return; }
     api.providerContact(id).then(setContact);
     api.recommendations(id).then(setRecs);
     api.providerOwner(id).then((owner) => setIsOwner(!!owner && owner === user.id));
     api.myClaimForProvider(id, user.id).then(setMyClaim);
+    api.repliesForProvider(id).then(setReplies);
+    api.myOpenReports(user.id).then(setReportedIds);
   }, [id, user]);
 
   if (err) return (
@@ -169,7 +277,7 @@ function ProviderInner() {
             <div className="text-[10px] uppercase tracking-wide text-muted">review{count === 1 ? "" : "s"}</div>
           </div>
           <div className="bg-surface2 rounded-xl p-3 text-center">
-            <div className="text-lg font-bold text-ok">{count ? wha + "%" : "—"}</div>
+            <div className="text-lg font-bold text-ok">{count ? wha + "%" : "N/A"}</div>
             <div className="text-[10px] uppercase tracking-wide text-muted">would hire again</div>
           </div>
         </div>
@@ -191,7 +299,7 @@ function ProviderInner() {
             </div>
           ) : (
             <div className="mt-3 text-[12px] text-muted bg-surface2 rounded-xl p-2.5 text-center">
-              Building reputation — detailed scores appear once there are a few reviews.
+              Building reputation. Detailed scores appear once there are a few reviews.
             </div>
           )
         ) : null}
@@ -243,18 +351,38 @@ function ProviderInner() {
       <h2 className="font-display font-semibold text-[17px] text-ink mt-5 mb-2">Reviews</h2>
       {!user ? (
         <div className="bg-surface border border-white/10 rounded-2xl p-5 text-center shadow-card">
-          <p className="text-[14px] text-slate2">{count ? `${count} review${count === 1 ? "" : "s"} — sign in to read what people said.` : "No reviews yet."}</p>
+          <p className="text-[14px] text-slate2">{count ? `${count} review${count === 1 ? "" : "s"}. Sign in to read what people said.` : "No reviews yet."}</p>
           {count ? <button onClick={() => openSignIn("Sign in to read recommendations.")} className="mt-3 bg-amber text-navy font-semibold text-sm px-4 py-2 rounded-full">Sign in to read</button> : null}
         </div>
       ) : (
         <div className="space-y-2.5">
-          {recs.length ? recs.map((r) => <RecCard key={r.id} r={r} />) : <div className="bg-surface border border-white/10 rounded-2xl p-5 text-center text-[13px] text-slate2 shadow-card">No recommendations yet. If you&apos;ve hired them, be the first to vouch.</div>}
+          {recs.length ? recs.map((r) => (
+            <RecCard
+              key={r.id}
+              r={r}
+              providerLabel={p.alias || p.name}
+              reply={replies[r.id]}
+              isOwner={isOwner}
+              isMine={r.recommender_id === user.id}
+              reported={reportedIds.has(r.id)}
+              onReport={setReporting}
+              onReplySaved={() => api.repliesForProvider(id).then(setReplies)}
+            />
+          )) : <div className="bg-surface border border-white/10 rounded-2xl p-5 text-center text-[13px] text-slate2 shadow-card">No recommendations yet. If you&apos;ve hired them, be the first to vouch.</div>}
         </div>
       )}
 
       <button onClick={() => setShowWarn(true)} className="w-full mt-4 text-[12px] text-muted py-2">Something wrong? Share a private concern ›</button>
       <div className="h-4" />
       {showWarn ? <WarningModal provider={p} onClose={() => setShowWarn(false)} /> : null}
+      {reporting ? (
+        <ReportModal
+          review={reporting}
+          isOwner={isOwner}
+          onClose={() => setReporting(null)}
+          onDone={(rid) => setReportedIds((s) => new Set([...s, rid]))}
+        />
+      ) : null}
     </>
   );
 }
