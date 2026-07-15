@@ -10,6 +10,8 @@ import CategoryIcon from "@/components/CategoryIcon";
 // search understands slang before you've typed a word.
 const SEARCH_EXAMPLES = ["current man", "AC man", "leak fix", "mason", "gardener", "deep clean"];
 
+const [featured, ...rest] = CATEGORIES;
+
 export default function Home() {
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -29,17 +31,16 @@ export default function Home() {
     <>
       <section className="pt-4 pb-5">
         <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber">Antigua &amp; Barbuda · Community verified</div>
-        <h1 className="mt-2 font-display font-semibold text-[30px] text-ink leading-[1.12] tracking-[-.01em]">
-          Find tradespeople
-          <br />
-          you can trust
+        <h1 className="mt-2 text-ink leading-[1.05] tracking-[-.01em]">
+          <span className="block font-display font-semibold text-[30px]">Find tradespeople</span>
+          <span className="block font-display italic font-medium text-[36px] text-amber -mt-0.5">you can trust.</span>
         </h1>
-        <p className="mt-2.5 text-[14px] text-slate2 max-w-[42ch]">
-          Honest recommendations from real residents — so you know who&apos;s reliable before you spend a cent.
+        <p className="mt-3 text-[14px] text-slate2 max-w-[42ch]">
+          Honest recommendations from real residents, so you know who&apos;s reliable before you spend a cent.
         </p>
       </section>
 
-      <form onSubmit={onSearch} className="relative mb-6">
+      <form onSubmit={onSearch} className="relative mb-7">
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -55,12 +56,30 @@ export default function Home() {
       </form>
 
       <h2 className="font-display font-semibold text-[17px] text-ink mb-2.5">Browse by trade</h2>
+
+      {/* Asymmetric: one wide entry point, then a tighter grid — not six identical boxes. */}
+      <Link
+        href={`/find?cat=${featured.id}`}
+        className="block bg-surface border border-white/10 rounded-2xl p-4 shadow-card flex items-center gap-4 active:scale-[.99] transition mb-2.5"
+      >
+        <span className="inline-flex items-center justify-center w-12 h-12 shrink-0 rounded-full bg-amber/12 text-amber">
+          <CategoryIcon id={featured.id} className="w-6 h-6" />
+        </span>
+        <span className="min-w-0">
+          <span className="block font-semibold text-ink text-[15px] leading-tight">{featured.name}</span>
+          <span className="block text-[12px] text-muted">{featured.blurb}</span>
+        </span>
+        <span className="ml-auto text-amber text-lg shrink-0">›</span>
+      </Link>
+
       <div className="grid grid-cols-2 gap-2.5">
-        {CATEGORIES.map((c) => (
+        {rest.map((c, i) => (
           <Link
             key={c.id}
             href={`/find?cat=${c.id}`}
-            className="bg-surface border border-white/10 rounded-2xl p-3 shadow-card flex items-center gap-3 active:scale-[.99] transition"
+            className={`bg-surface border border-white/10 rounded-2xl p-3 shadow-card flex items-center gap-3 active:scale-[.99] transition ${
+              i === rest.length - 1 && rest.length % 2 === 1 ? "col-span-2" : ""
+            }`}
           >
             <span className="inline-flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-amber/12 text-amber">
               <CategoryIcon id={c.id} />
@@ -73,21 +92,24 @@ export default function Home() {
         ))}
       </div>
 
-      <div className="mt-7 bg-gradient-to-b from-surface2 to-surface border border-white/10 rounded-2xl p-4">
-        <h3 className="font-semibold text-ink">Know someone good?</h3>
-        <p className="text-[13px] text-slate2 mt-1">
+      {/* The one bold moment on the page — inverted amber panel, not another dark card. */}
+      <div className="mt-7 bg-amber rounded-2xl p-5 relative overflow-hidden">
+        <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full border-2 border-navy/15" aria-hidden="true" />
+        <h3 className="font-display font-semibold text-navy text-[19px] relative">Know someone good?</h3>
+        <p className="text-[13px] text-navy/80 mt-1 relative max-w-[36ch]">
           Recommending a tradesperson takes 20 seconds and helps your whole community spend wisely.
         </p>
-        <Link href="/recommend" className="inline-block mt-3 bg-amber text-navy font-semibold text-sm px-4 py-2 rounded-full">
+        <Link href="/recommend" className="inline-block mt-3 bg-navy text-ink font-semibold text-sm px-4 py-2 rounded-full relative">
           Recommend someone
         </Link>
       </div>
 
-      <div className="mt-6 bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
-        <h3 className="font-semibold text-ink text-[15px]">What is Trusted Antigua?</h3>
-        <p className="text-[13px] text-slate2 mt-1">
+      {/* No card chrome here on purpose — a colophon, not another tile. */}
+      <div className="mt-6 pt-4 border-t border-white/10">
+        <h3 className="font-semibold text-ink text-[13px] uppercase tracking-wide text-muted">What is Trusted Antigua?</h3>
+        <p className="text-[13px] text-slate2 mt-1.5 leading-relaxed">
           A simple, community-built register of honest, reliable home-service providers across Antigua &amp; Barbuda.
-          Recommendations are public. Concerns are shared privately with us for review — we never post public attacks on anyone.
+          Recommendations are public. Concerns are shared privately with our team for review; we never post public attacks on anyone.
         </p>
       </div>
 
