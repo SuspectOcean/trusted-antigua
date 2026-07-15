@@ -70,7 +70,7 @@ export default function AccountPage() {
         {!editing ? (
           <>
             <div className="text-[13px] text-muted">You appear on reviews as</div>
-            <div className="text-ink font-display font-semibold text-lg">{profile?.first_name} — {profile?.area}</div>
+            <div className="text-ink font-display font-semibold text-lg">{profile?.first_name}, {profile?.area}</div>
             <div className="text-[13px] text-slate2 mt-2">{user.email || user.phone}</div>
             <button onClick={() => setEditing(true)} className="mt-3 text-[13px] text-amber font-semibold">Edit profile</button>
           </>
