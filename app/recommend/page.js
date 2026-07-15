@@ -107,7 +107,7 @@ function RecommendInner() {
         openSignIn("Please sign in again to post your review.");
         setBusy(false); return;
       }
-      const display = profile ? `${profile.first_name} — ${profile.area}` : "A resident";
+      const display = profile ? `${profile.first_name}, ${profile.area}` : "A resident";
 
       const review = {
         recommender_display: display,
@@ -143,7 +143,7 @@ function RecommendInner() {
         node = "Your session has expired. Please sign in again, then resubmit.";
         openSignIn("Please sign in again to post your review.");
       } else if (text.includes("timed out") || text.includes("timeout")) {
-        node = "That took too long — check your connection and try again.";
+        node = "That took too long. Check your connection and try again.";
       } else if (err?.message) {
         node = `Couldn't save: ${err.message}`;
       }
@@ -164,7 +164,7 @@ function RecommendInner() {
   return (
     <>
       <h1 className="text-xl font-display font-semibold text-ink mt-1">{title}</h1>
-      <p className="text-[13px] text-muted mt-1 mb-4">Quick to start — score the details if you have time. You can update this later.</p>
+      <p className="text-[13px] text-muted mt-1 mb-4">Quick to start. Score the details if you have time. You can update this later.</p>
       <form onSubmit={submit} className="space-y-4">
         {!presetPid ? (
           <>
@@ -191,7 +191,7 @@ function RecommendInner() {
             </label>
             <label className="cursor-pointer">
               <input type="radio" name="would" value="no" checked={form.would === "no"} onChange={() => set("would", "no")} className="peer sr-only" />
-              <span className="block text-center py-2.5 rounded-xl border border-white/15 bg-surface2 text-ink peer-checked:border-amber text-[14px] font-semibold">Not sure</span>
+              <span className="block text-center py-2.5 rounded-xl border border-white/15 bg-surface2 text-ink peer-checked:border-amber text-[14px] font-semibold">👎 No</span>
             </label>
           </div>
         </div>
