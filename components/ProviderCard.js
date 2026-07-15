@@ -48,7 +48,7 @@ export default function ProviderCard({ p, counts }) {
           <span className="text-ok font-medium">👍 {wha}% would hire again</span>
         </div>
       ) : (
-        <div className="mt-2 text-[12px] text-muted">New — no recommendations yet</div>
+        <div className="mt-2 text-[12px] text-muted">New, no recommendations yet</div>
       )}
     </Link>
   );
