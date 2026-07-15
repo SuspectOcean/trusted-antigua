@@ -163,7 +163,7 @@ function ManageInner() {
         </div>
         <div>
           <label className="block text-[13px] font-semibold text-ink mb-1.5">Short description</label>
-          <textarea value={form.description} onChange={(e) => set("description", e.target.value.slice(0, DESC_MAX))} rows={3} className={inputCls} placeholder="Factual introduction — no marketing language, no emojis." />
+          <textarea value={form.description} onChange={(e) => set("description", e.target.value.slice(0, DESC_MAX))} rows={3} className={inputCls} placeholder="Factual introduction. No marketing language, no emojis." />
           <div className="text-[11px] text-muted mt-1 text-right">{form.description.length}/{DESC_MAX}</div>
         </div>
         <div>
