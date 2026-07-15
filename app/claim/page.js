@@ -69,7 +69,7 @@ function ClaimInner() {
         <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
           <div className="text-3xl mb-2">⏳</div>
           <h1 className="text-lg font-display font-semibold text-ink">Claim submitted</h1>
-          <p className="text-[14px] text-slate2 mt-1">Thanks — your claim for <b>{p.alias || p.name}</b> is now with our team for review. You&apos;ll be able to edit the profile once it&apos;s approved.</p>
+          <p className="text-[14px] text-slate2 mt-1">Thanks, your claim for <b>{p.alias || p.name}</b> is now with our team for review. You&apos;ll be able to edit the profile once it&apos;s approved.</p>
           <Link href="/account" className="mt-4 inline-block text-amber font-semibold text-[14px]">Go to my account ›</Link>
         </div>
       </div>
@@ -125,7 +125,7 @@ function ClaimInner() {
 
         <div>
           <label className="block text-[13px] font-semibold text-ink mb-1.5">Short description</label>
-          <textarea value={form.description} onChange={(e) => set("description", e.target.value.slice(0, DESC_MAX))} rows={3} className={inputCls} placeholder="Factual introduction — what you do and where. No marketing language." />
+          <textarea value={form.description} onChange={(e) => set("description", e.target.value.slice(0, DESC_MAX))} rows={3} className={inputCls} placeholder="Factual introduction: what you do and where. No marketing language." />
           <div className="text-[11px] text-muted mt-1 text-right">{form.description.length}/{DESC_MAX}</div>
         </div>
 
@@ -136,7 +136,7 @@ function ClaimInner() {
         </div>
 
         <div className="bg-surface2 border border-white/10 rounded-xl p-3 text-[12px] text-muted">
-          Claiming lets you edit your description, photo, and service areas. It does <b>not</b> let you edit, hide, or reply to recommendations — those stay controlled by the community.
+          Claiming lets you edit your description, photo, and service areas. It does <b>not</b> let you edit, hide, or reply to recommendations. Those stay controlled by the community.
         </div>
 
         <button type="submit" disabled={busy} className="w-full bg-amber text-navy font-bold py-3 rounded-full text-[15px] disabled:opacity-60">{busy ? "Submitting…" : "Submit claim for review"}</button>
