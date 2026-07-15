@@ -11,9 +11,9 @@ const workSans = Work_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "
 const fraunces = Fraunces({ subsets: ["latin"], weight: ["500", "600", "700", "900"], style: ["normal", "italic"], display: "swap", variable: "--font-display" });
 
 export const metadata = {
-  title: "Trusted Antigua — Find trusted tradespeople",
+  title: "Trusted Antigua: Find trusted tradespeople",
   description:
-    "Find honest, reliable tradespeople and home-service providers in Antigua & Barbuda — recommended by real residents.",
+    "Find honest, reliable tradespeople and home-service providers in Antigua & Barbuda, recommended by real residents.",
 };
 
 export const viewport = {
@@ -39,7 +39,16 @@ export default function RootLayout({ children }) {
               </Link>
             </div>
           </header>
-          <main className="max-w-xl mx-auto px-4 pt-4 safe-bottom">{children}</main>
+          <main className="max-w-xl mx-auto px-4 pt-4 safe-bottom">
+            {children}
+            <footer className="mt-8 mb-20 pt-4 border-t border-white/10 text-center text-[11px] text-muted">
+              <Link href="/privacy" className="hover:text-slate2">Privacy</Link>
+              <span className="mx-2">·</span>
+              <Link href="/terms" className="hover:text-slate2">Terms</Link>
+              <span className="mx-2">·</span>
+              <Link href="/guidelines" className="hover:text-slate2">Review Guidelines</Link>
+            </footer>
+          </main>
           <BottomNav />
         </AuthProvider>
       </body>
