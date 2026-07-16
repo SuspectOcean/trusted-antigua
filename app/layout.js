@@ -3,6 +3,10 @@ import Link from "next/link";
 import { Fraunces, Work_Sans } from "next/font/google";
 import BottomNav from "@/components/BottomNav";
 import { AuthProvider } from "@/components/AuthProvider";
+import { SITE_URL } from "@/lib/site";
+
+const DESCRIPTION =
+  "Find honest, reliable tradespeople and home-service providers in Antigua & Barbuda, recommended by real residents.";
 
 // Work Sans carries the interface — body copy, buttons, data, labels.
 const workSans = Work_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], display: "swap", variable: "--font-sans" });
@@ -11,9 +15,24 @@ const workSans = Work_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "
 const fraunces = Fraunces({ subsets: ["latin"], weight: ["500", "600", "700", "900"], style: ["normal", "italic"], display: "swap", variable: "--font-display" });
 
 export const metadata = {
+  metadataBase: new URL(SITE_URL),
+  applicationName: "Trusted Antigua",
   title: "Trusted Antigua: Find trusted tradespeople",
-  description:
-    "Find honest, reliable tradespeople and home-service providers in Antigua & Barbuda, recommended by real residents.",
+  description: DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "Trusted Antigua",
+    title: "Trusted Antigua: Find trusted tradespeople",
+    description: DESCRIPTION,
+    url: "/",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Trusted Antigua: Find trusted tradespeople",
+    description: DESCRIPTION,
+  },
 };
 
 export const viewport = {
