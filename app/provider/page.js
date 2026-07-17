@@ -266,6 +266,13 @@ function ProviderInner() {
               {cat ? <CategoryIcon id={cat.id} className="w-4 h-4 shrink-0 text-muted" /> : null}
               <span>{cat ? cat.name : ""}{p.area ? ` · ${p.area}` : ""}</span>
             </div>
+            {Array.isArray(p.secondary_categories) && p.secondary_categories.length ? (
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {p.secondary_categories.map((sid) => CAT[sid] ? (
+                  <span key={sid} className="text-[11px] bg-surface2 text-muted px-2 py-0.5 rounded-full border border-white/10">{CAT[sid].name}</span>
+                ) : null)}
+              </div>
+            ) : null}
           </div>
         </div>
 
