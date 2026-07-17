@@ -2,15 +2,14 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CATEGORIES } from "@/lib/categories";
-import CategoryIcon from "@/components/CategoryIcon";
+import { GROUPS } from "@/lib/categories";
 
 // Real Antiguan phrasing for what people actually type — not "e.g. electrician".
 // Grounds the search in how the island talks, and doubles as quiet proof the
 // search understands slang before you've typed a word.
 const SEARCH_EXAMPLES = ["current man", "AC man", "leak fix", "mason", "gardener", "deep clean"];
 
-const [featured, ...rest] = CATEGORIES;
+const [featured, ...rest] = GROUPS;
 
 export default function Home() {
   const router = useRouter();
@@ -55,15 +54,15 @@ export default function Home() {
         </svg>
       </form>
 
-      <h2 className="font-display font-semibold text-[17px] text-ink mb-2.5">Browse by trade</h2>
+      <h2 className="font-display font-semibold text-[17px] text-ink mb-2.5">Browse by category</h2>
 
-      {/* Asymmetric: one wide entry point, then a tighter grid — not six identical boxes. */}
+      {/* Asymmetric: one wide entry point, then a tighter grid, not identical boxes. */}
       <Link
-        href={`/find?cat=${featured.id}`}
+        href={`/find?group=${featured.id}`}
         className="block bg-surface border border-white/10 rounded-2xl p-4 shadow-card flex items-center gap-4 active:scale-[.99] transition mb-2.5"
       >
-        <span className="inline-flex items-center justify-center w-12 h-12 shrink-0 rounded-full bg-amber/12 text-amber">
-          <CategoryIcon id={featured.id} className="w-6 h-6" />
+        <span className="inline-flex items-center justify-center w-12 h-12 shrink-0 rounded-full bg-amber/12 text-2xl leading-none">
+          {featured.emoji}
         </span>
         <span className="min-w-0">
           <span className="block font-semibold text-ink text-[15px] leading-tight">{featured.name}</span>
@@ -76,13 +75,13 @@ export default function Home() {
         {rest.map((c, i) => (
           <Link
             key={c.id}
-            href={`/find?cat=${c.id}`}
+            href={`/find?group=${c.id}`}
             className={`bg-surface border border-white/10 rounded-2xl p-3 shadow-card flex items-center gap-3 active:scale-[.99] transition ${
               i === rest.length - 1 && rest.length % 2 === 1 ? "col-span-2" : ""
             }`}
           >
-            <span className="inline-flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-amber/12 text-amber">
-              <CategoryIcon id={c.id} />
+            <span className="inline-flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-amber/12 text-xl leading-none">
+              {c.emoji}
             </span>
             <span className="min-w-0">
               <span className="block font-semibold text-ink text-[14px] leading-tight">{c.name}</span>
