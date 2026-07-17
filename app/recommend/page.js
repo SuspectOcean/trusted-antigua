@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CATEGORIES } from "@/lib/categories";
+import { GROUPED } from "@/lib/categories";
 import { CORE_DIMENSIONS, OPTIONAL_DIMENSIONS, ALL_DIMENSIONS, TIMEFRAMES, workTypesFor } from "@/lib/reviews";
 import { api } from "@/lib/data";
 import { withTimeout } from "@/lib/helpers";
@@ -171,8 +171,12 @@ function RecommendInner() {
             <div>
               <label className="block text-[13px] font-semibold text-ink mb-1.5">What do they do? <span className="text-err">*</span></label>
               <select value={form.category_id} onChange={(e) => set("category_id", e.target.value)} required className={inputCls}>
-                <option value="">Choose a trade…</option>
-                {CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
+                <option value="">Choose a category…</option>
+                {GROUPED.map((g) => (
+                  <optgroup key={g.id} label={g.name}>
+                    {g.categories.map((c) => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
+                  </optgroup>
+                ))}
               </select>
             </div>
             <div>
