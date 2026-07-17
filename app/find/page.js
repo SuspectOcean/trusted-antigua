@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CATEGORIES, CAT } from "@/lib/categories";
+import { GROUPS, GROUP, CAT, categoriesInGroup, groupOf } from "@/lib/categories";
 import { api } from "@/lib/data";
 import ProviderCard from "@/components/ProviderCard";
 import CategoryIcon from "@/components/CategoryIcon";
@@ -46,6 +46,7 @@ function FindInner() {
   const router = useRouter();
   const params = useSearchParams();
   const cat = params.get("cat") || "";
+  const group = params.get("group") || "";
   const q = params.get("q") || "";
 
   const [rows, setRows] = useState(null);
@@ -61,7 +62,7 @@ function FindInner() {
     setRows(null);
     setError(false);
     Promise.all([
-      withTimeout(api.providers({ category: cat, q }), 12000, null),
+      withTimeout(api.providers({ category: cat, group, q }), 12000, null),
       withTimeout(api.recCounts(), 12000, {}),
     ])
       .then(([r, c]) => {
@@ -71,7 +72,7 @@ function FindInner() {
       })
       .catch(() => { if (active) { setRows([]); setError(true); } });
     return () => { active = false; };
-  }, [cat, q, reloadKey]);
+  }, [cat, group, q, reloadKey]);
 
   function onSearch(e) {
     e.preventDefault();
@@ -80,7 +81,8 @@ function FindInner() {
 
   const retry = () => setReloadKey((k) => k + 1);
 
-  const title = cat ? CAT[cat]?.name || "" : q ? `Results for "${q}"` : "All providers";
+  const activeGroup = group || (cat ? groupOf(cat) : "");
+  const title = cat ? CAT[cat]?.name || "" : group ? GROUP[group]?.name || "" : q ? `Results for "${q}"` : "All providers";
 
   return (
     <>
@@ -98,20 +100,42 @@ function FindInner() {
         </svg>
       </form>
 
+      {/* Level 1: groups */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4">
-        {cat ? (
+        {(cat || group) ? (
           <Link href="/find" className="whitespace-nowrap text-[13px] px-3 py-1.5 rounded-full bg-amber text-navy font-medium">✕ Clear</Link>
         ) : null}
-        {CATEGORIES.map((c) => (
+        {GROUPS.map((g) => (
           <Link
-            key={c.id}
-            href={`/find?cat=${c.id}`}
-            className={`whitespace-nowrap inline-flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-full border ${cat === c.id ? "bg-amber text-navy border-amber font-medium" : "bg-surface2 text-ink border-white/15"}`}
+            key={g.id}
+            href={`/find?group=${g.id}`}
+            className={`whitespace-nowrap inline-flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-full border ${activeGroup === g.id ? "bg-amber text-navy border-amber font-medium" : "bg-surface2 text-ink border-white/15"}`}
           >
-            <CategoryIcon id={c.id} className="w-3.5 h-3.5" /> {c.name}
+            <span className="leading-none">{g.emoji}</span> {g.name}
           </Link>
         ))}
       </div>
+
+      {/* Level 2: categories within the active group */}
+      {activeGroup ? (
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4">
+          <Link
+            href={`/find?group=${activeGroup}`}
+            className={`whitespace-nowrap text-[13px] px-3 py-1.5 rounded-full border ${!cat ? "bg-teal/20 text-teal border-teal/40 font-medium" : "bg-surface2 text-muted border-white/15"}`}
+          >
+            All {GROUP[activeGroup]?.name}
+          </Link>
+          {categoriesInGroup(activeGroup).map((c) => (
+            <Link
+              key={c.id}
+              href={`/find?cat=${c.id}`}
+              className={`whitespace-nowrap inline-flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-full border ${cat === c.id ? "bg-amber text-navy border-amber font-medium" : "bg-surface2 text-ink border-white/15"}`}
+            >
+              <CategoryIcon id={c.id} className="w-3.5 h-3.5" /> {c.name}
+            </Link>
+          ))}
+        </div>
+      ) : null}
 
       <h2 className="font-display font-semibold text-[17px] text-ink mt-1 mb-2">
         {title} <span className="text-muted font-sans font-normal text-[14px]">{rows ? `(${rows.length})` : ""}</span>
