@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CATEGORIES, CAT, SELECTABLE_AREAS } from "@/lib/categories";
+import { GROUPED, CAT, SELECTABLE_AREAS } from "@/lib/categories";
 import { api } from "@/lib/data";
 import { withTimeout } from "@/lib/helpers";
 import { useAuth } from "@/components/AuthProvider";
@@ -199,7 +199,14 @@ function ManageInner() {
           <div className="mt-2 flex gap-2">
             <select value={catReq} onChange={(e) => setCatReq(e.target.value)} className={inputCls}>
               <option value="">Request a different category…</option>
-              {CATEGORIES.filter((c) => c.id !== p.category_id).map((c) => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
+              {GROUPED.map((g) => {
+                const cats = g.categories.filter((c) => c.id !== p.category_id);
+                return cats.length ? (
+                  <optgroup key={g.id} label={g.name}>
+                    {cats.map((c) => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
+                  </optgroup>
+                ) : null;
+              })}
             </select>
             <button type="button" onClick={submitCatReq} className="shrink-0 bg-surface2 border border-white/15 text-ink font-semibold text-[13px] px-3 rounded-xl">Request</button>
           </div>
