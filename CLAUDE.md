@@ -107,11 +107,11 @@ Momentum over documentation. Problems are worked through in chat, one at a time:
 
 ## 8. Current known issues
 
-- **Historic would-hire-again data:** old "Not sure" clicks were stored as `false` and count against providers' %. Needs a one-time human audit (data volume is tiny). SQL: `select id, provider_id, recommender_display, reason, created_at from recommendations where would_hire_again = false and deleted_at is null;`
+- **Historic would-hire-again data:** ✅ Resolved — audit run July 2026, **0** rows with `would_hire_again = false` (nothing to clean up). Re-check SQL if needed: `select id, provider_id, recommender_display, reason, created_at from recommendations where would_hire_again = false and deleted_at is null;`
 - **Magic-link email** sends from Supabase's default sender — poor deliverability/branding; move to Resend + domain once the domain exists.
 - **No analytics** — zero visibility into usage until backlog #4 ships.
 - **WhatsApp link previews are generic** (no per-provider OG) until backlog #3 ships.
-- **Supabase/Vercel MCP connectors do not have access to this project** (different account) — DB and deploy are done via the browser.
+- **Supabase MCP connector cannot access this project — known Supabase limitation, not a wrong-account problem (verified).** The connector authenticates as the Gmail/GitHub account (its own "SuspectOcean's Org"). The hosted Supabase OAuth grant is **scoped to a single organization** chosen at consent (open issue [supabase/mcp #304](https://github.com/supabase/mcp/issues/304)); it does not auto-pick-up newly-joined orgs, and reconnecting still grants only one org. That account is now an Owner of the "Tourism Platform" org that owns this project, but the connector's grant remains locked to SuspectOcean's Org — and switching it to Tourism Platform would drop the other projects. **SOP: all DB work is done via the browser Supabase SQL editor (Hotmail owner dashboard login). Do not chase the connector unless there is a documented multi-org fix.** Vercel deploy is likewise done via the browser (GitHub push).
 - **Cowork sandbox cannot run `npm`/Next builds** (timeouts) — rely on Vercel builds; syntax-check locally with esbuild if needed. The OneDrive-mounted folder can lag in the sandbox shell — verify file contents via the Read tool, not bash, after editing.
 
 ---
