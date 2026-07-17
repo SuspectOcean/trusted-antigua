@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Fraunces, Work_Sans } from "next/font/google";
 import BottomNav from "@/components/BottomNav";
 import { AuthProvider } from "@/components/AuthProvider";
+import AdSlot from "@/components/AdSlot";
 import { SITE_URL } from "@/lib/site";
 
 const DESCRIPTION =
@@ -58,16 +59,30 @@ export default function RootLayout({ children }) {
               </Link>
             </div>
           </header>
-          <main className="max-w-xl mx-auto px-4 pt-4 safe-bottom">
-            {children}
-            <footer className="mt-8 mb-20 pt-4 border-t border-white/10 text-center text-[11px] text-muted">
-              <Link href="/privacy" className="hover:text-slate2">Privacy</Link>
-              <span className="mx-2">·</span>
-              <Link href="/terms" className="hover:text-slate2">Terms</Link>
-              <span className="mx-2">·</span>
-              <Link href="/guidelines" className="hover:text-slate2">Review Guidelines</Link>
-            </footer>
-          </main>
+          <div className="lg:flex lg:justify-center lg:gap-5 lg:px-5">
+            {/* Desktop left rail: advert or house content. Hidden on mobile. */}
+            <aside className="hidden lg:block w-40 shrink-0 pt-6" aria-label="Sponsored and community">
+              <div className="sticky top-[72px]"><AdSlot slotKey="desktop-rail-left" /></div>
+            </aside>
+
+            <main className="w-full max-w-xl mx-auto px-4 pt-4 safe-bottom">
+              {children}
+              {/* Native mobile placement (not a shrunk rail). Hidden on desktop. */}
+              <div className="lg:hidden mt-6"><AdSlot slotKey="mobile-inline" variant="inline" /></div>
+              <footer className="mt-8 mb-20 pt-4 border-t border-white/10 text-center text-[11px] text-muted">
+                <Link href="/privacy" className="hover:text-slate2">Privacy</Link>
+                <span className="mx-2">·</span>
+                <Link href="/terms" className="hover:text-slate2">Terms</Link>
+                <span className="mx-2">·</span>
+                <Link href="/guidelines" className="hover:text-slate2">Review Guidelines</Link>
+              </footer>
+            </main>
+
+            {/* Desktop right rail. Hidden on mobile. */}
+            <aside className="hidden lg:block w-40 shrink-0 pt-6" aria-label="Sponsored and community">
+              <div className="sticky top-[72px]"><AdSlot slotKey="desktop-rail-right" /></div>
+            </aside>
+          </div>
           <BottomNav />
         </AuthProvider>
       </body>
