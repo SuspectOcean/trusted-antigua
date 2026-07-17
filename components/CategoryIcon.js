@@ -30,9 +30,17 @@ const PATHS = {
   ),
 };
 
+// Generic tag icon for categories without a bespoke line-icon (the taxonomy is
+// large; only the original trades have custom glyphs, the rest fall back here).
+const FALLBACK = (
+  <g>
+    <path d="M20.6 12.6 12.6 20.6a1.5 1.5 0 0 1-2.1 0l-7-7A1.5 1.5 0 0 1 3 12.5V5a2 2 0 0 1 2-2h7.5a1.5 1.5 0 0 1 1.1.4l7 7a1.5 1.5 0 0 1 0 2.2z" />
+    <circle cx="7.5" cy="7.5" r="1.3" />
+  </g>
+);
+
 export default function CategoryIcon({ id, className = "" }) {
-  const p = PATHS[id];
-  if (!p) return null;
+  const p = PATHS[id] || FALLBACK;
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className={className}>
       {p}
