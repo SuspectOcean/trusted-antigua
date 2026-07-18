@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { GROUPS } from "@/lib/categories";
+import FeaturedProviders from "@/components/FeaturedProviders";
 
 // Real Antiguan phrasing for what people actually type — not "e.g. electrician".
 // Grounds the search in how the island talks, and doubles as quiet proof the
@@ -90,6 +91,9 @@ export default function Home() {
           </Link>
         ))}
       </div>
+
+      {/* Editorial highlights. Separate system from advertising, never "Sponsored". */}
+      <FeaturedProviders limit={3} />
 
       {/* The one bold moment on the page — inverted amber panel, not another dark card. */}
       <div className="mt-7 bg-amber rounded-2xl p-5 relative overflow-hidden">
