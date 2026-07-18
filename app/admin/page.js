@@ -1,247 +1,68 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CAT } from "@/lib/categories";
+import AdminShell, { Panel, ADMIN_NAV } from "@/components/AdminShell";
 import { api } from "@/lib/data";
-import { useAuth } from "@/components/AuthProvider";
-import { TRUST } from "@/lib/trust";
 
-function Section({ title, children }) {
-  return (
-    <div className="mt-5">
-      <h2 className="font-display font-semibold text-[17px] text-ink mb-2">{title}</h2>
-      {children}
+// Dashboard overview. Everything actionable lives in its own section; this
+// page only shows what needs attention and where to go next.
+function Stat({ label, value, href, urgent }) {
+  const n = value === null || value === undefined ? "…" : String(value);
+  const body = (
+    <div className={`bg-surface border rounded-2xl p-3 h-full ${urgent && Number(value) > 0 ? "border-amber/50" : "border-white/10"}`}>
+      <div className={`font-display font-semibold text-[22px] leading-none ${urgent && Number(value) > 0 ? "text-amber" : "text-ink"}`}>{n}</div>
+      <div className="text-[12px] text-muted mt-1">{label}</div>
     </div>
   );
+  return href ? <Link href={href} className="block">{body}</Link> : body;
 }
 
-export default function AdminPage() {
-  const { user, isAdmin, loading } = useAuth();
-  const [claims, setClaims] = useState([]);
-  const [cats, setCats] = useState([]);
-  const [approved, setApproved] = useState([]);
-  const [reviews, setReviews] = useState([]);
-  const [reports, setReports] = useState([]);
-  const [busyId, setBusyId] = useState(null);
-  const [note, setNote] = useState("");
-  const [flash, setFlash] = useState(null);
+export default function AdminDashboardPage() {
+  const [o, setO] = useState(null);
 
-  const reload = useCallback(async () => {
-    const [c, k, a, rv, rp] = await Promise.all([
-      api.adminClaims("pending"),
-      api.adminCategoryRequests("pending"),
-      api.adminClaims("approved"),
-      api.adminReviews(),
-      api.adminReports(),
-    ]);
-    setClaims(c); setCats(k); setApproved(a); setReviews(rv); setReports(rp);
-  }, []);
+  useEffect(() => { api.adminOverview().then(setO); }, []);
 
-  useEffect(() => { if (isAdmin) reload(); }, [isAdmin, reload]);
-
-  if (loading) return <div className="py-16 text-center text-muted">Loading…</div>;
-  if (!user || !isAdmin) {
-    return (
-      <div className="py-16 text-center text-slate2">
-        This area is for administrators only.
-        <div className="mt-2"><Link href="/" className="text-amber underline">Go home</Link></div>
-      </div>
-    );
-  }
-
-  async function decideClaim(claimId, approve) {
-    setBusyId(claimId);
-    try { await api.adminDecideClaim(claimId, approve, note || null); setNote(""); setFlash(approve ? "Claim approved." : "Claim rejected."); await reload(); }
-    catch (e) { console.error(e); setFlash("Action failed."); }
-    finally { setBusyId(null); }
-  }
-  async function promote(providerId, level) {
-    setBusyId(providerId);
-    try { await api.adminSetTrust(providerId, level); setFlash("Trust level updated."); await reload(); }
-    catch (e) { console.error(e); setFlash("Action failed."); }
-    finally { setBusyId(null); }
-  }
-  async function revoke(providerId) {
-    setBusyId(providerId);
-    try { await api.adminRevoke(providerId); setFlash("Claim revoked."); await reload(); }
-    catch (e) { console.error(e); setFlash("Action failed."); }
-    finally { setBusyId(null); }
-  }
-  async function decideCat(reqId, approve) {
-    setBusyId(reqId);
-    try { await api.adminDecideCategory(reqId, approve, null); setFlash(approve ? "Category updated." : "Request rejected."); await reload(); }
-    catch (e) { console.error(e); setFlash("Action failed."); }
-    finally { setBusyId(null); }
-  }
-  async function removeReview(id) {
-    setBusyId(id);
-    try { await api.adminRemoveReview(id, null); setFlash("Review removed."); await reload(); }
-    catch (e) { console.error(e); setFlash("Action failed."); }
-    finally { setBusyId(null); }
-  }
-  async function restoreReview(id) {
-    setBusyId(id);
-    try { await api.adminRestoreReview(id); setFlash("Review restored."); await reload(); }
-    catch (e) { console.error(e); setFlash("Action failed."); }
-    finally { setBusyId(null); }
-  }
-  async function resolveReport(id, remove) {
-    setBusyId(id);
-    try { await api.adminResolveReport(id, remove, note || null); setNote(""); setFlash(remove ? "Review removed; report resolved." : "Review kept; report resolved."); await reload(); }
-    catch (e) { console.error(e); setFlash("Action failed."); }
-    finally { setBusyId(null); }
-  }
-  async function removeReply(id) {
-    setBusyId(id);
-    try { await api.adminRemoveReply(id, note || null); setNote(""); setFlash("Reply removed."); await reload(); }
-    catch (e) { console.error(e); setFlash("Action failed."); }
-    finally { setBusyId(null); }
-  }
-
-  const REASON_LABEL = {
-    not_genuine: "Not a genuine experience",
-    abusive: "Abusive / personal attack",
-    personal_info: "Private personal information",
-    conflict_of_interest: "Conflict of interest",
-    other: "Other",
-  };
+  const needsAttention = (Number(o?.open_reports) || 0) + (Number(o?.pending_claims) || 0);
 
   return (
-    <div className="pt-2">
-      <h1 className="text-xl font-display font-semibold text-ink">Admin</h1>
-      <p className="text-[13px] text-muted mt-0.5">Review claims and category changes. Reputation data is never editable here.</p>
-      {flash ? <div className="mt-3 bg-surface2 border border-white/10 rounded-xl p-2.5 text-[13px] text-slate2">{flash}</div> : null}
+    <AdminShell title="Dashboard" subtitle="Everything is managed from here. No database edits, no hidden pages.">
+      <Panel title="Needs attention">
+        <div className="grid grid-cols-2 gap-2">
+          <Stat label="Open reports and disputes" value={o?.open_reports} href="/admin/reviews" urgent />
+          <Stat label="Pending provider claims" value={o?.pending_claims} href="/admin/providers" urgent />
+        </div>
+        {o && needsAttention === 0 ? <p className="text-[12px] text-muted mt-2">Nothing waiting. The queue is clear.</p> : null}
+      </Panel>
 
-      <Section title={`Reports & disputes (${reports.length})`}>
-        {reports.length === 0 ? <div className="text-[13px] text-muted">Nothing reported.</div> : (
-          <div className="space-y-2.5">
-            {reports.map((rp) => (
-              <div key={rp.id} className={`bg-surface rounded-2xl p-4 shadow-card border ${rp.is_provider_dispute ? "border-amber/40" : "border-white/10"}`}>
-                <div className="flex items-center justify-between">
-                  <Link href={`/provider?id=${encodeURIComponent(rp.provider_id)}`} className="font-display font-semibold text-ink">{rp.providers?.alias || rp.providers?.name || "Provider"}</Link>
-                  <span className={`text-[11px] font-semibold ${rp.is_provider_dispute ? "text-amber" : "text-muted"}`}>{rp.is_provider_dispute ? "Provider dispute" : "User report"}</span>
-                </div>
-                <div className="text-[12px] text-slate2 mt-1">Reason: <b>{REASON_LABEL[rp.reason] || rp.reason}</b></div>
-                {rp.details ? <p className="text-[13px] text-slate2 mt-1">&ldquo;{rp.details}&rdquo;</p> : null}
-                <div className="mt-2 bg-surface2 rounded-xl p-2.5">
-                  <div className="text-[11px] text-muted">Reported review by {rp.recommendations?.recommender_display || "A resident"}{rp.recommendations?.deleted_at ? " (already removed)" : ""}</div>
-                  {rp.recommendations?.reason ? <p className="text-[13px] text-slate2 mt-0.5">{rp.recommendations.reason}</p> : <p className="text-[12px] text-muted mt-0.5">No written text, scores and tags only.</p>}
-                </div>
-                <div className="mt-3 flex gap-2">
-                  <button disabled={busyId === rp.id} onClick={() => resolveReport(rp.id, false)} className="flex-1 py-2 rounded-full bg-ok text-white font-semibold text-[13px] disabled:opacity-60">Keep review</button>
-                  <button disabled={busyId === rp.id} onClick={() => resolveReport(rp.id, true)} className="flex-1 py-2 rounded-full border border-err/40 text-err font-semibold text-[13px] disabled:opacity-60">Remove review</button>
-                </div>
-              </div>
-            ))}
-            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional note applied to next decision" className="w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2 text-[13px]" />
-          </div>
-        )}
-      </Section>
+      <Panel title="Platform">
+        <div className="grid grid-cols-2 gap-2">
+          <Stat label="Providers listed" value={o?.providers} href="/admin/providers" />
+          <Stat label="Reviews published" value={o?.reviews} href="/admin/reviews" />
+          <Stat label="Registered users" value={o?.users} href="/admin/users" />
+          <Stat label="Featured providers" value={o?.featured} href="/admin/featured" />
+        </div>
+      </Panel>
 
-      <Section title={`Pending claims (${claims.length})`}>
-        {claims.length === 0 ? <div className="text-[13px] text-muted">Nothing waiting.</div> : (
-          <div className="space-y-2.5">
-            {claims.map((c) => (
-              <div key={c.id} className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
-                <div className="flex items-center justify-between">
-                  <Link href={`/provider?id=${encodeURIComponent(c.provider_id)}`} className="font-display font-semibold text-ink">{c.providers?.alias || c.providers?.name || "Provider"}</Link>
-                  <span className="text-[11px] text-muted">{CAT[c.providers?.category_id]?.name || ""}</span>
-                </div>
-                {c.submitted_name ? <div className="text-[13px] text-slate2 mt-1">Name: {c.submitted_name}</div> : null}
-                {c.submitted_description ? <div className="text-[13px] text-slate2">Desc: {c.submitted_description}</div> : null}
-                {c.submitted_contact ? <div className="text-[13px] text-slate2">Contact: {c.submitted_contact}</div> : null}
-                <div className="mt-3 flex gap-2">
-                  <button disabled={busyId === c.id} onClick={() => decideClaim(c.id, true)} className="flex-1 py-2 rounded-full bg-ok text-white font-semibold text-[13px] disabled:opacity-60">Approve</button>
-                  <button disabled={busyId === c.id} onClick={() => decideClaim(c.id, false)} className="flex-1 py-2 rounded-full border border-white/15 text-ink text-[13px] disabled:opacity-60">Reject</button>
-                </div>
-              </div>
-            ))}
-            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional note applied to next decision" className="w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2 text-[13px]" />
-          </div>
-        )}
-      </Section>
+      <Panel title="Slots and content">
+        <div className="grid grid-cols-2 gap-2">
+          <Stat label="Active ad campaigns" value={o?.ad_campaigns} href="/admin/ads" />
+          <Stat label="Live placements" value={o?.live_placements} href="/admin/ads" />
+          <Stat label="Active house cards" value={o?.house_cards} href="/admin/house" />
+        </div>
+        <p className="text-[12px] text-muted mt-2">Adverts are isolated from all platform data. House content fills any slot with no live advert.</p>
+      </Panel>
 
-      <Section title={`Claimed profiles (${approved.length})`}>
-        {approved.length === 0 ? <div className="text-[13px] text-muted">No approved claims yet.</div> : (
-          <div className="space-y-2.5">
-            {approved.map((c) => {
-              const lvl = c.providers?.trust_level;
-              return (
-                <div key={c.id} className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
-                  <div className="flex items-center justify-between">
-                    <Link href={`/provider?id=${encodeURIComponent(c.provider_id)}`} className="font-display font-semibold text-ink">{c.providers?.alias || c.providers?.name}</Link>
-                    <span className="text-[11px] text-slate2">{TRUST[lvl]?.label || lvl}</span>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {lvl === "claimed" ? (
-                      <button disabled={busyId === c.provider_id} onClick={() => promote(c.provider_id, "verified_business")} className="py-2 px-3 rounded-full bg-amber text-navy font-semibold text-[13px] disabled:opacity-60">Promote to Verified Business</button>
-                    ) : null}
-                    {lvl === "verified_business" ? (
-                      <button disabled={busyId === c.provider_id} onClick={() => promote(c.provider_id, "claimed")} className="py-2 px-3 rounded-full border border-white/15 text-ink text-[13px] disabled:opacity-60">Downgrade to Claimed</button>
-                    ) : null}
-                    <button disabled={busyId === c.provider_id} onClick={() => revoke(c.provider_id)} className="py-2 px-3 rounded-full border border-err/40 text-err text-[13px] disabled:opacity-60">Revoke claim</button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </Section>
+      <Panel title="All sections">
+        <div className="grid grid-cols-2 gap-2">
+          {ADMIN_NAV.filter((n) => n.href !== "/admin").map((n) => (
+            <Link key={n.href} href={n.href} className="bg-surface2 border border-white/10 rounded-xl p-2.5 text-[13px] text-ink">
+              <span className="mr-1.5">{n.icon}</span>{n.label}
+            </Link>
+          ))}
+        </div>
+      </Panel>
 
-      <Section title={`Category change requests (${cats.length})`}>
-        {cats.length === 0 ? <div className="text-[13px] text-muted">Nothing waiting.</div> : (
-          <div className="space-y-2.5">
-            {cats.map((k) => (
-              <div key={k.id} className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
-                <Link href={`/provider?id=${encodeURIComponent(k.provider_id)}`} className="font-display font-semibold text-ink">{k.providers?.alias || k.providers?.name}</Link>
-                <div className="text-[13px] text-slate2 mt-1">{CAT[k.current_category]?.name || k.current_category} → <b>{CAT[k.requested_category]?.name || k.requested_category}</b></div>
-                <div className="mt-3 flex gap-2">
-                  <button disabled={busyId === k.id} onClick={() => decideCat(k.id, true)} className="flex-1 py-2 rounded-full bg-ok text-white font-semibold text-[13px] disabled:opacity-60">Approve</button>
-                  <button disabled={busyId === k.id} onClick={() => decideCat(k.id, false)} className="flex-1 py-2 rounded-full border border-white/15 text-ink text-[13px] disabled:opacity-60">Reject</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </Section>
-
-      <Section title={`Reviews (${reviews.length})`}>
-        {reviews.length === 0 ? <div className="text-[13px] text-muted">No reviews yet.</div> : (
-          <div className="space-y-2.5">
-            {reviews.map((r) => {
-              const removed = !!r.deleted_at;
-              const reply = Array.isArray(r.review_replies) ? r.review_replies[0] : r.review_replies;
-              return (
-                <div key={r.id} className={`bg-surface rounded-2xl p-4 shadow-card border ${removed ? "border-err/30 opacity-70" : "border-white/10"}`}>
-                  <div className="flex items-center justify-between">
-                    <Link href={`/provider?id=${encodeURIComponent(r.provider_id)}`} className="font-display font-semibold text-ink">{r.providers?.alias || r.providers?.name || "Provider"}</Link>
-                    <span className="text-[11px] text-muted">{r.recommender_display || "A resident"}</span>
-                  </div>
-                  {r.reason ? <p className="text-[13px] text-slate2 mt-1">{r.reason}</p> : null}
-                  {removed ? <div className="text-[11px] text-err mt-1">Removed ({r.deleted_reason || "admin"})</div> : null}
-                  {reply ? (
-                    <div className="mt-2 ml-3 pl-3 border-l-2 border-amber/40">
-                      <div className="text-[11px] text-amber font-semibold">Provider reply{reply.removed_at ? " (removed)" : ""}</div>
-                      <p className="text-[12px] text-slate2 mt-0.5">{reply.body}</p>
-                      {!reply.removed_at ? (
-                        <button disabled={busyId === reply.id} onClick={() => removeReply(reply.id)} className="mt-1 text-[11px] text-err underline disabled:opacity-60">Remove reply</button>
-                      ) : null}
-                    </div>
-                  ) : null}
-                  <div className="mt-3">
-                    {removed ? (
-                      <button disabled={busyId === r.id} onClick={() => restoreReview(r.id)} className="py-2 px-3 rounded-full border border-white/15 text-ink text-[13px] disabled:opacity-60">Restore</button>
-                    ) : (
-                      <button disabled={busyId === r.id} onClick={() => removeReview(r.id)} className="py-2 px-3 rounded-full border border-err/40 text-err text-[13px] disabled:opacity-60">Remove</button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </Section>
-      <div className="h-6" />
-    </div>
+      {o === null ? <p className="text-[12px] text-muted mt-4">If the counters stay blank, the admin functions may not be applied to this database yet.</p> : null}
+    </AdminShell>
   );
 }
