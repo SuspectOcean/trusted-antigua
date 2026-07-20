@@ -43,6 +43,7 @@ function RecommendInner() {
     scores: { ...EMPTY }, work_types: [],
   });
   const [editing, setEditing] = useState(false);
+  const [wasLegacy, setWasLegacy] = useState(false); // editing a previous-system review
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
 
@@ -57,6 +58,7 @@ function RecommendInner() {
     api.myReviewForProvider(presetPid, user.id).then((r) => {
       if (!r) return;
       setEditing(true);
+      setWasLegacy(r.rating_version !== 2);
       const scores = { ...EMPTY };
       if (r.rating_version === 2) {
         RATING_CATEGORIES.forEach((c) => { scores[c.key] = r[`r10_${c.key}`] ?? null; });
@@ -169,6 +171,16 @@ function RecommendInner() {
               <input value={form.name} onChange={(e) => set("name", e.target.value)} required placeholder="e.g. Ricky the AC Man" className={inputCls} />
             </div>
           </>
+        ) : null}
+
+        {/* Deliberate, informed conversion of legacy reviews — never silent. */}
+        {wasLegacy ? (
+          <div className="bg-amber/10 border border-amber/30 rounded-xl p-3 text-[13px] text-slate2">
+            <b className="text-amber">This review was created under our previous rating system.</b>{" "}
+            To update it, complete the new ten-category Trust Rating below. Your written review is kept.
+            Your old rating is not carried over, and nothing changes unless you save. If you leave this
+            page without saving, your original review stays exactly as it is.
+          </div>
         ) : null}
 
         {/* Step 1: the ten scores */}
