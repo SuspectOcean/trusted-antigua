@@ -21,14 +21,26 @@ export default function GuidelinesPage() {
           The quality of the work, reliability, punctuality, communication, price fairness, professionalism, and
           how problems were handled. Specifics help everyone: what the job was, roughly when, and what happened.
         </p>
+        <p>
+          Negative experiences are welcome when they describe what actually happened to you.
+          &ldquo;The provider arrived late and did not respond to my messages&rdquo; is a fair review.
+          A provider disagreeing with a review is never, on its own, a reason for us to remove it.
+        </p>
       </LSection>
 
       <LSection title="Not allowed">
         <p>
-          Reviews of businesses you own or work for (or of your competitors). Second-hand stories
-          (&ldquo;my cousin said…&rdquo;). Insults, threats, or attacks on someone as a person rather than their
-          work. Private personal information, such as home addresses, ID numbers, health details, or anything similar.
-          Accusations of crimes are a matter for the police, not a review. Fake or paid-for reviews of any kind.
+          Threats or harassment. Hate speech. Private personal information, such as home addresses, ID numbers,
+          health details, or anything similar. Fake or paid-for reviews of any kind. Reviews of businesses you own
+          or work for, or of your competitors, or written because of a personal falling-out rather than a service
+          experience. Second-hand stories (&ldquo;my cousin said…&rdquo;). Content unrelated to a genuine service
+          experience.
+        </p>
+        <p>
+          There is a difference between a bad experience and an accusation. Saying the work was poor, late, or
+          overpriced is your experience. Accusing someone of theft, fraud, or other crimes is a serious claim:
+          without something to support it, that content may be hidden, and genuinely criminal matters belong with
+          the police. Describe what happened to you; let readers draw their own conclusions.
         </p>
       </LSection>
 
@@ -46,10 +58,12 @@ export default function GuidelinesPage() {
 
       <LSection title="How moderation works">
         <p>
-          Any signed-in user can report a review. Our team checks reports against these guidelines. If a review
-          breaks them, we remove it and record why. If it doesn&rsquo;t, it stays, including negative reviews.
-          Deliberately false reports and fake reviews may lead to account suspension. If you believe content about
-          you is unlawful, you can send us a formal notice. <ContactLine prefix="Email" />
+          Any signed-in user can report a review, and providers can dispute reviews of their business. Reported
+          content goes into a moderation queue, where our team checks it against these guidelines, nothing more
+          and nothing less. We don&rsquo;t judge who was right in a disagreement about a job; we only judge whether
+          the content follows the rules above. If it breaks them, it may be hidden and the action is recorded.
+          If it doesn&rsquo;t, it stays published, including negative reviews. Deliberately false reports and fake
+          reviews may lead to account suspension. Questions about any of this? <ContactLine prefix="Email" />
         </p>
       </LSection>
 
