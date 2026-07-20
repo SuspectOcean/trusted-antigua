@@ -30,7 +30,9 @@ export default function Home() {
   return (
     <>
       <section className="pt-4 pb-5">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber">Antigua &amp; Barbuda · Community verified</div>
+        {/* Plain statement of place, not a trust seal. An unexplained "verified" badge on a
+            young domain reads as a fake credential to both people and phishing classifiers. */}
+        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber">Antigua &amp; Barbuda</div>
         <h1 className="mt-2 text-ink leading-[1.05] tracking-[-.01em]">
           <span className="block font-display font-semibold text-[30px]">Find tradespeople</span>
           <span className="block font-display italic font-medium text-[36px] text-amber -mt-0.5">you can trust.</span>
