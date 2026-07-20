@@ -4,7 +4,8 @@ import { supabase } from "@/lib/supabase";
 import { AREAS } from "@/lib/categories";
 
 // Flip these to true once the provider is configured in Supabase (see setup guides).
-const ENABLED = { email: true, google: false, facebook: false, phone: false };
+// Rule: a method that isn't configured is never rendered as a live button.
+const ENABLED = { email: true, google: false, facebook: false, whatsapp: false };
 
 const AuthCtx = createContext(null);
 export const useAuth = () => useContext(AuthCtx);
@@ -12,17 +13,20 @@ export const useAuth = () => useContext(AuthCtx);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [role, setRole] = useState("member"); // owner | admin | moderator | member
   const [loading, setLoading] = useState(true);
   const [showSignIn, setShowSignIn] = useState(false);
   const [signInMsg, setSignInMsg] = useState(null); // optional context message
 
   const loadProfile = useCallback(async (uid) => {
-    if (!uid) { setProfile(null); setIsAdmin(false); return; }
+    if (!uid) { setProfile(null); setRole("member"); return; }
     const { data } = await supabase.from("profiles").select("*").eq("id", uid).single();
     setProfile(data || null);
-    const { data: adm } = await supabase.rpc("is_admin");
-    setIsAdmin(!!adm);
+    // Claim any pending role invitation for this email (single-use, server-validated),
+    // then read the resulting role. Works for every auth provider.
+    try { await supabase.rpc("claim_role_invitations"); } catch { /* older DB: ignore */ }
+    const { data: r } = await supabase.rpc("my_role");
+    setRole(r || "member");
   }, []);
 
   useEffect(() => {
@@ -46,9 +50,11 @@ export function AuthProvider({ children }) {
   const refreshProfile = useCallback(() => loadProfile(user?.id), [user, loadProfile]);
 
   const needsProfile = !!user && (!profile || !profile.first_name || !profile.area);
+  const isAdmin = role === "owner" || role === "admin";
+  const isOwner = role === "owner";
 
   return (
-    <AuthCtx.Provider value={{ user, profile, isAdmin, loading, openSignIn, signOut, refreshProfile }}>
+    <AuthCtx.Provider value={{ user, profile, role, isAdmin, isOwner, loading, openSignIn, signOut, refreshProfile }}>
       {children}
       {showSignIn && !user ? <SignInSheet msg={signInMsg} onClose={() => setShowSignIn(false)} /> : null}
       {needsProfile ? <CompleteProfile user={user} onDone={refreshProfile} /> : null}
@@ -120,11 +126,11 @@ function SignInSheet({ msg, onClose }) {
               {ENABLED.facebook
                 ? <button onClick={() => oauth("facebook")} className="w-full py-3 rounded-xl border border-white/15 bg-surface2 text-ink text-[14px] font-medium">Continue with Facebook</button>
                 : <SoonBtn label="Continue with Facebook" />}
-              {ENABLED.phone
+              {ENABLED.whatsapp
                 ? null
-                : <SoonBtn label="Continue with phone" />}
+                : <SoonBtn label="Continue with WhatsApp" />}
             </div>
-            <p className="text-[11px] text-muted mt-3">Google, Facebook and phone sign-in are being set up. Email works now.</p>
+            <p className="text-[11px] text-muted mt-3">Google, Facebook and WhatsApp sign-in are being set up. Email works now.</p>
           </>
         )}
       </div>

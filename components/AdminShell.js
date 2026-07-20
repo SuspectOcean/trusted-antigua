@@ -13,6 +13,7 @@ export const ADMIN_NAV = [
   { href: "/admin/ads", label: "Advertisements", icon: "📣" },
   { href: "/admin/house", label: "House Content", icon: "🏠" },
   { href: "/admin/users", label: "Users", icon: "👥" },
+  { href: "/admin/invitations", label: "Invitations", icon: "✉️" },
   { href: "/admin/categories", label: "Categories", icon: "🗂️" },
   { href: "/admin/settings", label: "Site Settings", icon: "⚙️" },
 ];
