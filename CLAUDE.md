@@ -83,7 +83,7 @@ Momentum over documentation. Problems are worked through in chat, one at a time:
 ## 6. Current backlog (prioritised)
 
 1. **Enable Google sign-in** — operator task: create the Google Cloud OAuth client, enable the provider in Supabase, then flip `ENABLED.google = true` in `components/AuthProvider.js`, make it the primary button, keep magic link as fallback, verify existing users still sign in.
-2. **Legal completion** — local lawyer review of the three legal pages (L-01–L-07 in the Decision & Legal Register); company-formation decision. (Historic would-hire-again audit: ✅ resolved, 0 rows.)
+2. **Policy pages** — keep Terms / Privacy / Review Guidelines current as features ship; company-formation decision when convenient. Operator direction (20 July 2026): normal review-platform safeguards, no legal bureaucracy. (Historic would-hire-again audit: ✅ resolved, 0 rows.)
 3. **Per-provider sharing** — path-based provider routes (`/provider/[id]` or slug) with server-rendered per-provider OG/meta; WhatsApp-first share button; `LocalBusiness` structured data; custom domain.
 4. **Measurability** — analytics (Vercel Analytics or Plausible), funnel events (search → profile → sign-in → contact tap → review), no-results search logging, pilot metrics from the 4.7R doc (resident vs seeder, check-before-hiring).
 5. **Tech debt sweep** — see §7.
@@ -144,7 +144,7 @@ Momentum over documentation. Problems are worked through in chat, one at a time:
 ## 10. Domain & email plan
 
 - Custom domain to be purchased (likely `trusted-antigua.com` — **not confirmed, do not assume or publish**).
-- Email structure once live: **info@** (public contact), **admin@** (internal administration), **legal@** (legal/privacy requests — alias on info@ is fine).
+- Email structure once live: **info@** (general contact, shown on the site) and **admin@** (platform administration, moderation, review disputes — internal). **Deliberately no legal@ and no "legal department":** Trusted Antigua is a consumer review platform like Google Reviews or Tripadvisor, not a legal or arbitration service. Moderation decides only whether content complies with the published Review Guidelines, never who is right in a commercial dispute. Required safeguards are the normal review-platform set: Terms, Privacy, Review Guidelines, report function, moderation queue, provider response rights, and an audit record of moderation actions.
 - **No Gmail address may ever appear anywhere in the product.** Contact details stay hidden until domain email exists: `LEGAL_EMAIL = null` in `lib/site.js` renders the fallback "Contact details will be published before the public launch." on all legal pages via the `ContactLine` component. Setting the constant activates every contact point at once.
 - Once purchased: connect domain to Vercel; set up mailboxes (see §11 pattern); move transactional email (magic links) to Resend on the domain; 301 the vercel.app URL.
 
