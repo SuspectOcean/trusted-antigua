@@ -62,20 +62,23 @@ export function AuthProvider({ children }) {
   );
 }
 
-/* ---------- Sign-in sheet ---------- */
+/* ---------- Sign-in sheet ----------
+   One Trusted Antigua account. Google/Facebook/WhatsApp/Email are just ways of
+   proving who you are; the app decides whether you're new or returning. Only
+   configured providers render — a method that doesn't work doesn't exist here. */
 function SignInSheet({ msg, onClose }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState({ busy: false, sent: false, err: null });
 
   async function sendLink(e) {
     e.preventDefault();
-    if (!email.trim()) { setState({ ...state, err: "Enter your email." }); return; }
+    if (!email.trim()) { setState({ ...state, err: "Enter your email to continue." }); return; }
     setState({ busy: true, sent: false, err: null });
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: { emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined },
     });
-    if (error) setState({ busy: false, sent: false, err: "Couldn't send the link. Please try again." });
+    if (error) setState({ busy: false, sent: false, err: "Something went wrong. Please try again." });
     else setState({ busy: false, sent: true, err: null });
   }
 
@@ -86,52 +89,67 @@ function SignInSheet({ msg, onClose }) {
     });
   }
 
-  const SoonBtn = ({ label, icon }) => (
-    <button type="button" disabled className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 bg-surface2/60 text-muted text-[14px] font-medium cursor-not-allowed">
-      {icon}<span>{label}</span><span className="text-[10px] uppercase tracking-wide text-muted/80 ml-1">soon</span>
-    </button>
-  );
+  // Long-term priority order. Flipping a flag in ENABLED inserts the button in
+  // the right place with no redesign. Google becomes primary the day it's on.
+  const social = [
+    { id: "google", label: "Continue with Google", on: ENABLED.google, go: () => oauth("google") },
+    { id: "facebook", label: "Continue with Facebook", on: ENABLED.facebook, go: () => oauth("facebook") },
+    // WhatsApp is phone-OTP, wired separately when configured.
+  ].filter((p) => p.on);
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/55 flex items-end sm:items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-surface border border-white/10 w-full max-w-xl rounded-t-2xl sm:rounded-2xl p-5 shadow-pop">
         <div className="flex items-center justify-between">
-          <h3 className="font-display font-semibold text-ink text-lg">Log in or sign up</h3>
-          <button onClick={onClose} className="text-muted text-xl leading-none px-2">×</button>
+          <h3 className="font-display font-semibold text-ink text-lg">Welcome to Trusted Antigua</h3>
+          <button onClick={onClose} className="text-muted text-xl leading-none px-2" aria-label="Close">×</button>
         </div>
-        <p className="text-[13px] text-slate2 mt-1">{msg || "One step for both. New here? This creates your free profile. Been here before? It signs you straight back in."}</p>
 
         {state.sent ? (
-          <div className="mt-4 bg-ok/15 text-ok rounded-xl p-4 text-[14px]">
-            ✅ Check your inbox. We sent a sign-in link to <b>{email}</b>. Tap it to finish.
+          <div className="mt-4">
+            <div className="bg-ok/15 rounded-xl p-4">
+              <div className="text-[15px] text-ok font-semibold">Check your email</div>
+              <p className="text-[13px] text-slate2 mt-1.5">
+                We&apos;ve sent a secure link to <b className="text-ink">{email}</b>. Tap it and you&apos;re in.
+              </p>
+            </div>
+            <p className="text-[12px] text-muted mt-3">
+              This device will remember you. You&apos;ll stay signed in until you choose to log out.
+            </p>
+            <button onClick={() => setState({ busy: false, sent: false, err: null })} className="text-[12px] text-amber underline mt-2">
+              Use a different email
+            </button>
           </div>
         ) : (
           <>
-            <form onSubmit={sendLink} className="mt-4 space-y-2">
-              <label className="block text-[13px] font-semibold text-ink">Continue with email</label>
-              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email" placeholder="you@example.com"
+            <p className="text-[13px] text-slate2 mt-1">
+              {msg || "One account for everything on Trusted Antigua."}
+            </p>
+
+            {social.length ? (
+              <div className="mt-4 space-y-2">
+                {social.map((p) => (
+                  <button key={p.id} onClick={p.go} className="w-full py-3 rounded-xl bg-amber text-navy text-[15px] font-semibold">
+                    {p.label}
+                  </button>
+                ))}
+                <div className="flex items-center gap-3 my-1"><div className="h-px bg-white/10 flex-1" /><span className="text-[11px] text-muted">or</span><div className="h-px bg-white/10 flex-1" /></div>
+              </div>
+            ) : null}
+
+            <form onSubmit={sendLink} className={social.length ? "space-y-2" : "mt-4 space-y-2"}>
+              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email" autoComplete="email" placeholder="Your email address"
                 className="w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30" />
-              <button type="submit" disabled={state.busy} className="w-full bg-amber text-navy font-semibold py-3 rounded-xl text-[15px] disabled:opacity-60">
-                {state.busy ? "Sending…" : "Email me a sign-in link"}
+              <button type="submit" disabled={state.busy}
+                className={`w-full py-3 rounded-xl text-[15px] font-semibold disabled:opacity-60 ${social.length ? "border border-white/15 bg-surface2 text-ink" : "bg-amber text-navy"}`}>
+                {state.busy ? "One moment…" : "Continue with Email"}
               </button>
-              <p className="text-[11px] text-muted">You stay signed in on this device, so you&apos;ll only need this once, not every visit.</p>
               {state.err ? <p className="text-[13px] text-err">{state.err}</p> : null}
             </form>
 
-            <div className="flex items-center gap-3 my-4"><div className="h-px bg-white/10 flex-1" /><span className="text-[11px] text-muted">or</span><div className="h-px bg-white/10 flex-1" /></div>
-
-            <div className="space-y-2">
-              {ENABLED.google
-                ? <button onClick={() => oauth("google")} className="w-full py-3 rounded-xl border border-white/15 bg-surface2 text-ink text-[14px] font-medium">Continue with Google</button>
-                : <SoonBtn label="Continue with Google" />}
-              {ENABLED.facebook
-                ? <button onClick={() => oauth("facebook")} className="w-full py-3 rounded-xl border border-white/15 bg-surface2 text-ink text-[14px] font-medium">Continue with Facebook</button>
-                : <SoonBtn label="Continue with Facebook" />}
-              {ENABLED.whatsapp
-                ? null
-                : <SoonBtn label="Continue with WhatsApp" />}
-            </div>
-            <p className="text-[11px] text-muted mt-3">Google, Facebook and WhatsApp sign-in are being set up. Email works now.</p>
+            <p className="text-[12px] text-muted mt-3">
+              If you&apos;ve been here before, this signs you straight into your account. If you&apos;re new, your free account is created automatically.
+            </p>
           </>
         )}
       </div>
