@@ -96,6 +96,7 @@ Momentum over documentation. Problems are worked through in chat, one at a time:
 
 ## 7. Outstanding technical debt
 
+- **Column grants on `providers` are a live trap.** The table uses COLUMN-LEVEL grants so the `contact` column can be withheld from anon. PostgREST rejects the ENTIRE request with 401 if any single selected column is denied, so one missing grant silently empties the whole public directory. This happened: `secondary_categories` (added 17 July) had no anon grant, and from 17 to 20 July every logged-out visitor saw zero providers. Nobody noticed because all testing was done signed in. Fixed by `db/2026-07-20-fix-secondary-categories-grant.sql`. **Rule: any new public column on `providers` must ship with a matching `grant select (col) on providers to anon, authenticated;` in the same migration, and every release must be smoke-tested logged out (incognito), not just signed in.**
 - `recommender_display` is client-supplied to `submit_review` — must be derived server-side inside the RPC (impersonation risk). Requires editing the live function (fetch current source via `select prosrc from pg_proc where proname='submit_review'`).
 - Claim security: `submitClaim`/`requestCategoryChange` are raw inserts; already-claimed and duplicate-pending checks are UI-only — add DB constraints/policies.
 - Verify RLS on admin-read tables (`provider_claims`, `category_change_requests`, deleted `recommendations`) returns zero rows to non-admins; verify the providers guard trigger covers `trust_level`, `verified_at`, `name`.
