@@ -96,10 +96,10 @@ function SignInSheet({ msg, onClose }) {
     <div className="fixed inset-0 z-[60] bg-black/55 flex items-end sm:items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-surface border border-white/10 w-full max-w-xl rounded-t-2xl sm:rounded-2xl p-5 shadow-pop">
         <div className="flex items-center justify-between">
-          <h3 className="font-display font-semibold text-ink text-lg">Create your free profile</h3>
+          <h3 className="font-display font-semibold text-ink text-lg">Log in or sign up</h3>
           <button onClick={onClose} className="text-muted text-xl leading-none px-2">×</button>
         </div>
-        <p className="text-[13px] text-slate2 mt-1">{msg || "Create a free profile to contact trusted tradespeople and leave recommendations."}</p>
+        <p className="text-[13px] text-slate2 mt-1">{msg || "One step for both. New here? This creates your free profile. Been here before? It signs you straight back in."}</p>
 
         {state.sent ? (
           <div className="mt-4 bg-ok/15 text-ok rounded-xl p-4 text-[14px]">
@@ -114,6 +114,7 @@ function SignInSheet({ msg, onClose }) {
               <button type="submit" disabled={state.busy} className="w-full bg-amber text-navy font-semibold py-3 rounded-xl text-[15px] disabled:opacity-60">
                 {state.busy ? "Sending…" : "Email me a sign-in link"}
               </button>
+              <p className="text-[11px] text-muted">You stay signed in on this device, so you&apos;ll only need this once, not every visit.</p>
               {state.err ? <p className="text-[13px] text-err">{state.err}</p> : null}
             </form>
 
