@@ -9,7 +9,7 @@ import { useAuth } from "@/components/AuthProvider";
 import TrustBadge from "@/components/TrustBadge";
 import CategoryIcon from "@/components/CategoryIcon";
 import { isClaimed } from "@/lib/trust";
-import { CORE_DIMENSIONS, DIMENSION_THRESHOLD, timeframeLabel as tfLabel } from "@/lib/reviews";
+import { CORE_DIMENSIONS, DIMENSION_THRESHOLD, RATING_CATEGORIES, timeframeLabel as tfLabel } from "@/lib/reviews";
 
 const STAT_TAGS = [
   ["reliable_count", "Reliable"],
@@ -66,9 +66,16 @@ function RecCard({ r, providerLabel, reply, isOwner, isMine, reported, onReport,
     <div className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
       <div className="flex items-center justify-between">
         <div className="text-[13px] font-display font-semibold text-ink">{r.recommender_display || "A resident"}</div>
-        {r.would_hire_again ? <span className="text-[11px] text-ok font-semibold">👍 Would hire again</span> : null}
+        {r.rating_version === 2 && r.total_score != null ? (
+          <span className="text-[12px] text-amber font-bold">{r.total_score}/100</span>
+        ) : r.would_hire_again ? (
+          <span className="text-[11px] text-ok font-semibold">👍 Would hire again</span>
+        ) : null}
       </div>
-      {r.score_finished != null ? <div className="text-[12px] text-amber font-semibold mt-1">Finished work {r.score_finished}/10</div> : null}
+      {r.rating_version !== 2 ? (
+        <div className="text-[10px] text-muted mt-0.5">Reviewed under our previous rating system</div>
+      ) : null}
+      {r.rating_version !== 2 && r.score_finished != null ? <div className="text-[12px] text-amber font-semibold mt-1">Finished work {r.score_finished}/10</div> : null}
       {r.reason ? <p className="text-[14px] text-slate2 mt-1">{r.reason}</p> : null}
       {works.length ? <div className="text-[12px] text-muted mt-1">Work: {works.join(", ")}</div> : (r.job_type ? <div className="text-[12px] text-muted mt-1">Job: {r.job_type}</div> : null)}
       {r.timeframe ? <div className="text-[11px] text-muted mt-0.5">{tfLabel(r.timeframe)}</div> : null}
@@ -191,6 +198,7 @@ function ProviderInner() {
   const { user, openSignIn } = useAuth();
   const [p, setP] = useState(undefined);
   const [stats, setStats] = useState(null);
+  const [ratings, setRatings] = useState(null); // ten-category aggregates (v2 reviews only)
   const [contact, setContact] = useState(null);
   const [recs, setRecs] = useState([]);
   const [isOwner, setIsOwner] = useState(false);
@@ -206,11 +214,12 @@ function ProviderInner() {
     if (!id) { setP(null); return; }
     let active = true;
     setP(undefined); setErr(false);
-    Promise.all([withTimeout(api.provider(id)), withTimeout(api.providerStats(id))])
-      .then(([prov, st]) => {
+    Promise.all([withTimeout(api.provider(id)), withTimeout(api.providerStats(id)), withTimeout(api.providerRatings(id))])
+      .then(([prov, st, rt]) => {
         if (!active) return;
         setP(prov || null);
         setStats(st);
+        setRatings(rt);
       })
       .catch((e) => { console.error("[provider] load failed", e); if (active) { setP(undefined); setErr(true); } });
     return () => { active = false; };
@@ -278,37 +287,77 @@ function ProviderInner() {
 
         {p.description ? <p className="mt-3 text-[14px] text-slate2 leading-relaxed">{p.description}</p> : null}
 
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <div className="bg-surface2 rounded-xl p-3 text-center">
-            <div className="text-lg font-bold text-amber">{count}</div>
-            <div className="text-[10px] uppercase tracking-wide text-muted">review{count === 1 ? "" : "s"}</div>
-          </div>
-          <div className="bg-surface2 rounded-xl p-3 text-center">
-            <div className="text-lg font-bold text-ok">{count ? wha + "%" : "N/A"}</div>
-            <div className="text-[10px] uppercase tracking-wide text-muted">would hire again</div>
-          </div>
-        </div>
-        {households ? <div className="mt-2 text-[12px] text-muted text-center">{households} household{households === 1 ? "" : "s"} served</div> : null}
-
-        {/* Per-dimension averages appear only once there are enough scored reviews. */}
-        {count ? (
-          showDimensions ? (
-            <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5">
-              {CORE_DIMENSIONS.map((d) => {
-                const v = stats?.[`avg_${d.key}`];
+        {/* Trust Rating: ten-category (v2) reviews ONLY. Legacy reviews are
+            shown separately below and never blended into the headline number. */}
+        {ratings?.r10_count ? (
+          <>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <div className="bg-surface2 rounded-xl p-3 text-center">
+                <div className="text-lg font-bold text-amber">{ratings.trust_pct}%</div>
+                <div className="text-[10px] uppercase tracking-wide text-muted">trust rating</div>
+              </div>
+              <div className="bg-surface2 rounded-xl p-3 text-center">
+                <div className="text-lg font-bold text-ink">{Number(ratings.avg_out_of_10).toFixed(1)}</div>
+                <div className="text-[10px] uppercase tracking-wide text-muted">avg / 10</div>
+              </div>
+              <div className="bg-surface2 rounded-xl p-3 text-center">
+                <div className="text-lg font-bold text-ok">{ratings.r10_count}</div>
+                <div className="text-[10px] uppercase tracking-wide text-muted">rating{ratings.r10_count === 1 ? "" : "s"}</div>
+              </div>
+            </div>
+            {ratings.r10_count < 3 ? (
+              <div className="mt-2 text-[11px] text-muted text-center">Early rating, based on {ratings.r10_count} review{ratings.r10_count === 1 ? "" : "s"} so far.</div>
+            ) : null}
+            <div className="mt-3 grid grid-cols-1 gap-y-1.5">
+              {RATING_CATEGORIES.map((c) => {
+                const v = ratings[`avg_${c.key}`];
                 return v != null ? (
-                  <div key={d.key} className="flex items-center justify-between text-[13px]">
-                    <span className="text-slate2">{d.label}</span>
-                    <span className="text-ink font-semibold">{Number(v).toFixed(1)}/10</span>
+                  <div key={c.key} className="flex items-center gap-2 text-[13px]">
+                    <span className="text-slate2 flex-1">{c.label}</span>
+                    <div className="w-24 h-1.5 rounded-full bg-white/10 overflow-hidden"><div className="h-full bg-amber" style={{ width: `${Number(v) * 10}%` }} /></div>
+                    <span className="text-ink font-semibold w-9 text-right">{Number(v).toFixed(1)}</span>
                   </div>
                 ) : null;
               })}
             </div>
-          ) : (
-            <div className="mt-3 text-[12px] text-muted bg-surface2 rounded-xl p-2.5 text-center">
-              Building reputation. Detailed scores appear once there are a few reviews.
+          </>
+        ) : (
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="bg-surface2 rounded-xl p-3 text-center">
+              <div className="text-lg font-bold text-amber">{count}</div>
+              <div className="text-[10px] uppercase tracking-wide text-muted">review{count === 1 ? "" : "s"}</div>
             </div>
-          )
+            <div className="bg-surface2 rounded-xl p-3 text-center">
+              <div className="text-lg font-bold text-ok">{count ? wha + "%" : "N/A"}</div>
+              <div className="text-[10px] uppercase tracking-wide text-muted">would hire again</div>
+            </div>
+          </div>
+        )}
+
+        {/* Legacy reviews, stated separately for transparency (never blended). */}
+        {ratings?.r10_count && count > ratings.r10_count ? (
+          <div className="mt-2 text-[11px] text-muted text-center">
+            Plus {count - ratings.r10_count} review{count - ratings.r10_count === 1 ? "" : "s"} under our previous system ({wha}% would hire again).
+          </div>
+        ) : null}
+        {!ratings?.r10_count && count ? (
+          <div className="mt-2 text-[11px] text-muted text-center">Reviews so far use our previous rating system. New reviews use the 10-category Trust Rating.</div>
+        ) : null}
+        {households ? <div className="mt-2 text-[12px] text-muted text-center">{households} household{households === 1 ? "" : "s"} served</div> : null}
+
+        {/* Legacy per-dimension averages: only when there is no v2 data yet. */}
+        {!ratings?.r10_count && count && showDimensions ? (
+          <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5">
+            {CORE_DIMENSIONS.map((d) => {
+              const v = stats?.[`avg_${d.key}`];
+              return v != null ? (
+                <div key={d.key} className="flex items-center justify-between text-[13px]">
+                  <span className="text-slate2">{d.label}</span>
+                  <span className="text-ink font-semibold">{Number(v).toFixed(1)}/10</span>
+                </div>
+              ) : null;
+            })}
+          </div>
         ) : null}
 
         {summaryTags.length ? <div className="mt-3 flex flex-wrap gap-1.5">{summaryTags}</div> : null}
