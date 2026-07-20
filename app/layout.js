@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Fraunces, Work_Sans } from "next/font/google";
 import BottomNav from "@/components/BottomNav";
 import { AuthProvider } from "@/components/AuthProvider";
+import AccountMenu from "@/components/AccountMenu";
 import AdSlot from "@/components/AdSlot";
 import { SITE_URL } from "@/lib/site";
 
@@ -54,9 +55,12 @@ export default function RootLayout({ children }) {
                 <span className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-amber/60 text-amber text-[11px] font-display font-semibold" style={{ transform: "rotate(-6deg)" }}>TA</span>
                 <span className="font-display font-semibold tracking-wide">Trusted Antigua</span>
               </Link>
-              <Link href="/recommend" className="text-xs bg-amber hover:bg-amber-600 text-navy font-semibold px-3 py-1.5 rounded-full">
-                + Review
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link href="/recommend" className="text-xs bg-amber hover:bg-amber-600 text-navy font-semibold px-3 py-1.5 rounded-full">
+                  + Review
+                </Link>
+                <AccountMenu />
+              </div>
             </div>
           </header>
           <div className="lg:flex lg:justify-center lg:gap-5 lg:px-5">
