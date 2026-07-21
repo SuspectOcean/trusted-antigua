@@ -5,6 +5,7 @@ import Link from "next/link";
 import { GROUPS, GROUP, CAT, categoriesInGroup, groupOf } from "@/lib/categories";
 import { api } from "@/lib/data";
 import ProviderCard from "@/components/ProviderCard";
+import AdSlot from "@/components/AdSlot";
 import CategoryIcon from "@/components/CategoryIcon";
 
 function SkeletonList() {
@@ -152,7 +153,14 @@ function FindInner() {
         </div>
       ) : (
         <div className="space-y-2.5">
-          {rows.length ? rows.map((p) => <ProviderCard key={p.id} p={p} counts={counts} />) : <EmptyState />}
+          {rows.length ? rows.map((p, i) => (
+            <div key={p.id}>
+              <ProviderCard p={p} counts={counts} />
+              {/* In-feed placement after the 5th result. Mobile only: desktop
+                  already carries the rails, and a third unit would be too much. */}
+              {i === 4 ? <div className="lg:hidden pt-2.5"><AdSlot slotKey="find-results" variant="inline" /></div> : null}
+            </div>
+          )) : <EmptyState />}
         </div>
       )}
       <div className="h-4" />
