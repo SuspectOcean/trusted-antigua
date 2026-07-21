@@ -74,9 +74,12 @@ export default function RootLayout({ children }) {
 
             <main className="w-full max-w-xl mx-auto px-4 pt-4 safe-bottom">
               {children}
-              {/* Native mobile placement (not a shrunk rail). Hidden on desktop. */}
-              <div className="lg:hidden mt-6"><AdSlot slotKey="mobile-inline" variant="inline" /></div>
+              {/* Mobile advertising now lives where intent is highest: in the Find
+                  results feed and on provider pages. The old bottom-of-page slot
+                  was below the fold on every screen, so it has been retired. */}
               <footer className="mt-8 mb-20 pt-4 border-t border-white/10 text-center text-[11px] text-muted">
+                <Link href="/about" className="hover:text-slate2">About</Link>
+                <span className="mx-2">·</span>
                 <Link href="/privacy" className="hover:text-slate2">Privacy</Link>
                 <span className="mx-2">·</span>
                 <Link href="/terms" className="hover:text-slate2">Terms</Link>

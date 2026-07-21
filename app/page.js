@@ -113,9 +113,10 @@ export default function Home() {
       <div className="mt-6 pt-4 border-t border-white/10">
         <h3 className="font-semibold text-ink text-[13px] uppercase tracking-wide text-muted">What is Trusted Antigua?</h3>
         <p className="text-[13px] text-slate2 mt-1.5 leading-relaxed">
-          A simple, community-built register of honest, reliable home-service providers across Antigua &amp; Barbuda.
+          A simple, community-built register of honest, reliable service providers across Antigua &amp; Barbuda.
           Recommendations are public. Concerns are shared privately with our team for review; we never post public attacks on anyone.
         </p>
+        <Link href="/about" className="inline-block mt-2 text-[13px] text-amber font-semibold">More about Trusted Antigua ›</Link>
       </div>
 
       <div className="h-4" />

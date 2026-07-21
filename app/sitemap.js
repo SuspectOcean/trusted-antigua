@@ -14,6 +14,7 @@ export default function sitemap() {
     entry("/", "daily", 1),
     entry("/find", "daily", 0.9),
     entry("/recommend", "monthly", 0.5),
+    entry("/about", "monthly", 0.4),
     entry("/guidelines", "yearly", 0.3),
     entry("/privacy", "yearly", 0.2),
     entry("/terms", "yearly", 0.2),
