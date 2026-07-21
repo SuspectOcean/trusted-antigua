@@ -8,6 +8,7 @@ import { pct, waLink, withTimeout } from "@/lib/helpers";
 import { useAuth } from "@/components/AuthProvider";
 import TrustBadge from "@/components/TrustBadge";
 import CategoryIcon from "@/components/CategoryIcon";
+import AdSlot from "@/components/AdSlot";
 import { isClaimed } from "@/lib/trust";
 import { CORE_DIMENSIONS, DIMENSION_THRESHOLD, RATING_CATEGORIES, timeframeLabel as tfLabel } from "@/lib/reviews";
 
@@ -427,6 +428,11 @@ function ProviderInner() {
           )) : <div className="bg-surface border border-white/10 rounded-2xl p-5 text-center text-[13px] text-slate2 shadow-card">No recommendations yet. If you&apos;ve hired them, be the first to vouch.</div>}
         </div>
       )}
+
+      {/* Advertising below the reviews. Mobile only (desktop has the rails).
+          Deliberately after the reviews so it never sits between a provider and
+          their reputation. */}
+      <div className="lg:hidden mt-5"><AdSlot slotKey="provider-page" variant="inline" /></div>
 
       <button onClick={() => setShowWarn(true)} className="w-full mt-4 text-[12px] text-muted py-2">Something wrong? Share a private concern ›</button>
       <div className="h-4" />
