@@ -38,23 +38,34 @@ function pickAd(ads) {
   return top[0];
 }
 
-function HouseCard({ card }) {
+const isExternal = (href) => !!href && (href.startsWith("mailto:") || href.startsWith("http") || href.startsWith("tel:"));
+
+// promo = the single, larger card used when a rail has one dedicated card
+// (currently "Advertise your business here"). Normal cards stay compact.
+function HouseCard({ card, promo }) {
   const body = (
-    <div className="bg-surface border border-white/10 rounded-2xl p-3 shadow-card">
+    <div className={`bg-surface border rounded-2xl shadow-card ${promo ? "border-amber/30 p-5 text-center" : "border-white/10 p-3"}`}>
       {card.image_url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={card.image_url} alt="" className="w-full rounded-xl mb-2" loading="lazy" />
       ) : card.icon ? (
-        <div className="text-lg leading-none">{card.icon}</div>
+        <div className={promo ? "text-3xl leading-none" : "text-lg leading-none"}>{card.icon}</div>
       ) : null}
-      <div className="mt-1 font-display font-semibold text-ink text-[13px] leading-tight">{card.title}</div>
-      {card.description ? <div className="mt-1 text-[11px] text-muted leading-snug">{card.description}</div> : null}
+      <div className={`mt-1 font-display font-semibold text-ink leading-tight ${promo ? "text-[17px]" : "text-[13px]"}`}>{card.title}</div>
+      {card.description ? <div className={`mt-2 leading-snug ${promo ? "text-[13px] text-slate2" : "text-[11px] text-muted"}`}>{card.description}</div> : null}
       {card.href && card.cta_text ? (
-        <div className="mt-2 text-[11px] text-amber font-semibold">{card.cta_text} ›</div>
+        promo
+          ? <div className="mt-3 inline-block bg-amber text-navy font-semibold text-[13px] px-4 py-2 rounded-full">{card.cta_text}</div>
+          : <div className="mt-2 text-[11px] text-amber font-semibold">{card.cta_text} ›</div>
       ) : null}
     </div>
   );
-  return card.href ? <Link href={card.href} className="block active:scale-[.99] transition">{body}</Link> : body;
+  if (!card.href) return body;
+  // mailto/tel/external must be a plain anchor; next/link is for internal routes.
+  if (isExternal(card.href)) {
+    return <a href={card.href} className="block active:scale-[.99] transition">{body}</a>;
+  }
+  return <Link href={card.href} className="block active:scale-[.99] transition">{body}</Link>;
 }
 
 // slotKey: an ad_slots.key. variant: "rail" (stacked) or "inline" (single banner).
@@ -92,6 +103,8 @@ export default function AdSlot({ slotKey, variant = "rail" }) {
   if (!cards.length) return null;
 
   if (variant === "inline") return <HouseCard card={cards[0]} />;
+  // A rail with a single dedicated card renders it large (the advertise offer).
+  if (cards.length === 1) return <HouseCard card={cards[0]} promo />;
   return (
     <div className="space-y-2.5">
       {cards.map((c) => <HouseCard key={c.id} card={c} />)}
