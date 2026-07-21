@@ -44,7 +44,7 @@ const isExternal = (href) => !!href && (href.startsWith("mailto:") || href.start
 // (currently "Advertise your business here"). Normal cards stay compact.
 function HouseCard({ card, promo }) {
   const body = (
-    <div className={`bg-surface border rounded-2xl shadow-card ${promo ? "border-amber/30 p-5 text-center" : "border-white/10 p-3"}`}>
+    <div className={`bg-surface border rounded-2xl shadow-card ${promo ? "border-amber/30 p-5 text-center h-full flex flex-col items-center justify-center" : "border-white/10 p-3"}`}>
       {card.image_url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={card.image_url} alt="" className="w-full rounded-xl mb-2" loading="lazy" />
@@ -60,12 +60,11 @@ function HouseCard({ card, promo }) {
       ) : null}
     </div>
   );
-  if (!card.href) return body;
+  if (!card.href) return promo ? <div className="h-full">{body}</div> : body;
   // mailto/tel/external must be a plain anchor; next/link is for internal routes.
-  if (isExternal(card.href)) {
-    return <a href={card.href} className="block active:scale-[.99] transition">{body}</a>;
-  }
-  return <Link href={card.href} className="block active:scale-[.99] transition">{body}</Link>;
+  const cls = `block active:scale-[.99] transition${promo ? " h-full" : ""}`;
+  if (isExternal(card.href)) return <a href={card.href} className={cls}>{body}</a>;
+  return <Link href={card.href} className={cls}>{body}</Link>;
 }
 
 // slotKey: an ad_slots.key. variant: "rail" (stacked) or "inline" (single banner).
