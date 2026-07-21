@@ -63,9 +63,11 @@ export default function RootLayout({ children }) {
               </div>
             </div>
           </header>
+          {/* Rails flex to fill the empty margin either side of the centre column,
+              capped so they stay a sane advertising unit on very wide screens. */}
           <div className="lg:flex lg:justify-center lg:gap-5 lg:px-5">
             {/* Desktop left rail: advert or house content. Hidden on mobile. */}
-            <aside className="hidden lg:block w-40 shrink-0 pt-6" aria-label="Sponsored and community">
+            <aside className="hidden lg:block flex-1 max-w-[340px] min-w-0 pt-6" aria-label="Advertising">
               <div className="sticky top-[72px]"><AdSlot slotKey="desktop-rail-left" /></div>
             </aside>
 
@@ -83,7 +85,7 @@ export default function RootLayout({ children }) {
             </main>
 
             {/* Desktop right rail. Hidden on mobile. */}
-            <aside className="hidden lg:block w-40 shrink-0 pt-6" aria-label="Sponsored and community">
+            <aside className="hidden lg:block flex-1 max-w-[340px] min-w-0 pt-6" aria-label="Advertising">
               <div className="sticky top-[72px]"><AdSlot slotKey="desktop-rail-right" /></div>
             </aside>
           </div>
