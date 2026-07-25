@@ -5,7 +5,7 @@ import BottomNav from "@/components/BottomNav";
 import { AuthProvider } from "@/components/AuthProvider";
 import AccountMenu from "@/components/AccountMenu";
 import AdSlot from "@/components/AdSlot";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL, LEGAL_EMAIL, SITE_NAME } from "@/lib/site";
 
 const DESCRIPTION =
   "Find honest, reliable tradespeople and home-service providers in Antigua & Barbuda, recommended by real residents.";
@@ -78,13 +78,24 @@ export default function RootLayout({ children }) {
                   results feed and on provider pages. The old bottom-of-page slot
                   was below the fold on every screen, so it has been retired. */}
               <footer className="mt-8 mb-20 pt-4 border-t border-white/10 text-center text-[11px] text-muted">
-                <Link href="/about" className="hover:text-slate2">About</Link>
-                <span className="mx-2">·</span>
-                <Link href="/privacy" className="hover:text-slate2">Privacy</Link>
-                <span className="mx-2">·</span>
-                <Link href="/terms" className="hover:text-slate2">Terms</Link>
-                <span className="mx-2">·</span>
-                <Link href="/guidelines" className="hover:text-slate2">Review Guidelines</Link>
+                <div>
+                  <Link href="/about" className="hover:text-slate2">About</Link>
+                  <span className="mx-2">·</span>
+                  <Link href="/privacy" className="hover:text-slate2">Privacy</Link>
+                  <span className="mx-2">·</span>
+                  <Link href="/terms" className="hover:text-slate2">Terms</Link>
+                  <span className="mx-2">·</span>
+                  <Link href="/guidelines" className="hover:text-slate2">Review Guidelines</Link>
+                </div>
+                {LEGAL_EMAIL && (
+                  <div className="mt-2">
+                    Questions?{" "}
+                    <a href={`mailto:${LEGAL_EMAIL}`} className="text-slate2 hover:text-amber">{LEGAL_EMAIL}</a>
+                  </div>
+                )}
+                <div className="mt-2 text-muted/70">
+                  © {new Date().getFullYear()} {SITE_NAME} · Antigua &amp; Barbuda
+                </div>
               </footer>
             </main>
 
