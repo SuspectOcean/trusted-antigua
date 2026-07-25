@@ -40,9 +40,19 @@ export default function AdminInvitationsPage() {
   async function invite(e) {
     e.preventDefault();
     setBusy(true);
+    const target = email.trim();
     try {
-      await api.adminInviteRole(email.trim(), role);
-      setEmail(""); setFlash(`Invitation sent. When they sign in with that email, ${role} access attaches automatically.`);
+      await api.adminInviteRole(target, role);
+      // Invitation recorded — now email the invitee a plain sign-in link.
+      // If the email fails, the invitation still stands; they can sign in manually.
+      let emailed = true;
+      try { await api.sendSignInLink(target); } catch { emailed = false; }
+      setEmail("");
+      setFlash(
+        emailed
+          ? `Invitation sent to ${target}. When they open the sign-in link and log in, ${role} access attaches automatically.`
+          : `Invitation created for ${target}, but the sign-in email didn't send. Ask them to log in at trustedantigua.com with this exact email — ${role} access will attach automatically.`
+      );
       await reload();
     } catch (err) {
       const key = String(err?.message || "").match(/not_owner|already_invited|already_has_role|bad_email|bad_role/)?.[0];
