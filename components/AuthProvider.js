@@ -17,6 +17,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [showSignIn, setShowSignIn] = useState(false);
   const [signInMsg, setSignInMsg] = useState(null); // optional context message
+  const [recovery, setRecovery] = useState(false); // password-reset link opened
 
   const loadProfile = useCallback(async (uid) => {
     if (!uid) { setProfile(null); setRole("member"); return; }
@@ -37,7 +38,8 @@ export function AuthProvider({ children }) {
       setUser(u);
       loadProfile(u?.id).finally(() => setLoading(false));
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") setRecovery(true);
       const u = session?.user || null;
       setUser(u);
       loadProfile(u?.id);
@@ -57,134 +59,157 @@ export function AuthProvider({ children }) {
     <AuthCtx.Provider value={{ user, profile, role, isAdmin, isOwner, loading, openSignIn, signOut, refreshProfile }}>
       {children}
       {showSignIn && !user ? <SignInSheet msg={signInMsg} onClose={() => setShowSignIn(false)} /> : null}
-      {needsProfile ? <CompleteProfile user={user} onDone={refreshProfile} /> : null}
+      {recovery ? <SetPasswordSheet onDone={() => setRecovery(false)} /> : null}
+      {needsProfile && !recovery ? <CompleteProfile user={user} onDone={refreshProfile} /> : null}
     </AuthCtx.Provider>
   );
 }
 
 /* ---------- Sign-in sheet ----------
-   One Trusted Antigua account. Google/Facebook/WhatsApp/Email are just ways of
-   proving who you are; the app decides whether you're new or returning. Only
-   configured providers render — a method that doesn't work doesn't exist here. */
+   Email + password is the baseline: sign up once (with a one-time confirmation
+   email), then sign in with your password — no email round-trip per login, and
+   the device keeps you signed in. Google (and, later, passkeys) sit on top as
+   faster options; a method that isn't configured is never rendered. */
 function SignInSheet({ msg, onClose }) {
-  const [step, setStep] = useState("email"); // "email" | "code"
+  const [mode, setMode] = useState("signin"); // signin | signup | forgot
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
-  const [resent, setResent] = useState(false);
+  const [info, setInfo] = useState(null);
 
   const origin = typeof window !== "undefined" ? window.location.origin : undefined;
+  const reset = () => { setErr(null); setInfo(null); };
 
-  async function sendCode(e) {
-    if (e) e.preventDefault();
-    if (!email.trim()) { setErr("Enter your email to continue."); return; }
-    setBusy(true); setErr(null);
-    // Sends the email. The template shows a 6-digit code (and a link as fallback).
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: { shouldCreateUser: true, emailRedirectTo: origin },
-    });
-    setBusy(false);
-    if (error) { setErr("Something went wrong. Please try again."); }
-    else { setStep("code"); setCode(""); }
-  }
-
-  async function resend() {
-    await sendCode();
-    setResent(true);
-    setTimeout(() => setResent(false), 2500);
-  }
-
-  async function verifyCode(e) {
+  async function submit(e) {
     e.preventDefault();
-    const token = code.replace(/\D/g, "");
-    if (token.length < 6) { setErr("Enter the code from your email."); return; }
-    setBusy(true); setErr(null);
-    // Verifies in this exact context, so the session lands in the app you're in —
-    // no leaving for the inbox, no "logged in on the web instead" problem.
-    const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token, type: "email" });
+    reset();
+    const mail = email.trim();
+    if (!mail) { setErr("Enter your email."); return; }
+
+    if (mode === "forgot") {
+      setBusy(true);
+      const { error } = await supabase.auth.resetPasswordForEmail(mail, { redirectTo: origin });
+      setBusy(false);
+      if (error) setErr("Couldn't send the reset email. Please try again.");
+      else { setInfo("Check your email for a link to set a new password."); setMode("signin"); }
+      return;
+    }
+
+    if (!password) { setErr("Enter your password."); return; }
+
+    if (mode === "signup") {
+      if (password.length < 6) { setErr("Use a password of at least 6 characters."); return; }
+      setBusy(true);
+      const { data, error } = await supabase.auth.signUp({ email: mail, password, options: { emailRedirectTo: origin } });
+      setBusy(false);
+      if (error) {
+        setErr(/registered|already/i.test(error.message || "") ? "That email already has an account — sign in instead." : "Couldn't create your account. Please try again.");
+      } else if (data.session) {
+        onClose(); // email confirmation disabled — signed straight in
+      } else {
+        setInfo("Account created. Check your email to confirm it, then sign in with your password.");
+        setMode("signin"); setPassword("");
+      }
+      return;
+    }
+
+    // signin
+    setBusy(true);
+    const { error } = await supabase.auth.signInWithPassword({ email: mail, password });
     setBusy(false);
-    if (error) setErr("That code didn't work. Check it, or resend a new one.");
-    else onClose(); // onAuthStateChange updates the app immediately
+    if (error) {
+      if (/confirm/i.test(error.message || "")) setErr("Please confirm your email first — check your inbox for the confirmation link.");
+      else setErr("Wrong email or password. Try again, or reset your password below.");
+    } else onClose(); // onAuthStateChange updates the app immediately, in this context
   }
 
   async function oauth(provider) {
     await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: origin } });
   }
-
-  // Long-term priority order. Flipping a flag in ENABLED inserts the button here
-  // with no redesign. Google becomes primary the day it's on.
   const social = [
     { id: "google", label: "Continue with Google", on: ENABLED.google, go: () => oauth("google") },
     { id: "facebook", label: "Continue with Facebook", on: ENABLED.facebook, go: () => oauth("facebook") },
   ].filter((p) => p.on);
 
+  const title = mode === "signup" ? "Create your account" : mode === "forgot" ? "Reset your password" : "Welcome to Trusted Antigua";
+  const cta = busy ? "One moment…" : mode === "signup" ? "Create account" : mode === "forgot" ? "Send reset link" : "Sign in";
+
   return (
     <div className="fixed inset-0 z-[60] bg-black/55 flex items-end sm:items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-surface border border-white/10 w-full max-w-xl rounded-t-2xl sm:rounded-2xl p-5 shadow-pop">
         <div className="flex items-center justify-between">
-          <h3 className="font-display font-semibold text-ink text-lg">Welcome to Trusted Antigua</h3>
+          <h3 className="font-display font-semibold text-ink text-lg">{title}</h3>
           <button onClick={onClose} className="text-muted text-xl leading-none px-2" aria-label="Close">×</button>
         </div>
 
-        {step === "code" ? (
-          <form onSubmit={verifyCode} className="mt-4">
-            <p className="text-[13px] text-slate2">
-              We sent a code to <b className="text-ink">{email}</b>. Enter it below — no need to leave the app.
-            </p>
-            <input
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={8}
-              placeholder="Enter code"
-              autoFocus
-              className="w-full mt-3 rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-center text-[22px] tracking-[0.3em] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30"
-            />
-            <button type="submit" disabled={busy} className="w-full mt-3 py-3 rounded-xl bg-amber text-navy text-[15px] font-semibold disabled:opacity-60">
-              {busy ? "Signing you in…" : "Sign in"}
-            </button>
-            {err ? <p className="text-[13px] text-err mt-2">{err}</p> : null}
-            <div className="flex items-center justify-between mt-3">
-              <button type="button" onClick={() => { setStep("email"); setErr(null); }} className="text-[12px] text-amber underline">Use a different email</button>
-              <button type="button" onClick={resend} className="text-[12px] text-muted underline">{resent ? "Code resent" : "Resend code"}</button>
-            </div>
-            <p className="text-[12px] text-muted mt-3">This device will remember you. You&apos;ll stay signed in until you choose to log out.</p>
-          </form>
+        <p className="text-[13px] text-slate2 mt-1">
+          {mode === "forgot" ? "We'll email you a link to choose a new password." : (msg || "One account for everything on Trusted Antigua.")}
+        </p>
+
+        {social.length ? (
+          <div className="mt-4 space-y-2">
+            {social.map((p) => (
+              <button key={p.id} onClick={p.go} className="w-full py-3 rounded-xl bg-amber text-navy text-[15px] font-semibold">{p.label}</button>
+            ))}
+            <div className="flex items-center gap-3 my-1"><div className="h-px bg-white/10 flex-1" /><span className="text-[11px] text-muted">or</span><div className="h-px bg-white/10 flex-1" /></div>
+          </div>
+        ) : null}
+
+        <form onSubmit={submit} className={social.length ? "space-y-2" : "mt-4 space-y-2"}>
+          <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email" autoComplete="email" placeholder="Your email address"
+            className="w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30" />
+          {mode !== "forgot" ? (
+            <input value={password} onChange={(e) => setPassword(e.target.value)} type="password"
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
+              placeholder={mode === "signup" ? "Create a password (6+ characters)" : "Password"}
+              className="w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30" />
+          ) : null}
+          <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-amber text-navy text-[15px] font-semibold disabled:opacity-60">{cta}</button>
+          {err ? <p className="text-[13px] text-err">{err}</p> : null}
+          {info ? <p className="text-[13px] text-ok">{info}</p> : null}
+        </form>
+
+        {mode === "signin" ? (
+          <div className="mt-3 flex items-center justify-between text-[12px]">
+            <button type="button" onClick={() => { setMode("signup"); reset(); }} className="text-amber underline font-semibold">Create an account</button>
+            <button type="button" onClick={() => { setMode("forgot"); reset(); }} className="text-muted underline">Forgot password?</button>
+          </div>
         ) : (
-          <>
-            <p className="text-[13px] text-slate2 mt-1">
-              {msg || "One account for everything on Trusted Antigua."}
-            </p>
-
-            {social.length ? (
-              <div className="mt-4 space-y-2">
-                {social.map((p) => (
-                  <button key={p.id} onClick={p.go} className="w-full py-3 rounded-xl bg-amber text-navy text-[15px] font-semibold">
-                    {p.label}
-                  </button>
-                ))}
-                <div className="flex items-center gap-3 my-1"><div className="h-px bg-white/10 flex-1" /><span className="text-[11px] text-muted">or</span><div className="h-px bg-white/10 flex-1" /></div>
-              </div>
-            ) : null}
-
-            <form onSubmit={sendCode} className={social.length ? "space-y-2" : "mt-4 space-y-2"}>
-              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email" autoComplete="email" placeholder="Your email address"
-                className="w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30" />
-              <button type="submit" disabled={busy}
-                className={`w-full py-3 rounded-xl text-[15px] font-semibold disabled:opacity-60 ${social.length ? "border border-white/15 bg-surface2 text-ink" : "bg-amber text-navy"}`}>
-                {busy ? "Sending code…" : "Email me a sign-in code"}
-              </button>
-              {err ? <p className="text-[13px] text-err">{err}</p> : null}
-            </form>
-
-            <p className="text-[12px] text-muted mt-3">
-              If you&apos;ve been here before, this signs you straight into your account. If you&apos;re new, your free account is created automatically.
-            </p>
-          </>
+          <button type="button" onClick={() => { setMode("signin"); reset(); }} className="mt-3 text-[12px] text-amber underline">‹ Back to sign in</button>
         )}
+
+        <p className="text-[12px] text-muted mt-3">This device will remember you — you&apos;ll stay signed in until you choose to log out.</p>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Set a new password (after a reset link) ---------- */
+function SetPasswordSheet({ onDone }) {
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
+  async function save(e) {
+    e.preventDefault();
+    if (password.length < 6) { setErr("Use a password of at least 6 characters."); return; }
+    setBusy(true); setErr(null);
+    const { error } = await supabase.auth.updateUser({ password });
+    setBusy(false);
+    if (error) setErr("Couldn't update your password. Please try again.");
+    else onDone();
+  }
+  return (
+    <div className="fixed inset-0 z-[70] bg-black/60 flex items-end sm:items-center justify-center">
+      <div className="bg-surface border border-white/10 w-full max-w-xl rounded-t-2xl sm:rounded-2xl p-5 shadow-pop">
+        <h3 className="font-display font-semibold text-ink text-lg">Set a new password</h3>
+        <p className="text-[13px] text-slate2 mt-1">Choose a new password for your account.</p>
+        <form onSubmit={save} className="mt-4 space-y-3">
+          <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" autoComplete="new-password" placeholder="New password (6+ characters)"
+            className="w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30" />
+          <button type="submit" disabled={busy} className="w-full bg-amber text-navy font-bold py-3 rounded-full text-[15px] disabled:opacity-60">{busy ? "Saving…" : "Save password"}</button>
+          {err ? <p className="text-[13px] text-err text-center">{err}</p> : null}
+        </form>
       </div>
     </div>
   );
