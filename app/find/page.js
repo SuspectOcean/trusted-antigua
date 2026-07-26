@@ -5,7 +5,7 @@ import Link from "next/link";
 import { GROUPS, GROUP, CAT, categoriesInGroup, groupOf } from "@/lib/categories";
 import { api } from "@/lib/data";
 import ProviderCard from "@/components/ProviderCard";
-import AdSlot from "@/components/AdSlot";
+import NativeAdCard from "@/components/NativeAdCard";
 import CategoryIcon from "@/components/CategoryIcon";
 
 function SkeletonList() {
@@ -55,8 +55,19 @@ function FindInner() {
   const [input, setInput] = useState(q);
   const [error, setError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [ads, setAds] = useState([]);
 
   useEffect(() => { setInput(q); }, [q]);
+
+  // Native in-feed adverts. Shown across all searches (not query-targeted), so we
+  // load them once. Empty list => no advert slots appear at all.
+  useEffect(() => {
+    let active = true;
+    withTimeout(api.adsForSlot("find-results"), 8000, []).then((a) => {
+      if (active) setAds(Array.isArray(a) ? a : []);
+    });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -153,14 +164,20 @@ function FindInner() {
         </div>
       ) : (
         <div className="space-y-2.5">
-          {rows.length ? rows.map((p, i) => (
-            <div key={p.id}>
-              <ProviderCard p={p} counts={counts} />
-              {/* In-feed placement after the 5th result. Mobile only: desktop
-                  already carries the rails, and a third unit would be too much. */}
-              {i === 4 ? <div className="lg:hidden pt-2.5"><AdSlot slotKey="find-results" variant="inline" /></div> : null}
-            </div>
-          )) : <EmptyState />}
+          {rows.length ? rows.map((p, i) => {
+            // Native sponsored card after every 4th result (positions 4, 8, 12…),
+            // mobile only — desktop already carries the rails. Rotates through the
+            // available adverts so each slot shows a different one; if there are no
+            // adverts the slot simply doesn't appear (no gap, no filler).
+            const showAd = (i + 1) % 4 === 0 && ads.length > 0;
+            const ad = showAd ? ads[Math.floor(i / 4) % ads.length] : null;
+            return (
+              <div key={p.id}>
+                <ProviderCard p={p} counts={counts} />
+                {ad ? <div className="lg:hidden pt-2.5"><NativeAdCard ad={ad} /></div> : null}
+              </div>
+            );
+          }) : <EmptyState />}
         </div>
       )}
       <div className="h-4" />
