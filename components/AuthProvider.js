@@ -99,7 +99,7 @@ function SignInSheet({ msg, onClose }) {
   async function verifyCode(e) {
     e.preventDefault();
     const token = code.replace(/\D/g, "");
-    if (token.length < 6) { setErr("Enter the 6-digit code from your email."); return; }
+    if (token.length < 6) { setErr("Enter the code from your email."); return; }
     setBusy(true); setErr(null);
     // Verifies in this exact context, so the session lands in the app you're in —
     // no leaving for the inbox, no "logged in on the web instead" problem.
@@ -131,17 +131,17 @@ function SignInSheet({ msg, onClose }) {
         {step === "code" ? (
           <form onSubmit={verifyCode} className="mt-4">
             <p className="text-[13px] text-slate2">
-              We sent a 6-digit code to <b className="text-ink">{email}</b>. Enter it below — no need to leave the app.
+              We sent a code to <b className="text-ink">{email}</b>. Enter it below — no need to leave the app.
             </p>
             <input
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
               inputMode="numeric"
               autoComplete="one-time-code"
-              maxLength={6}
-              placeholder="______"
+              maxLength={8}
+              placeholder="Enter code"
               autoFocus
-              className="w-full mt-3 rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-center text-[22px] tracking-[0.4em] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30"
+              className="w-full mt-3 rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-center text-[22px] tracking-[0.3em] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30"
             />
             <button type="submit" disabled={busy} className="w-full mt-3 py-3 rounded-xl bg-amber text-navy text-[15px] font-semibold disabled:opacity-60">
               {busy ? "Signing you in…" : "Sign in"}
