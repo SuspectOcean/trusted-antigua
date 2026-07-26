@@ -22,7 +22,7 @@ export default function ProviderCard({ p, counts }) {
   const cat = CAT[p.category_id];
   const wha = pct(c.yes, c.count);
   return (
-    <Link href={`/provider?id=${encodeURIComponent(p.id)}`} className="block bg-surface border border-white/10 rounded-2xl p-4 shadow-card active:scale-[.99] transition">
+    <Link href={`/provider/${encodeURIComponent(p.id)}`} className="block bg-surface border border-white/10 rounded-2xl p-4 shadow-card active:scale-[.99] transition">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
           <Avatar src={p.photo_url} name={p.alias || p.name} />

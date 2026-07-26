@@ -35,7 +35,7 @@ export default function FeaturedProviders({ limit = 3 }) {
           return (
             <Link
               key={p.provider_id}
-              href={`/provider?id=${encodeURIComponent(p.provider_id)}`}
+              href={`/provider/${encodeURIComponent(p.provider_id)}`}
               className="block bg-surface border border-teal/30 rounded-2xl p-4 shadow-card active:scale-[.99] transition"
             >
               <div className="flex items-start gap-3">
