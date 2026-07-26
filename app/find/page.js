@@ -56,8 +56,16 @@ function FindInner() {
   const [error, setError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [ads, setAds] = useState([]);
+  const [populatedCats, setPopulatedCats] = useState(null); // Set of category ids in use
 
   useEffect(() => { setInput(q); }, [q]);
+
+  // Which categories actually have providers, for the "be the first to add" cue.
+  useEffect(() => {
+    let active = true;
+    api.populatedCategories().then((cats) => { if (active) setPopulatedCats(new Set(cats || [])); });
+    return () => { active = false; };
+  }, [reloadKey]);
 
   // Native in-feed adverts. Shown across all searches (not query-targeted), so we
   // load them once. Empty list => no advert slots appear at all.
@@ -96,6 +104,10 @@ function FindInner() {
   const activeGroup = group || (cat ? groupOf(cat) : "");
   const title = cat ? CAT[cat]?.name || "" : group ? GROUP[group]?.name || "" : q ? `Results for "${q}"` : "All providers";
 
+  // Empty markers (only once populated set has loaded, so nothing flashes red).
+  const emptyCat = (id) => populatedCats !== null && !populatedCats.has(id);
+  const emptyGroup = (id) => populatedCats !== null && !categoriesInGroup(id).some((c) => populatedCats.has(c.id));
+
   return (
     <>
       <form onSubmit={onSearch} className="relative mb-3">
@@ -121,7 +133,7 @@ function FindInner() {
           <Link
             key={g.id}
             href={`/find?group=${g.id}`}
-            className={`whitespace-nowrap inline-flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-full border ${activeGroup === g.id ? "bg-amber text-navy border-amber font-medium" : "bg-surface2 text-ink border-white/15"}`}
+            className={`whitespace-nowrap inline-flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-full border ${activeGroup === g.id ? "bg-amber text-navy border-amber font-medium" : `bg-surface2 text-ink ${emptyGroup(g.id) ? "border-err/30" : "border-white/15"}`}`}
           >
             <span className="leading-none">{g.emoji}</span> {g.name}
           </Link>
@@ -141,7 +153,7 @@ function FindInner() {
             <Link
               key={c.id}
               href={`/find?cat=${c.id}`}
-              className={`whitespace-nowrap inline-flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-full border ${cat === c.id ? "bg-amber text-navy border-amber font-medium" : "bg-surface2 text-ink border-white/15"}`}
+              className={`whitespace-nowrap inline-flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-full border ${cat === c.id ? "bg-amber text-navy border-amber font-medium" : `bg-surface2 text-ink ${emptyCat(c.id) ? "border-err/30" : "border-white/15"}`}`}
             >
               <CategoryIcon id={c.id} className="w-3.5 h-3.5" /> {c.name}
             </Link>
