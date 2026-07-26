@@ -67,34 +67,57 @@ export function AuthProvider({ children }) {
    proving who you are; the app decides whether you're new or returning. Only
    configured providers render — a method that doesn't work doesn't exist here. */
 function SignInSheet({ msg, onClose }) {
+  const [step, setStep] = useState("email"); // "email" | "code"
   const [email, setEmail] = useState("");
-  const [state, setState] = useState({ busy: false, sent: false, err: null });
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
+  const [resent, setResent] = useState(false);
 
-  async function sendLink(e) {
-    e.preventDefault();
-    if (!email.trim()) { setState({ ...state, err: "Enter your email to continue." }); return; }
-    setState({ busy: true, sent: false, err: null });
+  const origin = typeof window !== "undefined" ? window.location.origin : undefined;
+
+  async function sendCode(e) {
+    if (e) e.preventDefault();
+    if (!email.trim()) { setErr("Enter your email to continue."); return; }
+    setBusy(true); setErr(null);
+    // Sends the email. The template shows a 6-digit code (and a link as fallback).
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: { emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined },
+      options: { shouldCreateUser: true, emailRedirectTo: origin },
     });
-    if (error) setState({ busy: false, sent: false, err: "Something went wrong. Please try again." });
-    else setState({ busy: false, sent: true, err: null });
+    setBusy(false);
+    if (error) { setErr("Something went wrong. Please try again."); }
+    else { setStep("code"); setCode(""); }
+  }
+
+  async function resend() {
+    await sendCode();
+    setResent(true);
+    setTimeout(() => setResent(false), 2500);
+  }
+
+  async function verifyCode(e) {
+    e.preventDefault();
+    const token = code.replace(/\D/g, "");
+    if (token.length < 6) { setErr("Enter the 6-digit code from your email."); return; }
+    setBusy(true); setErr(null);
+    // Verifies in this exact context, so the session lands in the app you're in —
+    // no leaving for the inbox, no "logged in on the web instead" problem.
+    const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token, type: "email" });
+    setBusy(false);
+    if (error) setErr("That code didn't work. Check it, or resend a new one.");
+    else onClose(); // onAuthStateChange updates the app immediately
   }
 
   async function oauth(provider) {
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: typeof window !== "undefined" ? window.location.origin : undefined },
-    });
+    await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: origin } });
   }
 
-  // Long-term priority order. Flipping a flag in ENABLED inserts the button in
-  // the right place with no redesign. Google becomes primary the day it's on.
+  // Long-term priority order. Flipping a flag in ENABLED inserts the button here
+  // with no redesign. Google becomes primary the day it's on.
   const social = [
     { id: "google", label: "Continue with Google", on: ENABLED.google, go: () => oauth("google") },
     { id: "facebook", label: "Continue with Facebook", on: ENABLED.facebook, go: () => oauth("facebook") },
-    // WhatsApp is phone-OTP, wired separately when configured.
   ].filter((p) => p.on);
 
   return (
@@ -105,21 +128,31 @@ function SignInSheet({ msg, onClose }) {
           <button onClick={onClose} className="text-muted text-xl leading-none px-2" aria-label="Close">×</button>
         </div>
 
-        {state.sent ? (
-          <div className="mt-4">
-            <div className="bg-ok/15 rounded-xl p-4">
-              <div className="text-[15px] text-ok font-semibold">Check your email</div>
-              <p className="text-[13px] text-slate2 mt-1.5">
-                We&apos;ve sent a secure link to <b className="text-ink">{email}</b>. Tap it and you&apos;re in.
-              </p>
-            </div>
-            <p className="text-[12px] text-muted mt-3">
-              This device will remember you. You&apos;ll stay signed in until you choose to log out.
+        {step === "code" ? (
+          <form onSubmit={verifyCode} className="mt-4">
+            <p className="text-[13px] text-slate2">
+              We sent a 6-digit code to <b className="text-ink">{email}</b>. Enter it below — no need to leave the app.
             </p>
-            <button onClick={() => setState({ busy: false, sent: false, err: null })} className="text-[12px] text-amber underline mt-2">
-              Use a different email
+            <input
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              placeholder="______"
+              autoFocus
+              className="w-full mt-3 rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-center text-[22px] tracking-[0.4em] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30"
+            />
+            <button type="submit" disabled={busy} className="w-full mt-3 py-3 rounded-xl bg-amber text-navy text-[15px] font-semibold disabled:opacity-60">
+              {busy ? "Signing you in…" : "Sign in"}
             </button>
-          </div>
+            {err ? <p className="text-[13px] text-err mt-2">{err}</p> : null}
+            <div className="flex items-center justify-between mt-3">
+              <button type="button" onClick={() => { setStep("email"); setErr(null); }} className="text-[12px] text-amber underline">Use a different email</button>
+              <button type="button" onClick={resend} className="text-[12px] text-muted underline">{resent ? "Code resent" : "Resend code"}</button>
+            </div>
+            <p className="text-[12px] text-muted mt-3">This device will remember you. You&apos;ll stay signed in until you choose to log out.</p>
+          </form>
         ) : (
           <>
             <p className="text-[13px] text-slate2 mt-1">
@@ -137,14 +170,14 @@ function SignInSheet({ msg, onClose }) {
               </div>
             ) : null}
 
-            <form onSubmit={sendLink} className={social.length ? "space-y-2" : "mt-4 space-y-2"}>
+            <form onSubmit={sendCode} className={social.length ? "space-y-2" : "mt-4 space-y-2"}>
               <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email" autoComplete="email" placeholder="Your email address"
                 className="w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30" />
-              <button type="submit" disabled={state.busy}
+              <button type="submit" disabled={busy}
                 className={`w-full py-3 rounded-xl text-[15px] font-semibold disabled:opacity-60 ${social.length ? "border border-white/15 bg-surface2 text-ink" : "bg-amber text-navy"}`}>
-                {state.busy ? "One moment…" : "Continue with Email"}
+                {busy ? "Sending code…" : "Email me a sign-in code"}
               </button>
-              {state.err ? <p className="text-[13px] text-err">{state.err}</p> : null}
+              {err ? <p className="text-[13px] text-err">{err}</p> : null}
             </form>
 
             <p className="text-[12px] text-muted mt-3">
