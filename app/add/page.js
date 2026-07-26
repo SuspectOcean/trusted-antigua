@@ -25,6 +25,7 @@ export default function AddProviderPage() {
   const [alias, setAlias] = useState("");
   const [phone, setPhone] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [suggestedTrade, setSuggestedTrade] = useState(""); // when "not listed" is chosen
   const [area, setArea] = useState("");
 
   const [dupe, setDupe] = useState(null);       // existing provider for this number
@@ -72,12 +73,14 @@ export default function AddProviderPage() {
     e.preventDefault();
     if (!user) { openSignIn("Sign in to add a tradesperson to the directory."); return; }
     if (dupe) return; // guarded — the UI shows the existing profile instead
+    const suggesting = categoryId === "__suggest__";
+    const effectiveCategory = suggesting ? "other" : categoryId;
     setBusy(true); setErr(null);
     try {
       const res = await api.addProviderQuick({
         name: name.trim(),
         alias: alias.trim() || null,
-        category_id: categoryId,
+        category_id: effectiveCategory,
         area: area.trim() || null,
         phone: phone.trim(),
       });
@@ -87,7 +90,11 @@ export default function AddProviderPage() {
         router.push(`/provider/${res.provider_id}`);
         return;
       }
-      setDone({ id: res.provider_id, name: alias.trim() || name.trim(), category_id: categoryId });
+      // If they proposed a trade, log it for admin review (best-effort).
+      if (suggesting && suggestedTrade.trim()) {
+        try { await api.suggestCategory(suggestedTrade.trim(), res.provider_id); } catch { /* non-blocking */ }
+      }
+      setDone({ id: res.provider_id, name: alias.trim() || name.trim(), category_id: effectiveCategory });
     } catch (e2) {
       const key = String(e2?.message || "").match(/name_required|category_required|phone_required|not_authenticated/)?.[0];
       const map = {
@@ -193,7 +200,20 @@ export default function AddProviderPage() {
                 {categoriesInGroup(g.id).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </optgroup>
             ))}
+            <option value="__suggest__">＋ My trade isn&apos;t listed…</option>
           </select>
+          {categoryId === "__suggest__" ? (
+            <div className="mt-2">
+              <input
+                value={suggestedTrade}
+                onChange={(e) => setSuggestedTrade(e.target.value)}
+                type="text"
+                placeholder="What's their trade? e.g. Locksmith"
+                className="w-full rounded-xl border border-amber/40 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber"
+              />
+              <p className="text-[11px] text-muted mt-1">We&apos;ll add them under &ldquo;Other&rdquo; for now and review your suggested trade to add it properly.</p>
+            </div>
+          ) : null}
         </div>
 
         <div>
@@ -206,7 +226,7 @@ export default function AddProviderPage() {
 
         {!dupe ? (
           <button
-            disabled={busy || !name.trim() || !phone.trim() || !categoryId || checking}
+            disabled={busy || !name.trim() || !phone.trim() || !categoryId || checking || (categoryId === "__suggest__" && !suggestedTrade.trim())}
             className="w-full bg-amber text-navy font-semibold text-sm py-3 rounded-full disabled:opacity-50"
           >
             {busy ? "Adding…" : "Add to directory"}
