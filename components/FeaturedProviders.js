@@ -4,6 +4,7 @@ import Link from "next/link";
 import { api } from "@/lib/data";
 import { CAT } from "@/lib/categories";
 import CategoryIcon from "@/components/CategoryIcon";
+import RatingBadge from "@/components/RatingBadge";
 
 // EDITORIAL, NOT ADVERTISING.
 // Featured providers are chosen by our team. They live in their own table, are read
@@ -12,10 +13,14 @@ import CategoryIcon from "@/components/CategoryIcon";
 // changes nothing about their rating, reviews or ranking.
 export default function FeaturedProviders({ limit = 3 }) {
   const [rows, setRows] = useState(null);
+  const [ratings, setRatings] = useState({});
+  const [counts, setCounts] = useState({});
 
   useEffect(() => {
     let active = true;
     api.featuredProviders(limit).then((r) => { if (active) setRows(r); });
+    api.providerRatingsAll().then((m) => { if (active) setRatings(m); });
+    api.recCounts().then((m) => { if (active) setCounts(m); });
     return () => { active = false; };
   }, [limit]);
 
@@ -53,6 +58,9 @@ export default function FeaturedProviders({ limit = 3 }) {
                   <div className="mt-0.5 flex items-center gap-1.5 text-[13px] text-slate2">
                     {cat ? <CategoryIcon id={cat.id} className="w-3.5 h-3.5 shrink-0 text-muted" /> : null}
                     <span>{cat ? cat.name : ""}{p.area ? ` · ${p.area}` : ""}</span>
+                  </div>
+                  <div className="mt-1">
+                    <RatingBadge rating={ratings[p.provider_id]} count={counts[p.provider_id]?.count || 0} yes={counts[p.provider_id]?.yes || 0} />
                   </div>
                   {p.headline ? <div className="mt-1 text-[13px] text-ink font-medium">{p.headline}</div> : null}
                   {p.note ? <p className="mt-0.5 text-[12px] text-muted leading-snug">{p.note}</p> : null}
