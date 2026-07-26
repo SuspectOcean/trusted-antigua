@@ -52,6 +52,7 @@ function FindInner() {
 
   const [rows, setRows] = useState(null);
   const [counts, setCounts] = useState({});
+  const [ratings, setRatings] = useState({});
   const [input, setInput] = useState(q);
   const [error, setError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -84,11 +85,12 @@ function FindInner() {
     Promise.all([
       withTimeout(api.providers({ category: cat, group, q }), 12000, null),
       withTimeout(api.recCounts(), 12000, {}),
+      withTimeout(api.providerRatingsAll(), 12000, {}),
     ])
-      .then(([r, c]) => {
+      .then(([r, c, rt]) => {
         if (!active) return;
         if (r === null) { setRows([]); setError(true); }
-        else { setRows(r); setCounts(c || {}); }
+        else { setRows(r); setCounts(c || {}); setRatings(rt || {}); }
       })
       .catch(() => { if (active) { setRows([]); setError(true); } });
     return () => { active = false; };
@@ -185,7 +187,7 @@ function FindInner() {
             const ad = showAd ? ads[Math.floor(i / 4) % ads.length] : null;
             return (
               <div key={p.id}>
-                <ProviderCard p={p} counts={counts} />
+                <ProviderCard p={p} counts={counts} ratings={ratings} />
                 {ad ? <div className="lg:hidden pt-2.5"><NativeAdCard ad={ad} /></div> : null}
               </div>
             );
