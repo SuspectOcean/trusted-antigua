@@ -13,6 +13,12 @@ import { useAuth } from "@/components/AuthProvider";
 // numbers shown here are a courtesy preview only.
 const EMPTY = Object.fromEntries(RATING_CATEGORIES.map((c) => [c.key, null]));
 
+// Contact Picker API — Chrome/Android (and installed PWAs). iOS/desktop don't
+// support it, so the button only appears where it actually works.
+function contactPickerSupported() {
+  return typeof navigator !== "undefined" && "contacts" in navigator && navigator.contacts && "select" in navigator.contacts;
+}
+
 function ScoreRow({ label, hint, value, onChange }) {
   return (
     <div className="py-2.5 border-b border-white/5">
@@ -46,11 +52,28 @@ function RecommendInner() {
   const [wasLegacy, setWasLegacy] = useState(false); // editing a previous-system review
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
+  const [pickerOK, setPickerOK] = useState(false);
+  useEffect(() => { setPickerOK(contactPickerSupported()); }, []);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const setScore = (k, v) => setForm((f) => ({ ...f, scores: { ...f.scores, [k]: v } }));
   const toggleWork = (w) => setForm((f) => ({ ...f, work_types: f.work_types.includes(w) ? f.work_types.filter((x) => x !== w) : [...f.work_types, w] }));
   const inputCls = "w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30";
+
+  // Pull a name + number straight from the phone's contacts, so there's nothing
+  // to type. Fills the name and phone fields; category/area stay manual.
+  async function pickContact() {
+    try {
+      const cs = await navigator.contacts.select(["name", "tel"], { multiple: false });
+      if (cs && cs[0]) {
+        const c = cs[0];
+        const nm = (Array.isArray(c.name) && c.name[0]) || "";
+        const tel = (Array.isArray(c.tel) && c.tel[0]) || "";
+        if (nm) set("name", nm);
+        if (tel) set("contact", tel);
+      }
+    } catch { /* user cancelled or unsupported */ }
+  }
 
   // Prefill when editing an existing review for this provider.
   useEffect(() => {
@@ -155,6 +178,12 @@ function RecommendInner() {
       <form onSubmit={submit} className="space-y-4">
         {!presetPid ? (
           <>
+            {pickerOK ? (
+              <button type="button" onClick={pickContact} className="w-full flex items-center justify-center gap-2 bg-surface2 border border-white/15 text-ink font-semibold text-sm py-2.5 rounded-xl active:scale-[.99] transition">
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 11h-6M19 8v6" /></svg>
+                Import from my contacts
+              </button>
+            ) : null}
             <div>
               <label className="block text-[13px] font-semibold text-ink mb-1.5">What do they do? <span className="text-err">*</span></label>
               <select value={form.category_id} onChange={(e) => set("category_id", e.target.value)} required className={inputCls}>
