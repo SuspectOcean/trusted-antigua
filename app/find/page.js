@@ -26,10 +26,10 @@ function EmptyState() {
   return (
     <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
       <div className="text-3xl mb-2">🔍</div>
-      <p className="text-[14px] text-slate2">No providers listed here yet.</p>
-      <p className="text-[13px] text-muted mt-1">Know someone reliable? Be the first to review them.</p>
-      <Link href="/recommend" className="inline-block mt-3 bg-amber text-navy font-semibold text-sm px-4 py-2 rounded-full">
-        Write a review
+      <p className="text-[14px] text-slate2">No one listed here yet.</p>
+      <p className="text-[13px] text-muted mt-1">Know someone good? Add them in seconds.</p>
+      <Link href="/add" className="inline-block mt-3 bg-amber text-navy font-semibold text-sm px-4 py-2 rounded-full">
+        ＋ Add a tradesperson
       </Link>
     </div>
   );
@@ -180,6 +180,15 @@ function FindInner() {
           }) : <EmptyState />}
         </div>
       )}
+
+      {/* Someone missing? Direct route to add them. Shown once results have loaded. */}
+      {rows && rows.length ? (
+        <Link href="/add" className="mt-4 block bg-surface border border-white/10 rounded-2xl p-4 text-center shadow-card active:scale-[.99] transition">
+          <span className="text-[13px] text-slate2">Can&apos;t find who you&apos;re looking for? </span>
+          <span className="text-[13px] text-amber font-semibold">Add a tradesperson ›</span>
+        </Link>
+      ) : null}
+
       <div className="h-4" />
     </>
   );
