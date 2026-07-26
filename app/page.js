@@ -2,7 +2,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { GROUPS } from "@/lib/categories";
+import { GROUPS, groupOf } from "@/lib/categories";
+import { api } from "@/lib/data";
 import FeaturedProviders from "@/components/FeaturedProviders";
 
 // Real Antiguan phrasing for what people actually type — not "e.g. electrician".
@@ -16,11 +17,26 @@ export default function Home() {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [exampleIdx, setExampleIdx] = useState(0);
+  // Group ids that have at least one provider. null = not loaded yet (don't mark).
+  const [populatedGroups, setPopulatedGroups] = useState(null);
 
   useEffect(() => {
     const t = setInterval(() => setExampleIdx((i) => (i + 1) % SEARCH_EXAMPLES.length), 2600);
     return () => clearInterval(t);
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    api.populatedCategories().then((cats) => {
+      if (!active) return;
+      const groups = new Set((cats || []).map((c) => groupOf(c)).filter(Boolean));
+      setPopulatedGroups(groups);
+    });
+    return () => { active = false; };
+  }, []);
+
+  // Only mark once loaded, so nothing flashes red on first paint.
+  const isEmptyGroup = (id) => populatedGroups !== null && !populatedGroups.has(id);
 
   function onSearch(e) {
     e.preventDefault();
@@ -62,14 +78,16 @@ export default function Home() {
       {/* Asymmetric: one wide entry point, then a tighter grid, not identical boxes. */}
       <Link
         href={`/find?group=${featured.id}`}
-        className="block bg-surface border border-white/10 rounded-2xl p-4 shadow-card flex items-center gap-4 active:scale-[.99] transition mb-2.5"
+        className={`block bg-surface border rounded-2xl p-4 shadow-card flex items-center gap-4 active:scale-[.99] transition mb-2.5 ${isEmptyGroup(featured.id) ? "border-err/30" : "border-white/10"}`}
       >
         <span className="inline-flex items-center justify-center w-12 h-12 shrink-0 rounded-full bg-amber/12 text-2xl leading-none">
           {featured.emoji}
         </span>
         <span className="min-w-0">
           <span className="block font-semibold text-ink text-[15px] leading-tight">{featured.name}</span>
-          <span className="block text-[12px] text-muted">{featured.blurb}</span>
+          {isEmptyGroup(featured.id)
+            ? <span className="block text-[12px] text-err/80">No listings yet — be the first to add</span>
+            : <span className="block text-[12px] text-muted">{featured.blurb}</span>}
         </span>
         <span className="ml-auto text-amber text-lg shrink-0">›</span>
       </Link>
@@ -79,16 +97,18 @@ export default function Home() {
           <Link
             key={c.id}
             href={`/find?group=${c.id}`}
-            className={`bg-surface border border-white/10 rounded-2xl p-3 shadow-card flex items-center gap-3 active:scale-[.99] transition ${
-              i === rest.length - 1 && rest.length % 2 === 1 ? "col-span-2" : ""
-            }`}
+            className={`bg-surface border rounded-2xl p-3 shadow-card flex items-center gap-3 active:scale-[.99] transition ${
+              isEmptyGroup(c.id) ? "border-err/30" : "border-white/10"
+            } ${i === rest.length - 1 && rest.length % 2 === 1 ? "col-span-2" : ""}`}
           >
             <span className="inline-flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-amber/12 text-xl leading-none">
               {c.emoji}
             </span>
             <span className="min-w-0">
               <span className="block font-semibold text-ink text-[14px] leading-tight">{c.name}</span>
-              <span className="block text-[11px] text-muted truncate">{c.blurb}</span>
+              {isEmptyGroup(c.id)
+                ? <span className="block text-[11px] text-err/75 truncate">Be the first to add</span>
+                : <span className="block text-[11px] text-muted truncate">{c.blurb}</span>}
             </span>
           </Link>
         ))}
