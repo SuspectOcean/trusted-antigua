@@ -23,13 +23,13 @@ function SkeletonList() {
   );
 }
 
-function EmptyState() {
+function EmptyState({ addHref = "/add" }) {
   return (
     <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
       <div className="text-3xl mb-2">🔍</div>
       <p className="text-[14px] text-slate2">No one listed here yet.</p>
       <p className="text-[13px] text-muted mt-1">Know someone good? Add them in seconds.</p>
-      <Link href="/add" className="inline-block mt-3 bg-amber text-navy font-semibold text-sm px-4 py-2 rounded-full">
+      <Link href={addHref} className="inline-block mt-3 bg-amber text-navy font-semibold text-sm px-4 py-2 rounded-full">
         ＋ Add a tradesperson
       </Link>
     </div>
@@ -107,6 +107,9 @@ function FindInner() {
 
   const activeGroup = group || (cat ? groupOf(cat) : "");
   const title = cat ? CAT[cat]?.name || "" : group ? GROUP[group]?.name || "" : q ? `Results for "${q}"` : "All providers";
+
+  // Carry the current trade/group into the add flow so it's pre-selected there.
+  const addHref = cat ? `/add?cat=${encodeURIComponent(cat)}` : activeGroup ? `/add?group=${encodeURIComponent(activeGroup)}` : "/add";
 
   // Empty markers (only once populated set has loaded, so nothing flashes red).
   const emptyCat = (id) => populatedCats !== null && !populatedCats.has(id);
@@ -193,13 +196,13 @@ function FindInner() {
                 {ad ? <div className="lg:hidden pt-2.5"><NativeAdCard ad={ad} /></div> : null}
               </div>
             );
-          }) : <EmptyState />}
+          }) : <EmptyState addHref={addHref} />}
         </div>
       )}
 
       {/* Someone missing? Direct route to add them. Shown once results have loaded. */}
       {rows && rows.length ? (
-        <Link href="/add" className="mt-4 block bg-surface border border-white/10 rounded-2xl p-4 text-center shadow-card active:scale-[.99] transition">
+        <Link href={addHref} className="mt-4 block bg-surface border border-white/10 rounded-2xl p-4 text-center shadow-card active:scale-[.99] transition">
           <span className="text-[13px] text-slate2">Can&apos;t find who you&apos;re looking for? </span>
           <span className="text-[13px] text-amber font-semibold">Add a tradesperson ›</span>
         </Link>
