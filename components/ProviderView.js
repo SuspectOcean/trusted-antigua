@@ -357,9 +357,14 @@ export default function ProviderView({ id }) {
 
         {p.description ? <p className="mt-3 text-[14px] text-slate2 leading-relaxed">{p.description}</p> : null}
 
-        {/* Trust Rating: ten-category (v2) reviews ONLY. Legacy reviews are
-            shown separately below and never blended into the headline number. */}
-        {ratings?.r10_count ? (
+        {/* Ratings & reviews are gated: logged-out visitors get a sign-in prompt
+            instead of the numbers. Ten-category (v2) only; legacy shown separately. */}
+        {!user ? (
+          <div className="mt-3 bg-surface2 border border-white/10 rounded-xl p-4 text-center">
+            <div className="text-[13px] text-slate2">Ratings and reviews are for members.</div>
+            <button onClick={() => openSignIn("Sign in to see ratings and read reviews.")} className="mt-3 bg-amber text-navy font-semibold text-[13px] px-4 py-2 rounded-full">Sign in to see the rating</button>
+          </div>
+        ) : ratings?.r10_count ? (
           <>
             <div className="mt-3 grid grid-cols-3 gap-2">
               <div className="bg-surface2 rounded-xl p-3 text-center">

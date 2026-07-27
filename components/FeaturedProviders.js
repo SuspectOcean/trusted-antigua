@@ -5,6 +5,7 @@ import { api } from "@/lib/data";
 import { CAT } from "@/lib/categories";
 import CategoryIcon from "@/components/CategoryIcon";
 import RatingBadge from "@/components/RatingBadge";
+import { useAuth } from "@/components/AuthProvider";
 
 // EDITORIAL, NOT ADVERTISING.
 // Featured providers are chosen by our team. They live in their own table, are read
@@ -12,6 +13,7 @@ import RatingBadge from "@/components/RatingBadge";
 // reader never has to wonder whether a highlight was bought. Featuring a provider
 // changes nothing about their rating, reviews or ranking.
 export default function FeaturedProviders({ limit = 3 }) {
+  const { user } = useAuth();
   const [rows, setRows] = useState(null);
   const [ratings, setRatings] = useState({});
   const [counts, setCounts] = useState({});
@@ -60,7 +62,7 @@ export default function FeaturedProviders({ limit = 3 }) {
                     <span>{cat ? cat.name : ""}{p.area ? ` · ${p.area}` : ""}</span>
                   </div>
                   <div className="mt-1">
-                    <RatingBadge rating={ratings[p.provider_id]} count={counts[p.provider_id]?.count || 0} yes={counts[p.provider_id]?.yes || 0} />
+                    <RatingBadge rating={ratings[p.provider_id]} count={counts[p.provider_id]?.count || 0} yes={counts[p.provider_id]?.yes || 0} gated={!user} />
                   </div>
                   {p.headline ? <div className="mt-1 text-[13px] text-ink font-medium">{p.headline}</div> : null}
                   {p.note ? <p className="mt-0.5 text-[12px] text-muted leading-snug">{p.note}</p> : null}

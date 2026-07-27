@@ -17,7 +17,7 @@ function Avatar({ src, name }) {
   );
 }
 
-export default function ProviderCard({ p, counts = {}, ratings = {} }) {
+export default function ProviderCard({ p, counts = {}, ratings = {}, gated = false }) {
   const c = counts[p.id] || { count: 0, yes: 0 };
   const cat = CAT[p.category_id];
   return (
@@ -30,7 +30,7 @@ export default function ProviderCard({ p, counts = {}, ratings = {} }) {
             <TrustBadge level={p.trust_level} size="sm" />
           </div>
           {/* Rating right under the name, so it's readable at a glance in the list. */}
-          <div className="mt-0.5"><RatingBadge rating={ratings[p.id]} count={c.count} yes={c.yes} /></div>
+          <div className="mt-0.5"><RatingBadge rating={ratings[p.id]} count={c.count} yes={c.yes} gated={gated} /></div>
           {p.alias ? <div className="text-xs text-muted truncate mt-0.5">{p.name}</div> : null}
           <div className="mt-1 flex items-center gap-1 text-[13px] text-slate2">
             {cat ? <CategoryIcon id={cat.id} className="w-3.5 h-3.5 shrink-0 text-muted" /> : null}
