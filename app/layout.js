@@ -5,6 +5,7 @@ import BottomNav from "@/components/BottomNav";
 import { AuthProvider } from "@/components/AuthProvider";
 import AccountMenu from "@/components/AccountMenu";
 import AdSlot from "@/components/AdSlot";
+import InstallBanner from "@/components/InstallBanner";
 import { SITE_URL, LEGAL_EMAIL, SITE_NAME } from "@/lib/site";
 
 const DESCRIPTION =
@@ -63,6 +64,7 @@ export default function RootLayout({ children }) {
               </div>
             </div>
           </header>
+          <InstallBanner />
           {/* Rails flex to fill the empty margin either side of the centre column,
               capped so they stay a sane advertising unit on very wide screens. */}
           <div className="lg:flex lg:justify-center lg:gap-5 lg:px-5">
