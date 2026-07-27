@@ -7,6 +7,7 @@ import { api } from "@/lib/data";
 import ProviderCard from "@/components/ProviderCard";
 import NativeAdCard from "@/components/NativeAdCard";
 import CategoryIcon from "@/components/CategoryIcon";
+import { useAuth } from "@/components/AuthProvider";
 
 function SkeletonList() {
   return (
@@ -45,6 +46,7 @@ function withTimeout(promise, ms, fallback) {
 
 function FindInner() {
   const router = useRouter();
+  const { user } = useAuth();
   const params = useSearchParams();
   const cat = params.get("cat") || "";
   const group = params.get("group") || "";
@@ -187,7 +189,7 @@ function FindInner() {
             const ad = showAd ? ads[Math.floor(i / 4) % ads.length] : null;
             return (
               <div key={p.id}>
-                <ProviderCard p={p} counts={counts} ratings={ratings} />
+                <ProviderCard p={p} counts={counts} ratings={ratings} gated={!user} />
                 {ad ? <div className="lg:hidden pt-2.5"><NativeAdCard ad={ad} /></div> : null}
               </div>
             );
