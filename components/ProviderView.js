@@ -60,9 +60,16 @@ function ReplyForm({ reviewId, existing, onSaved }) {
   );
 }
 
-function RecCard({ r, providerLabel, reply, isOwner, isMine, reported, onReport, onReplySaved }) {
+function RecCard({ r, providerLabel, reply, isOwner, isMine, isAdmin, reported, onReport, onReplySaved, onDelete, onAdminRemove }) {
   const tags = REC_TAGS.filter(([k]) => r[k]).map(([, l]) => <span key={l} className="text-[11px] bg-teal/15 text-teal px-2 py-0.5 rounded-full">{l}</span>);
   const works = Array.isArray(r.work_types) ? r.work_types : [];
+  const [confirm, setConfirm] = useState(null); // 'delete' | 'remove'
+  const [rbusy, setRbusy] = useState(false);
+  async function run(kind) {
+    setRbusy(true);
+    try { await (kind === "delete" ? onDelete(r.id) : onAdminRemove(r.id)); }
+    finally { setRbusy(false); setConfirm(null); }
+  }
   return (
     <div className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
       <div className="flex items-center justify-between">
@@ -94,18 +101,30 @@ function RecCard({ r, providerLabel, reply, isOwner, isMine, reported, onReport,
       ) : null}
       {isOwner ? <ReplyForm reviewId={r.id} existing={reply} onSaved={onReplySaved} /> : null}
 
-      {/* Report / dispute — never shown on the user's own review */}
-      {!isMine ? (
-        <div className="mt-2 text-right">
-          {reported ? (
-            <span className="text-[11px] text-muted">Reported (under review)</span>
+      {/* Actions: author deletes their own; admin removes any; others report/dispute. */}
+      <div className="mt-2 flex items-center justify-end gap-3 flex-wrap text-[11px]">
+        {isMine ? (
+          confirm === "delete" ? (
+            <span className="text-muted">Delete your review? <button disabled={rbusy} onClick={() => run("delete")} className="text-err underline">Yes, delete</button> · <button onClick={() => setConfirm(null)} className="underline">Keep</button></span>
           ) : (
-            <button onClick={() => onReport(r)} className="text-[11px] text-muted underline decoration-white/20">
-              {isOwner ? "Dispute this review" : "Report"}
-            </button>
-          )}
-        </div>
-      ) : null}
+            <button onClick={() => setConfirm("delete")} className="text-err underline">Delete my review</button>
+          )
+        ) : null}
+        {isAdmin && !isMine ? (
+          confirm === "remove" ? (
+            <span className="text-muted">Remove as admin? <button disabled={rbusy} onClick={() => run("remove")} className="text-err underline">Yes, remove</button> · <button onClick={() => setConfirm(null)} className="underline">Cancel</button></span>
+          ) : (
+            <button onClick={() => setConfirm("remove")} className="text-err underline">Remove (admin)</button>
+          )
+        ) : null}
+        {!isMine ? (
+          reported ? (
+            <span className="text-muted">Reported (under review)</span>
+          ) : (
+            <button onClick={() => onReport(r)} className="text-muted underline decoration-white/20">{isOwner ? "Dispute" : "Report"}</button>
+          )
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -227,7 +246,7 @@ function ShareButton({ provider }) {
 }
 
 export default function ProviderView({ id }) {
-  const { user, openSignIn } = useAuth();
+  const { user, openSignIn, isAdmin } = useAuth();
   const [p, setP] = useState(undefined);
   const [stats, setStats] = useState(null);
   const [ratings, setRatings] = useState(null); // ten-category aggregates (v2 reviews only)
@@ -266,6 +285,22 @@ export default function ProviderView({ id }) {
     api.repliesForProvider(id).then(setReplies);
     api.myOpenReports(user.id).then(setReportedIds);
   }, [id, user]);
+
+  // Author deletes their own review; admin removes any review. Both soft-delete
+  // server-side (delete_my_review / admin_remove_review). Remove from the list
+  // immediately, then refresh the headline stats/ratings.
+  async function removeMine(rid) {
+    try { await api.deleteMyReview(rid); }
+    catch (e) { console.error("[review] delete failed", e); return; }
+    setRecs((rs) => rs.filter((x) => x.id !== rid));
+    setReloadKey((k) => k + 1);
+  }
+  async function removeAsAdmin(rid) {
+    try { await api.adminRemoveReview(rid, null); }
+    catch (e) { console.error("[review] admin remove failed", e); return; }
+    setRecs((rs) => rs.filter((x) => x.id !== rid));
+    setReloadKey((k) => k + 1);
+  }
 
   if (err) return (
     <div className="py-16 text-center">
@@ -455,9 +490,12 @@ export default function ProviderView({ id }) {
               reply={replies[r.id]}
               isOwner={isOwner}
               isMine={r.recommender_id === user.id}
+              isAdmin={isAdmin}
               reported={reportedIds.has(r.id)}
               onReport={setReporting}
               onReplySaved={() => api.repliesForProvider(id).then(setReplies)}
+              onDelete={removeMine}
+              onAdminRemove={removeAsAdmin}
             />
           )) : <div className="bg-surface border border-white/10 rounded-2xl p-5 text-center text-[13px] text-slate2 shadow-card">No recommendations yet. If you&apos;ve hired them, be the first to vouch.</div>}
         </div>
