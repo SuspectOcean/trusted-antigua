@@ -5,7 +5,7 @@ import { AREAS } from "@/lib/categories";
 
 // Flip these to true once the provider is configured in Supabase (see setup guides).
 // Rule: a method that isn't configured is never rendered as a live button.
-const ENABLED = { email: true, google: false, facebook: false, whatsapp: false };
+const ENABLED = { email: true, google: true, facebook: false, whatsapp: false };
 
 const AuthCtx = createContext(null);
 export const useAuth = () => useContext(AuthCtx);
