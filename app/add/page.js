@@ -38,6 +38,22 @@ export default function AddProviderPage() {
 
   const supported = contactPickerSupported();
 
+  // Pre-select the trade from where the user came (Find category/group), so
+  // adding someone from the "Animals" or "Electricians" view lands on that trade
+  // already chosen. A specific category wins; a group falls back to its first
+  // trade as a sensible, editable starting point.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    const cat = sp.get("cat");
+    const group = sp.get("group");
+    if (cat && CAT[cat]) setCategoryId(cat);
+    else if (group) {
+      const cats = categoriesInGroup(group);
+      if (cats && cats.length) setCategoryId(cats[0].id);
+    }
+  }, []);
+
   // Live duplicate check (debounced) once there are enough digits to be a number.
   useEffect(() => {
     const digits = phone.replace(/\D/g, "");
