@@ -9,6 +9,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { TRUST } from "@/lib/trust";
 
 const DESC_MAX = 250;
+const MAX_SECONDARY = 4;
 
 function Check({ done }) {
   return (
@@ -29,6 +30,7 @@ function ManageInner() {
   const [catReq, setCatReq] = useState("");
   const [existingCatReq, setExistingCatReq] = useState(null);
   const [catMsg, setCatMsg] = useState(null);
+  const [addTrade, setAddTrade] = useState("");
 
   useEffect(() => {
     if (!id || !user) return;
@@ -42,6 +44,7 @@ function ManageInner() {
             contact: prov.contact || "",
             area_scope: prov.area_scope || (prov.area === "Island-wide" ? "islandwide" : "selected"),
             service_areas: prov.service_areas || [],
+            secondary_categories: prov.secondary_categories || [],
           });
         }
       })
@@ -66,6 +69,20 @@ function ManageInner() {
 
   const toggleArea = (a) =>
     setForm((f) => ({ ...f, service_areas: f.service_areas.includes(a) ? f.service_areas.filter((x) => x !== a) : [...f.service_areas, a] }));
+
+  const addSecondary = (id) => {
+    if (!id) return;
+    setForm((f) => ({
+      ...f,
+      secondary_categories:
+        f.secondary_categories.includes(id) || id === p.category_id || f.secondary_categories.length >= MAX_SECONDARY
+          ? f.secondary_categories
+          : [...f.secondary_categories, id],
+    }));
+    setAddTrade("");
+  };
+  const removeSecondary = (id) =>
+    setForm((f) => ({ ...f, secondary_categories: f.secondary_categories.filter((x) => x !== id) }));
 
   async function onPhoto(e) {
     const file = e.target.files?.[0];
@@ -94,6 +111,7 @@ function ManageInner() {
         area_scope: scope,
         service_areas: scope === "selected" ? form.service_areas : null,
         area: areaSummary,
+        secondary_categories: (form.secondary_categories || []).filter((c) => c !== p.category_id),
       });
       setP((prev) => ({ ...prev, ...form, area: areaSummary }));
       setMsg({ ok: true, text: "✅ Profile saved." });
@@ -183,6 +201,34 @@ function ManageInner() {
               ))}
             </div>
           ) : null}
+        </div>
+
+        <div>
+          <label className="block text-[13px] font-semibold text-ink mb-1.5">Other trades you offer</label>
+          <p className="text-[12px] text-muted mb-1.5">You appear in search under your main trade (<b className="text-slate2">{CAT[p.category_id]?.name || p.category_id}</b>) plus any you add here.</p>
+          {(form.secondary_categories || []).length ? (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {form.secondary_categories.map((id) => (
+                <span key={id} className="inline-flex items-center gap-1.5 text-[13px] bg-teal/15 text-teal border border-teal/40 px-2.5 py-1 rounded-full">
+                  {CAT[id]?.name || id}
+                  <button type="button" onClick={() => removeSecondary(id)} className="text-teal/80 hover:text-teal" aria-label="Remove">✕</button>
+                </span>
+              ))}
+            </div>
+          ) : null}
+          {(form.secondary_categories || []).length < MAX_SECONDARY ? (
+            <select value={addTrade} onChange={(e) => addSecondary(e.target.value)} className={inputCls}>
+              <option value="">＋ Add another trade…</option>
+              {GROUPED.map((g) => {
+                const cats = g.categories.filter((c) => c.id !== p.category_id && !(form.secondary_categories || []).includes(c.id));
+                return cats.length ? (
+                  <optgroup key={g.id} label={g.name}>
+                    {cats.map((c) => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
+                  </optgroup>
+                ) : null;
+              })}
+            </select>
+          ) : <p className="text-[11px] text-muted">Maximum extra trades reached. For anything else, list a separate profile.</p>}
         </div>
 
         <button type="submit" disabled={busy} className="w-full bg-amber text-navy font-bold py-3 rounded-full text-[15px] disabled:opacity-60">{busy ? "Saving…" : "Save profile"}</button>
