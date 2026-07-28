@@ -58,6 +58,7 @@ export default function AccountMenu() {
         <div className="absolute right-0 mt-2 w-52 bg-surface border border-white/10 rounded-xl shadow-pop p-1.5 z-50">
           <Item href="/account">My Profile</Item>
           <Item href="/account#my-reviews">My Reviews</Item>
+          <Item href="/list-me">List myself as a provider</Item>
           <Item disabled>Saved Providers</Item>
           <Item disabled>Notifications</Item>
           {isAdmin ? (
