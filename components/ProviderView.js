@@ -494,7 +494,7 @@ export default function ProviderView({ id }) {
               providerLabel={p.alias || p.name}
               reply={replies[r.id]}
               isOwner={isOwner}
-              isMine={r.recommender_id === user.id}
+              isMine={!!r.is_mine}
               isAdmin={isAdmin}
               reported={reportedIds.has(r.id)}
               onReport={setReporting}
