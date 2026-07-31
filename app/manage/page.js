@@ -94,7 +94,17 @@ function ManageInner() {
       await api.updateProfile(p.id, { photo_url: url });
       setP((prev) => ({ ...prev, photo_url: url }));
       setMsg({ ok: true, text: "Photo updated." });
-    } catch (e2) { console.error(e2); setMsg({ ok: false, text: "Photo upload failed. Please try again." }); }
+    } catch (e2) {
+      console.error(e2);
+      // Say what actually went wrong, so a rejected upload isn't a mystery.
+      const map = {
+        file_too_large: "That image is over 2 MB. Please choose a smaller one.",
+        unsupported_file_type: "Please choose a JPEG, PNG or WebP image.",
+        not_an_image: "That file isn't a readable image. Please choose a photo.",
+        upload_rate_limited: "You've uploaded a lot today. Please try again tomorrow.",
+      };
+      setMsg({ ok: false, text: map[e2?.message] || "Photo upload failed. Please try again." });
+    }
     finally { setPhotoBusy(false); }
   }
 
