@@ -6,6 +6,7 @@ import { GROUPS, GROUP, CAT, categoriesInGroup, groupOf } from "@/lib/categories
 import { api } from "@/lib/data";
 import ProviderCard from "@/components/ProviderCard";
 import NativeAdCard from "@/components/NativeAdCard";
+import HouseSlotCard from "@/components/HouseSlotCard";
 import CategoryIcon from "@/components/CategoryIcon";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -59,6 +60,7 @@ function FindInner() {
   const [error, setError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [ads, setAds] = useState([]);
+  const [houseCards, setHouseCards] = useState([]); // fill the slot when nothing is booked
   const [populatedCats, setPopulatedCats] = useState(null); // Set of category ids in use
 
   useEffect(() => { setInput(q); }, [q]);
@@ -71,11 +73,16 @@ function FindInner() {
   }, [reloadKey]);
 
   // Native in-feed adverts. Shown across all searches (not query-targeted), so we
-  // load them once. Empty list => no advert slots appear at all.
+  // load them once. If nothing is booked we fall back to house content — an
+  // honest "advertise here" card in the same slot — so a prospective sponsor can
+  // see the placement. If neither exists, no slot appears at all.
   useEffect(() => {
     let active = true;
     withTimeout(api.adsForSlot("find-results"), 8000, []).then((a) => {
       if (active) setAds(Array.isArray(a) ? a : []);
+    });
+    withTimeout(api.houseCardsForSlot("find-results"), 8000, []).then((h) => {
+      if (active) setHouseCards(Array.isArray(h) ? h : []);
     });
     return () => { active = false; };
   }, []);
@@ -184,16 +191,20 @@ function FindInner() {
       ) : (
         <div className="space-y-2.5">
           {rows.length ? rows.map((p, i) => {
-            // Native sponsored card after every 4th result (positions 4, 8, 12…),
-            // mobile only — desktop already carries the rails. Rotates through the
-            // available adverts so each slot shows a different one; if there are no
-            // adverts the slot simply doesn't appear (no gap, no filler).
-            const showAd = (i + 1) % 4 === 0 && ads.length > 0;
-            const ad = showAd ? ads[Math.floor(i / 4) % ads.length] : null;
+            // An advertising slot sits after every 4th result (positions 4, 8, 12…),
+            // in the same list as the tradespeople. A booked advert always wins;
+            // otherwise we show the house "advertise here" card so the placement is
+            // visible to prospective sponsors. Both rotate, so repeated slots differ.
+            // If neither exists the slot simply doesn't appear (no gap, no filler).
+            const slotIndex = Math.floor(i / 4);
+            const isSlot = (i + 1) % 4 === 0;
+            const ad = isSlot && ads.length ? ads[slotIndex % ads.length] : null;
+            const house = isSlot && !ad && houseCards.length ? houseCards[slotIndex % houseCards.length] : null;
             return (
               <div key={p.id}>
                 <ProviderCard p={p} counts={counts} ratings={ratings} gated={!user} />
-                {ad ? <div className="lg:hidden pt-2.5"><NativeAdCard ad={ad} /></div> : null}
+                {ad ? <div className="pt-2.5"><NativeAdCard ad={ad} /></div> : null}
+                {house ? <div className="pt-2.5"><HouseSlotCard card={house} /></div> : null}
               </div>
             );
           }) : <EmptyState addHref={addHref} />}
