@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { GROUPED } from "@/lib/categories";
+import { CAT } from "@/lib/categories";
 import { RATING_CATEGORIES, TIMEFRAMES, workTypesFor } from "@/lib/reviews";
 import { api } from "@/lib/data";
 import { withTimeout } from "@/lib/helpers";
@@ -12,12 +12,6 @@ import { useAuth } from "@/components/AuthProvider";
 // review -> submit. Totals are computed and enforced by the database; the
 // numbers shown here are a courtesy preview only.
 const EMPTY = Object.fromEntries(RATING_CATEGORIES.map((c) => [c.key, null]));
-
-// Contact Picker API — Chrome/Android (and installed PWAs). iOS/desktop don't
-// support it, so the button only appears where it actually works.
-function contactPickerSupported() {
-  return typeof navigator !== "undefined" && "contacts" in navigator && navigator.contacts && "select" in navigator.contacts;
-}
 
 function ScoreRow({ label, hint, value, onChange }) {
   return (
@@ -52,28 +46,36 @@ function RecommendInner() {
   const [wasLegacy, setWasLegacy] = useState(false); // editing a previous-system review
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
-  const [pickerOK, setPickerOK] = useState(false);
-  useEffect(() => { setPickerOK(contactPickerSupported()); }, []);
+  // "Who are you reviewing?" step — only used when no provider was passed in.
+  const [pickQuery, setPickQuery] = useState("");
+  const [pickResults, setPickResults] = useState([]);
+  const [picking, setPicking] = useState(false);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const setScore = (k, v) => setForm((f) => ({ ...f, scores: { ...f.scores, [k]: v } }));
   const toggleWork = (w) => setForm((f) => ({ ...f, work_types: f.work_types.includes(w) ? f.work_types.filter((x) => x !== w) : [...f.work_types, w] }));
   const inputCls = "w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30";
 
-  // Pull a name + number straight from the phone's contacts, so there's nothing
-  // to type. Fills the name and phone fields; category/area stay manual.
-  async function pickContact() {
-    try {
-      const cs = await navigator.contacts.select(["name", "tel"], { multiple: false });
-      if (cs && cs[0]) {
-        const c = cs[0];
-        const nm = (Array.isArray(c.name) && c.name[0]) || "";
-        const tel = (Array.isArray(c.tel) && c.tel[0]) || "";
-        if (nm) set("name", nm);
-        if (tel) set("contact", tel);
-      }
-    } catch { /* user cancelled or unsupported */ }
-  }
+  // Search the existing directory so a review always attaches to a real listing.
+  // Reviewing and adding are deliberately separate: adding someone new lives in
+  // /add (which has the contact importer and the phone de-duplication check).
+  // Letting this form create a provider by typed name is what produced duplicate
+  // listings — "Mario Antonio" vs "Mario Antonio AC" — splitting a tradesperson's
+  // reviews and rating across two profiles.
+  useEffect(() => {
+    if (presetPid) return;
+    const q = pickQuery.trim();
+    if (q.length < 2) { setPickResults([]); return; }
+    let active = true;
+    setPicking(true);
+    const t = setTimeout(async () => {
+      const rows = await withTimeout(api.providers({ q }), 8000, []);
+      if (!active) return;
+      setPickResults((rows || []).slice(0, 8));
+      setPicking(false);
+    }, 300);
+    return () => { active = false; clearTimeout(t); };
+  }, [pickQuery, presetPid]);
 
   // Prefill when editing an existing review for this provider.
   useEffect(() => {
@@ -114,8 +116,10 @@ function RecommendInner() {
   async function submit(e) {
     e.preventDefault();
     const name = form.name.trim();
-    if (!presetPid && (!form.category_id || !name)) {
-      setMsg({ ok: false, node: "Please choose a category and add their name." });
+    // A provider is always chosen before this form renders, so a review can no
+    // longer create a listing by typed name (which caused duplicate profiles).
+    if (!presetPid) {
+      setMsg({ ok: false, node: "Please choose who you're reviewing first." });
       return;
     }
     if (scored < 10) {
@@ -171,36 +175,83 @@ function RecommendInner() {
   const worktypes = workTypesFor(form.category_id || presetCat);
   const title = editing ? "Update your review" : presetName ? `Review ${presetName}` : "Review a provider";
 
+  // ---------------------------------------------------------------
+  // Step 0 — "Who are you reviewing?"
+  // Reviewing is separated from adding. You pick someone already listed; if they
+  // aren't listed you add them first in /add, which then hands you straight back
+  // into this form with the new provider attached.
+  // ---------------------------------------------------------------
+  if (!presetPid) {
+    return (
+      <div className="pt-1 pb-8">
+        <h1 className="text-xl font-display font-semibold text-ink mt-1">Who are you reviewing?</h1>
+        <p className="text-[13px] text-muted mt-1 mb-4">
+          Search for the tradesperson or business you used.
+        </p>
+
+        <div className="relative">
+          <input
+            value={pickQuery}
+            onChange={(e) => setPickQuery(e.target.value)}
+            type="search"
+            autoFocus
+            placeholder="Search by name, trade or area"
+            className="w-full rounded-full border border-white/15 bg-surface2 text-ink placeholder-muted pl-11 pr-4 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30"
+          />
+          <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" />
+          </svg>
+        </div>
+
+        <div className="mt-3 space-y-2">
+          {picking ? <p className="text-[13px] text-muted px-1">Searching…</p> : null}
+
+          {!picking && pickQuery.trim().length >= 2 && !pickResults.length ? (
+            <p className="text-[13px] text-slate2 px-1">
+              No one matching “{pickQuery.trim()}” is listed yet.
+            </p>
+          ) : null}
+
+          {pickResults.map((p) => {
+            const cat = CAT[p.category_id];
+            return (
+              <Link
+                key={p.id}
+                href={`/recommend?pid=${encodeURIComponent(p.id)}&pname=${encodeURIComponent(p.alias || p.name)}&cat=${encodeURIComponent(p.category_id || "")}`}
+                className="block bg-surface border border-white/10 rounded-2xl p-3.5 shadow-card active:scale-[.99] transition"
+              >
+                <div className="font-display font-semibold text-ink">{p.alias || p.name}</div>
+                <div className="text-[12px] text-slate2 mt-0.5">
+                  {cat ? cat.name : ""}{p.area ? ` · ${p.area}` : ""}
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* The only route to creating a listing — keeps adding and reviewing apart,
+            and routes new people through /add's phone de-duplication check. */}
+        <Link
+          href="/add"
+          className="mt-5 block bg-surface border border-dashed border-amber/40 rounded-2xl p-4 text-center active:scale-[.99] transition"
+        >
+          <span className="text-[13px] text-slate2">Can&apos;t find them? </span>
+          <span className="text-[13px] text-amber font-semibold">Add them first ›</span>
+          <div className="text-[11px] text-muted mt-1">
+            We&apos;ll check they&apos;re not already listed, then bring you back here to review them.
+          </div>
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <>
       <h1 className="text-xl font-display font-semibold text-ink mt-1">{title}</h1>
       <p className="text-[13px] text-muted mt-1 mb-4">Score ten areas out of 10, then tell people what happened. You can update this later.</p>
       <form onSubmit={submit} className="space-y-4">
-        {!presetPid ? (
-          <>
-            {pickerOK ? (
-              <button type="button" onClick={pickContact} className="w-full flex items-center justify-center gap-2 bg-surface2 border border-white/15 text-ink font-semibold text-sm py-2.5 rounded-xl active:scale-[.99] transition">
-                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 11h-6M19 8v6" /></svg>
-                Import from my contacts
-              </button>
-            ) : null}
-            <div>
-              <label className="block text-[13px] font-semibold text-ink mb-1.5">What do they do? <span className="text-err">*</span></label>
-              <select value={form.category_id} onChange={(e) => set("category_id", e.target.value)} required className={inputCls}>
-                <option value="">Choose a category…</option>
-                {GROUPED.map((g) => (
-                  <optgroup key={g.id} label={g.name}>
-                    {g.categories.map((c) => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
-                  </optgroup>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[13px] font-semibold text-ink mb-1.5">Their name or business name <span className="text-err">*</span></label>
-              <input value={form.name} onChange={(e) => set("name", e.target.value)} required placeholder="e.g. Ricky the AC Man" className={inputCls} />
-            </div>
-          </>
-        ) : null}
+        {/* The review form itself only ever appears once a real provider is chosen —
+            see the picker rendered above when presetPid is empty. */}
 
         {/* Deliberate, informed conversion of legacy reviews — never silent. */}
         {wasLegacy ? (
