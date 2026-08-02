@@ -88,6 +88,8 @@ export default function RootLayout({ children }) {
                   <Link href="/terms" className="hover:text-slate2">Terms</Link>
                   <span className="mx-2">·</span>
                   <Link href="/guidelines" className="hover:text-slate2">Review Guidelines</Link>
+                  <span className="mx-2">·</span>
+                  <Link href="/trust" className="hover:text-slate2">What badges mean</Link>
                 </div>
                 {LEGAL_EMAIL && (
                   <div className="mt-2">
