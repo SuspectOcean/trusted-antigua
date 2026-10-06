@@ -57,7 +57,7 @@ function ClaimInner() {
         <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
           <h1 className="text-lg font-display font-semibold text-ink">This profile is already claimed</h1>
           <p className="text-[14px] text-slate2 mt-1">If you believe this is a mistake, use the private concern link on the profile and our team will review it.</p>
-          <Link href={`/provider?id=${encodeURIComponent(p.id)}`} className="mt-4 inline-block text-amber font-semibold text-[14px]">‹ Back to profile</Link>
+          <Link href={`/provider/${encodeURIComponent(p.id)}`} className="mt-4 inline-block text-amber font-semibold text-[14px]">‹ Back to profile</Link>
         </div>
       </div>
     );
@@ -102,7 +102,7 @@ function ClaimInner() {
 
   return (
     <div className="pt-2">
-      <Link href={`/provider?id=${encodeURIComponent(p.id)}`} className="text-[13px] text-slate2">‹ Back to profile</Link>
+      <Link href={`/provider/${encodeURIComponent(p.id)}`} className="text-[13px] text-slate2">‹ Back to profile</Link>
       <h1 className="text-xl font-display font-semibold text-ink mt-2">Claim this profile</h1>
       <div className="mt-2 bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
         <div className="font-display font-semibold text-ink">{p.alias || p.name}</div>
@@ -136,7 +136,7 @@ function ClaimInner() {
         </div>
 
         <div className="bg-surface2 border border-white/10 rounded-xl p-3 text-[12px] text-muted">
-          Claiming lets you edit your description, photo, and service areas. It does <b>not</b> let you edit, hide, or reply to recommendations. Those stay controlled by the community.
+          Claiming lets you edit your description, photo, and service areas, and post one public reply to each review. It does <b>not</b> let you edit, hide, or remove reviews. Those stay controlled by the community.
         </div>
 
         <button type="submit" disabled={busy} className="w-full bg-amber text-navy font-bold py-3 rounded-full text-[15px] disabled:opacity-60">{busy ? "Submitting…" : "Submit claim for review"}</button>
