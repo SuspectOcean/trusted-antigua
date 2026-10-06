@@ -482,8 +482,11 @@ export default function ProviderView({ id }) {
       <h2 className="font-display font-semibold text-[17px] text-ink mt-5 mb-2">Reviews</h2>
       {!user ? (
         <div className="bg-surface border border-white/10 rounded-2xl p-5 text-center shadow-card">
-          <p className="text-[14px] text-slate2">{count ? `${count} review${count === 1 ? "" : "s"}. Sign in to read what people said.` : "No reviews yet."}</p>
-          {count ? <button onClick={() => openSignIn("Sign in to read recommendations.")} className="mt-3 bg-amber text-navy font-semibold text-sm px-4 py-2 rounded-full">Sign in to read</button> : null}
+          {/* Logged-out visitors cannot read review data at all, so we never claim
+              "No reviews yet" here: that would be a guess, and a wrong one whenever
+              reviews exist. Say what is true and offer the way in. */}
+          <p className="text-[14px] text-slate2">{count ? `${count} review${count === 1 ? "" : "s"}. Sign in to read what people said.` : "Reviews are for members. Sign in to read what residents said, or to add your own."}</p>
+          <button onClick={() => openSignIn("Sign in to read reviews.")} className="mt-3 bg-amber text-navy font-semibold text-sm px-4 py-2 rounded-full">Sign in to read</button>
         </div>
       ) : (
         <div className="space-y-2.5">
