@@ -19,7 +19,8 @@ export default function AdminFeaturedPage() {
   async function search(e) {
     e.preventDefault();
     if (!q.trim()) { setResults([]); return; }
-    setResults(await api.providers({ q: q.trim() }));
+    try { setResults(await api.providers({ q: q.trim() })); }
+    catch { setResults([]); setFlash("Couldn't search right now. Check your connection and try again."); }
   }
 
   async function save() {
