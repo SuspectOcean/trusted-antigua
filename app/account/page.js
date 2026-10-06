@@ -17,6 +17,7 @@ export default function AccountPage() {
   const [managed, setManaged] = useState(null);
   const [pendingClaims, setPendingClaims] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteErr, setDeleteErr] = useState(false);
 
   useEffect(() => { if (profile) { setFirstName(profile.first_name || ""); setArea(profile.area || ""); } }, [profile]);
 
@@ -57,8 +58,11 @@ export default function AccountPage() {
   }
 
   async function doDelete() {
-    // Remove the user's profile + detach their recommendations, then sign out.
-    await supabase.from("profiles").delete().eq("id", user.id);
+    // Removes the profile row (name + area) and signs out. Reviews stay published
+    // anonymously and the login itself remains until erased on request, which is
+    // exactly what the confirmation text says. Never promise more than this does.
+    const { error } = await supabase.from("profiles").delete().eq("id", user.id);
+    if (error) { setDeleteErr(true); return; }
     await signOut();
   }
 
@@ -162,10 +166,16 @@ export default function AccountPage() {
       <div className="mt-6 space-y-2">
         <button onClick={signOut} className="w-full py-3 rounded-full border border-white/15 text-ink font-semibold text-[14px]">Log out</button>
         {!confirmDelete ? (
-          <button onClick={() => setConfirmDelete(true)} className="w-full py-2 text-[12px] text-muted">Delete my account</button>
+          <button onClick={() => setConfirmDelete(true)} className="w-full py-2 text-[12px] text-muted">Delete my profile</button>
         ) : (
           <div className="bg-err/10 border border-err/30 rounded-xl p-3 text-center">
-            <p className="text-[13px] text-ink">Delete your account and profile? This can&apos;t be undone.</p>
+            <p className="text-[13px] text-ink">Delete your profile?</p>
+            <p className="text-[12px] text-slate2 mt-1">
+              This removes your name and area and signs you out. Reviews you have written stay published as
+              &ldquo;Verified resident&rdquo;; delete any you want gone first, above. To have your login erased
+              as well, email <a href="mailto:info@trustedantigua.com" className="text-amber underline">info@trustedantigua.com</a>.
+            </p>
+            {deleteErr ? <p className="text-[12px] text-err mt-1">Couldn&apos;t delete your profile. Check your connection and try again.</p> : null}
             <div className="flex gap-2 mt-2">
               <button onClick={() => setConfirmDelete(false)} className="flex-1 py-2 rounded-full border border-white/15 text-ink text-[13px]">Keep</button>
               <button onClick={doDelete} className="flex-1 py-2 rounded-full bg-err text-white font-semibold text-[13px]">Delete</button>
