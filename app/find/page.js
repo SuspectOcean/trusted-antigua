@@ -45,6 +45,29 @@ function withTimeout(promise, ms, fallback) {
   ]);
 }
 
+// Order: rated providers first, highest average at the top (more reviews wins a
+// tie), then everyone without a rating in alphabetical order. Ratings are only
+// readable when signed in, so a logged-out visitor simply gets the A to Z list.
+function sortByRating(rows, ratings) {
+  const label = (p) => (p.alias || p.name || "").trim().toLowerCase();
+  const score = (p) => {
+    const r = ratings[p.id];
+    return r && r.r10_count > 0 ? Number(r.avg_out_of_10) : null;
+  };
+  return [...rows].sort((a, b) => {
+    const sa = score(a), sb = score(b);
+    if (sa !== null && sb !== null) {
+      if (sb !== sa) return sb - sa;
+      const ca = ratings[a.id].r10_count, cb = ratings[b.id].r10_count;
+      if (cb !== ca) return cb - ca;
+      return label(a).localeCompare(label(b));
+    }
+    if (sa !== null) return -1;
+    if (sb !== null) return 1;
+    return label(a).localeCompare(label(b));
+  });
+}
+
 function FindInner() {
   const router = useRouter();
   const { user } = useAuth();
@@ -99,7 +122,7 @@ function FindInner() {
       .then(([r, c, rt]) => {
         if (!active) return;
         if (r === null) { setRows([]); setError(true); }
-        else { setRows(r); setCounts(c || {}); setRatings(rt || {}); }
+        else { setRows(sortByRating(r, rt || {})); setCounts(c || {}); setRatings(rt || {}); }
       })
       .catch(() => { if (active) { setRows([]); setError(true); } });
     return () => { active = false; };
