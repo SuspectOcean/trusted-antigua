@@ -99,7 +99,7 @@ function SignInSheet({ msg, onClose }) {
     if (!password) { setErr("Enter your password."); return; }
 
     if (mode === "signup") {
-      if (password.length < 6) { setErr("Use a password of at least 6 characters."); return; }
+      if (password.length < 8) { setErr("Use a password of at least 8 characters."); return; }
       setBusy(true);
       const { data, error } = await supabase.auth.signUp({ email: mail, password, options: { emailRedirectTo: origin } });
       setBusy(false);
@@ -162,7 +162,7 @@ function SignInSheet({ msg, onClose }) {
           {mode !== "forgot" ? (
             <input value={password} onChange={(e) => setPassword(e.target.value)} type="password"
               autoComplete={mode === "signup" ? "new-password" : "current-password"}
-              placeholder={mode === "signup" ? "Create a password (6+ characters)" : "Password"}
+              placeholder={mode === "signup" ? "Create a password (8+ characters)" : "Password"}
               className="w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30" />
           ) : null}
           <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-amber text-navy text-[15px] font-semibold disabled:opacity-60">{cta}</button>
@@ -192,7 +192,7 @@ function SetPasswordSheet({ onDone }) {
   const [err, setErr] = useState(null);
   async function save(e) {
     e.preventDefault();
-    if (password.length < 6) { setErr("Use a password of at least 6 characters."); return; }
+    if (password.length < 8) { setErr("Use a password of at least 8 characters."); return; }
     setBusy(true); setErr(null);
     const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);

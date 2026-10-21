@@ -251,6 +251,7 @@ export default function ProviderView({ id }) {
   const [stats, setStats] = useState(null);
   const [ratings, setRatings] = useState(null); // ten-category aggregates (v2 reviews only)
   const [contact, setContact] = useState(null);
+  const [contactLimited, setContactLimited] = useState(false);
   const [recs, setRecs] = useState([]);
   const [isOwner, setIsOwner] = useState(false);
   const [myClaim, setMyClaim] = useState(null);
@@ -278,7 +279,7 @@ export default function ProviderView({ id }) {
 
   useEffect(() => {
     if (!id || !user) { setContact(null); setRecs([]); setIsOwner(false); setMyClaim(null); setReplies({}); setReportedIds(new Set()); return; }
-    api.providerContact(id).then(setContact);
+    api.providerContact(id).then((r) => { setContact(r.contact); setContactLimited(!!r.limited); });
     api.recommendations(id).then(setRecs);
     api.providerOwner(id).then((owner) => setIsOwner(!!owner && owner === user.id));
     api.myClaimForProvider(id, user.id).then(setMyClaim);
@@ -444,7 +445,7 @@ export default function ProviderView({ id }) {
             {contact ? <a href={`tel:${contact}`} className="flex-1 text-center bg-navy border border-white/15 text-ink font-semibold text-sm py-2.5 rounded-full">Call</a> : null}
           </div>
         ) : user && !wa ? (
-          <div className="mt-4 text-center text-[13px] text-muted py-2.5">No contact on file for this provider.</div>
+          <div className="mt-4 text-center text-[13px] text-muted py-2.5">{contactLimited ? "Daily contact limit reached. Try again tomorrow." : "No contact on file for this provider."}</div>
         ) : (
           <button onClick={() => openSignIn("Create a free profile to contact trusted tradespeople and leave recommendations.")} className="w-full mt-4 flex items-center justify-center gap-2 bg-amber text-navy font-semibold text-sm py-3 rounded-full">
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
@@ -514,7 +515,7 @@ export default function ProviderView({ id }) {
           their reputation. */}
       <div className="lg:hidden mt-5"><AdSlot slotKey="provider-page" variant="inline" /></div>
 
-      <button onClick={() => setShowWarn(true)} className="w-full mt-4 text-[12px] text-muted py-2">Something wrong? Share a private concern ›</button>
+      <button onClick={() => (user ? setShowWarn(true) : openSignIn("Sign in to share a private concern with our team."))} className="w-full mt-4 text-[12px] text-muted py-2">Something wrong? Share a private concern ›</button>
       <div className="h-4" />
       {showWarn ? <WarningModal provider={p} onClose={() => setShowWarn(false)} /> : null}
       {reporting ? (
