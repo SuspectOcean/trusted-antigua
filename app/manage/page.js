@@ -7,7 +7,7 @@ import { api } from "@/lib/data";
 import { withTimeout } from "@/lib/helpers";
 import { useAuth } from "@/components/AuthProvider";
 import { TRUST } from "@/lib/trust";
-import { MATERIALS_STATES, MATERIALS_ORDER, MATERIALS_MIN_REPORTS, FEE_WARN_ABOVE, feeApplies, materialsApplies } from "@/lib/materials";
+import { MATERIALS_STATES, MATERIALS_ORDER, MATERIALS_MIN_REPORTS, FEE_WARN_FROM, feeApplies, materialsApplies } from "@/lib/materials";
 
 const DESC_MAX = 250;
 const MAX_SECONDARY = 4;
@@ -262,7 +262,7 @@ function ManageInner() {
                 <input id="mat-fee" value={fee} onChange={(e) => onFee(e.target.value)} inputMode="numeric" placeholder="e.g. 15" className={inputCls.replace("w-full", "w-28")} />
                 <span className="text-[15px] text-slate2">%</span>
               </div>
-              {feeNum != null && feeNum > FEE_WARN_ABOVE ? (
+              {feeNum != null && feeNum >= FEE_WARN_FROM ? (
                 <div className="mt-2 bg-amber/10 border border-amber/30 rounded-xl p-3 text-[13px] text-slate2">
                   <b className="text-amber">This is considered a very high fee for supplying materials.</b> You may not get as many jobs.
                 </div>
