@@ -35,7 +35,7 @@ function ManageInner() {
   const [materials, setMaterials] = useState(null); // provider's own statement: supplies | customer | varies | null
   const [matBusy, setMatBusy] = useState(false);
   const [matMsg, setMatMsg] = useState(null);
-  const [fee, setFee] = useState(""); // collection fee percentage as typed, "" = not stated
+  const [fee, setFee] = useState(""); // materials supply fee percentage as typed, "" = not stated
   const [receipts, setReceipts] = useState(null); // true | false | null
   const [termsBusy, setTermsBusy] = useState(false);
   const [termsMsg, setTermsMsg] = useState(null);
@@ -155,7 +155,7 @@ function ManageInner() {
     finally { setMatBusy(false); }
   }
 
-  // Collection fee and receipts. A fee above 0 always means receipts are shown;
+  // Materials supply fee and receipts. A fee above 0 always means receipts are shown;
   // the database enforces the same rule.
   const feeNum = fee === "" ? null : Math.max(0, Math.min(100, Math.round(Number(fee))));
   const feeCharged = feeNum != null && feeNum > 0;
@@ -256,20 +256,20 @@ function ManageInner() {
           {/* Fee and receipts: only when the provider supplies materials. */}
           {feeApplies(materials) ? (
             <div className="mt-4 pt-4 border-t border-white/10">
-              <label htmlFor="mat-fee" className="block text-[14px] font-semibold text-ink">What&apos;s your fee percentage to collect materials?</label>
-              <p className="text-[12px] text-muted mt-0.5">Type a number from 0 to 100. Customers see it as: receipt cost plus your percentage.</p>
+              <label htmlFor="mat-fee" className="block text-[14px] font-semibold text-ink">What&apos;s your fee percentage for supplying materials?</label>
+              <p className="text-[12px] text-muted mt-0.5">This covers you paying for the materials up front on the customer&apos;s behalf, sourcing them and bringing them to the job. Type a number from 0 to 100. Customers see it as: receipt cost plus your percentage.</p>
               <div className="mt-2 flex items-center gap-2">
                 <input id="mat-fee" value={fee} onChange={(e) => onFee(e.target.value)} inputMode="numeric" placeholder="e.g. 15" className={inputCls.replace("w-full", "w-28")} />
                 <span className="text-[15px] text-slate2">%</span>
               </div>
               {feeNum != null && feeNum > FEE_WARN_ABOVE ? (
                 <div className="mt-2 bg-amber/10 border border-amber/30 rounded-xl p-3 text-[13px] text-slate2">
-                  <b className="text-amber">This is considered a very high fee for collection.</b> You may not get as many jobs.
+                  <b className="text-amber">This is considered a very high fee for supplying materials.</b> You may not get as many jobs.
                 </div>
               ) : null}
               {feeCharged ? (
                 <div className="mt-2 bg-surface2 border border-white/10 rounded-xl p-3 text-[13px] text-slate2">
-                  <b className="text-ink">Receipts must be shown.</b> If you charge a collection fee, show the customer the receipt for everything you buy. Customers are asked in their review whether they saw receipts. If you don&apos;t show them, you are at risk of bad reviews.
+                  <b className="text-ink">Receipts must be shown.</b> If you charge a supply fee, show the customer the receipt for everything you buy. Customers are asked in their review whether they saw receipts. If you don&apos;t show them, you are at risk of bad reviews.
                 </div>
               ) : (
                 <div className="mt-3">
