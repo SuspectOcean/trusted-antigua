@@ -11,7 +11,7 @@ import CategoryIcon from "@/components/CategoryIcon";
 import AdSlot from "@/components/AdSlot";
 import { isClaimed } from "@/lib/trust";
 import { CORE_DIMENSIONS, DIMENSION_THRESHOLD, RATING_CATEGORIES, timeframeLabel as tfLabel } from "@/lib/reviews";
-import { materialsDisplay, MATERIALS_MIN_REPORTS } from "@/lib/materials";
+import { materialsDisplay, materialsTerms, MATERIALS_MIN_REPORTS } from "@/lib/materials";
 
 const STAT_TAGS = [
   ["reliable_count", "Reliable"],
@@ -341,6 +341,9 @@ export default function ProviderView({ id }) {
   const matDeclared = mat && mat.fromCustomers && materials.declared && materials.declared !== materials.status ? materialsDisplay({ status: materials.declared, source: "provider" }) : null;
   // Customer reports exist but are below the threshold: say so, without a verdict.
   const matEarly = materials && materials.source !== "customers" && materials.n_reports > 0 ? materials.n_reports : 0;
+  // Provider's own fee and receipts terms, and what customers say about receipts.
+  const matTerms = materialsTerms(materials);
+  const receiptReports = materials ? (materials.n_receipts_yes || 0) + (materials.n_receipts_no || 0) : 0;
 
   return (
     <>
@@ -394,6 +397,19 @@ export default function ProviderView({ id }) {
             {matEarly ? (
               <div className="text-[12px] text-muted mt-1">
                 {matEarly} customer report{matEarly === 1 ? "" : "s"} so far. Shown once there are {MATERIALS_MIN_REPORTS}.
+              </div>
+            ) : null}
+            {matTerms ? (
+              <div className="mt-2 pt-2 border-t border-white/10">
+                <div className="text-[13px] text-ink">{matTerms.line}</div>
+                {matTerms.example ? <div className="text-[12px] text-muted mt-0.5">{matTerms.example}</div> : null}
+                {matTerms.receipts ? <div className="text-[12px] text-slate2 mt-0.5">{matTerms.receipts}</div> : null}
+                <div className="text-[11px] text-muted mt-0.5">The provider&apos;s own stated terms. Agree the materials cost before work starts.</div>
+              </div>
+            ) : null}
+            {receiptReports >= MATERIALS_MIN_REPORTS ? (
+              <div className="text-[12px] text-slate2 mt-1">
+                Shown receipts: {materials.n_receipts_yes} of {receiptReports} customers who answered.
               </div>
             ) : null}
           </div>

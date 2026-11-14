@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CAT } from "@/lib/categories";
 import { RATING_CATEGORIES, TIMEFRAMES, workTypesFor } from "@/lib/reviews";
-import { MATERIALS_ANSWERS, materialsApplies } from "@/lib/materials";
+import { MATERIALS_ANSWERS, RECEIPT_ANSWERS, materialsApplies } from "@/lib/materials";
 import { api } from "@/lib/data";
 import { withTimeout } from "@/lib/helpers";
 import { useAuth } from "@/components/AuthProvider";
@@ -43,6 +43,7 @@ function RecommendInner() {
     contact: "", area: "", reason: "", timeframe: "", private_note: "",
     scores: { ...EMPTY }, work_types: [],
     materials: "", // "Did you have to buy the materials yourself?" yes | no | partly | ""
+    receipts: "", // "Were you shown the receipts?" yes | no | ""
   });
   const [editing, setEditing] = useState(false);
   const [wasLegacy, setWasLegacy] = useState(false); // editing a previous-system review
@@ -98,6 +99,7 @@ function RecommendInner() {
       }));
     });
     api.myReviewMaterials(presetPid).then((m) => { if (m) setForm((f) => ({ ...f, materials: f.materials || m })); });
+    api.myReviewReceipts(presetPid).then((m) => { if (m) setForm((f) => ({ ...f, receipts: f.receipts || m })); });
   }, [user, presetPid]);
 
   if (!user) {
@@ -156,6 +158,9 @@ function RecommendInner() {
       if (askMaterials) {
         try { await api.setReviewMaterials(providerId, form.materials || null); }
         catch (m) { console.warn("[review] materials answer failed (non-fatal)", m); }
+        // Receipts only apply when the provider supplied some or all of the materials.
+        try { await api.setReviewReceipts(providerId, askReceipts ? form.receipts || null : null); }
+        catch (m) { console.warn("[review] receipts answer failed (non-fatal)", m); }
       }
       if (form.private_note.trim()) {
         try { await api.addWarning({ provider_id: providerId, provider_name: name, warning: form.private_note.trim() }); }
@@ -183,6 +188,7 @@ function RecommendInner() {
 
   const worktypes = workTypesFor(form.category_id || presetCat);
   const askMaterials = materialsApplies(form.category_id || presetCat);
+  const askReceipts = askMaterials && (form.materials === "no" || form.materials === "partly");
   const title = editing ? "Update your review" : presetName ? `Review ${presetName}` : "Review a provider";
 
   // ---------------------------------------------------------------
@@ -308,6 +314,16 @@ function RecommendInner() {
               <div className="flex flex-wrap gap-2">
                 {MATERIALS_ANSWERS.map((a) => (
                   <button type="button" key={a.value} onClick={() => set("materials", form.materials === a.value ? "" : a.value)} className={`text-[13px] px-3 py-1.5 rounded-full border ${form.materials === a.value ? "bg-teal/15 text-teal border-teal/40" : "bg-surface2 text-slate2 border-white/15"}`}>{a.label}</button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          {askReceipts ? (
+            <div>
+              <label className="block text-[13px] text-slate2 mb-1.5">Were you shown the receipts for the materials? <span className="text-muted">(optional)</span></label>
+              <div className="flex flex-wrap gap-2">
+                {RECEIPT_ANSWERS.map((a) => (
+                  <button type="button" key={a.value} onClick={() => set("receipts", form.receipts === a.value ? "" : a.value)} className={`text-[13px] px-3 py-1.5 rounded-full border ${form.receipts === a.value ? "bg-teal/15 text-teal border-teal/40" : "bg-surface2 text-slate2 border-white/15"}`}>{a.label}</button>
                 ))}
               </div>
             </div>
