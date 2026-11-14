@@ -20,7 +20,7 @@ export default function BottomNav() {
     { href: "/account", label: "Account", active: path.startsWith("/account"), icon: <Icon d="M12 11c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zM4 21c0-4 3.6-6 8-6s8 2 8 6" /> },
   ];
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-30 bg-navy border-t border-white/10" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+    <nav className="fixed bottom-0 inset-x-0 z-30 bg-navy border-t border-ink/10" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
       <div className="max-w-xl mx-auto grid grid-cols-4 text-center text-[11px]">
         {items.map((it) => (
           <Link key={it.href} href={it.href} className={`py-2.5 flex flex-col items-center gap-0.5 ${it.active ? "text-amber font-semibold" : "text-slate2/70"}`}>

@@ -9,10 +9,10 @@ function Avatar({ src, name }) {
   const initial = (name || "?").trim().charAt(0).toUpperCase();
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt="" className="w-11 h-11 rounded-xl object-cover shrink-0 border border-white/10" />;
+    return <img src={src} alt="" className="w-11 h-11 rounded-md object-cover shrink-0 border border-ink/10" />;
   }
   return (
-    <div className="w-11 h-11 rounded-xl shrink-0 bg-surface2 border border-white/10 flex items-center justify-center text-slate2 font-bold">
+    <div className="w-11 h-11 rounded-md shrink-0 bg-surface2 border border-ink/10 flex items-center justify-center text-slate2 font-bold">
       {initial}
     </div>
   );
@@ -22,12 +22,12 @@ export default function ProviderCard({ p, counts = {}, ratings = {}, materials =
   const c = counts[p.id] || { count: 0, yes: 0 };
   const cat = CAT[p.category_id];
   return (
-    <Link href={`/provider/${encodeURIComponent(p.id)}`} className="block bg-surface border border-white/10 rounded-2xl p-4 shadow-card active:scale-[.99] transition">
+    <Link href={`/provider/${encodeURIComponent(p.id)}`} className="block bg-surface border border-ink/10 rounded-md p-4 shadow-card active:scale-[.99] transition">
       <div className="flex items-start gap-3">
         <Avatar src={p.photo_url} name={p.alias || p.name} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-display font-semibold text-ink truncate">{p.alias || p.name}</span>
+            <span className="font-display font-semibold text-ink text-[19px] leading-tight truncate">{p.alias || p.name}</span>
             <TrustBadge level={p.trust_level} size="sm" />
           </div>
           {/* Rating right under the name, so it's readable at a glance in the list. */}

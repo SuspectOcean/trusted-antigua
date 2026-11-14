@@ -59,14 +59,14 @@ export default function AdminReviewsPage() {
         {!reports.length ? <div className="text-[13px] text-muted">Nothing reported.</div> : (
           <div className="space-y-2.5">
             {reports.map((rp) => (
-              <div key={rp.id} className={`bg-surface rounded-2xl p-4 shadow-card border ${rp.is_provider_dispute ? "border-amber/40" : "border-white/10"}`}>
+              <div key={rp.id} className={`bg-surface rounded-md p-4 shadow-card border ${rp.is_provider_dispute ? "border-amber/40" : "border-ink/10"}`}>
                 <div className="flex items-center justify-between">
                   <Link href={`/provider?id=${encodeURIComponent(rp.provider_id)}`} className="font-display font-semibold text-ink">{rp.providers?.alias || rp.providers?.name || "Provider"}</Link>
                   <span className={`text-[11px] font-semibold ${rp.is_provider_dispute ? "text-amber" : "text-muted"}`}>{rp.is_provider_dispute ? "Provider dispute" : "User report"}</span>
                 </div>
                 <div className="text-[12px] text-slate2 mt-1">Reason: <b>{REASON_LABEL[rp.reason] || rp.reason}</b></div>
                 {rp.details ? <p className="text-[13px] text-slate2 mt-1">&ldquo;{rp.details}&rdquo;</p> : null}
-                <div className="mt-2 bg-surface2 rounded-xl p-2.5">
+                <div className="mt-2 bg-surface2 rounded-md p-2.5">
                   <div className="text-[11px] text-muted">Reported review by {rp.recommendations?.recommender_display || "A resident"}{rp.recommendations?.deleted_at ? " (already removed)" : ""}</div>
                   {rp.recommendations?.reason ? <p className="text-[13px] text-slate2 mt-0.5">{rp.recommendations.reason}</p> : <p className="text-[12px] text-muted mt-0.5">No written text, scores and tags only.</p>}
                 </div>
@@ -88,7 +88,7 @@ export default function AdminReviewsPage() {
               const removed = !!r.deleted_at;
               const reply = Array.isArray(r.review_replies) ? r.review_replies[0] : r.review_replies;
               return (
-                <div key={r.id} className={`bg-surface rounded-2xl p-4 shadow-card border ${removed ? "border-err/30 opacity-70" : "border-white/10"}`}>
+                <div key={r.id} className={`bg-surface rounded-md p-4 shadow-card border ${removed ? "border-err/30 opacity-70" : "border-ink/10"}`}>
                   <div className="flex items-center justify-between">
                     <Link href={`/provider?id=${encodeURIComponent(r.provider_id)}`} className="font-display font-semibold text-ink">{r.providers?.alias || r.providers?.name || "Provider"}</Link>
                     <span className="text-[11px] text-muted">{r.recommender_display || "A resident"}</span>
@@ -106,7 +106,7 @@ export default function AdminReviewsPage() {
                   ) : null}
                   <div className="mt-3">
                     {removed ? (
-                      <button disabled={busyId === r.id} onClick={() => restoreReview(r.id)} className="py-2 px-3 rounded-full border border-white/15 text-ink text-[13px] disabled:opacity-60">Restore</button>
+                      <button disabled={busyId === r.id} onClick={() => restoreReview(r.id)} className="py-2 px-3 rounded-full border border-ink/15 text-ink text-[13px] disabled:opacity-60">Restore</button>
                     ) : (
                       <button disabled={busyId === r.id} onClick={() => removeReview(r.id)} className="py-2 px-3 rounded-full border border-err/40 text-err text-[13px] disabled:opacity-60">Remove</button>
                     )}

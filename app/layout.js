@@ -1,6 +1,6 @@
 import "./globals.css";
 import Link from "next/link";
-import { Fraunces, Work_Sans } from "next/font/google";
+import { Barlow_Condensed, Atkinson_Hyperlegible } from "next/font/google";
 import BottomNav from "@/components/BottomNav";
 import { AuthProvider } from "@/components/AuthProvider";
 import AccountMenu from "@/components/AccountMenu";
@@ -11,11 +11,11 @@ import { SITE_URL, LEGAL_EMAIL, SITE_NAME } from "@/lib/site";
 const DESCRIPTION =
   "Find honest, reliable tradespeople and home-service providers in Antigua & Barbuda, recommended by real residents.";
 
-// Work Sans carries the interface — body copy, buttons, data, labels.
-const workSans = Work_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], display: "swap", variable: "--font-sans" });
-// Fraunces carries names — headings and every person/business name in the registry.
-// Reserved for that one job so it stays a signature, not a default.
-const fraunces = Fraunces({ subsets: ["latin"], weight: ["500", "600", "700", "900"], style: ["normal", "italic"], display: "swap", variable: "--font-display" });
+// Atkinson Hyperlegible carries the interface: designed for readability, which
+// matters on a phone in bright sun. Barlow Condensed carries headings and names,
+// with the feel of a painted shop sign or a printed directory.
+const bodyFont = Atkinson_Hyperlegible({ subsets: ["latin"], weight: ["400", "700"], display: "swap", variable: "--font-sans" });
+const headFont = Barlow_Condensed({ subsets: ["latin"], weight: ["500", "600", "700"], display: "swap", variable: "--font-display" });
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
@@ -39,7 +39,7 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: "#0C1526",
+  themeColor: "#FFFFFF",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -47,17 +47,17 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${workSans.variable} ${fraunces.variable}`}>
+    <html lang="en" className={`${bodyFont.variable} ${headFont.variable}`}>
       <body className="min-h-screen bg-bg text-ink font-sans">
         <AuthProvider>
-          <header className="sticky top-0 z-30 bg-navy border-b border-white/10">
+          <header className="sticky top-0 z-30 bg-navy border-b border-ink/10">
             <div className="max-w-xl mx-auto px-4 h-14 flex items-center justify-between">
               <Link href="/" className="flex items-center gap-2 text-ink">
-                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-amber/60 text-amber text-[11px] font-display font-semibold" style={{ transform: "rotate(-6deg)" }}>TA</span>
-                <span className="font-display font-semibold tracking-wide">Trusted Antigua</span>
+                <span className="w-1.5 h-6 bg-flag" aria-hidden="true" />
+                <span className="font-display font-bold uppercase text-[20px] tracking-[0.02em] leading-none">Trusted Antigua</span>
               </Link>
               <div className="flex items-center gap-2">
-                <Link href="/recommend" className="text-xs bg-amber hover:bg-amber-600 text-navy font-semibold px-3 py-1.5 rounded-full">
+                <Link href="/recommend" className="text-xs bg-amber hover:bg-amber-600 text-navy font-bold px-3 py-1.5 rounded">
                   + Review
                 </Link>
                 <AccountMenu />
@@ -79,7 +79,7 @@ export default function RootLayout({ children }) {
               {/* Mobile advertising now lives where intent is highest: in the Find
                   results feed and on provider pages. The old bottom-of-page slot
                   was below the fold on every screen, so it has been retired. */}
-              <footer className="mt-8 mb-20 pt-4 border-t border-white/10 text-center text-[11px] text-muted">
+              <footer className="mt-8 mb-20 pt-4 border-t border-ink/10 text-center text-[11px] text-muted">
                 <div>
                   <Link href="/about" className="hover:text-slate2">About</Link>
                   <span className="mx-2">·</span>

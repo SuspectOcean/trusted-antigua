@@ -21,7 +21,7 @@ export function LegalShell({ title, children }) {
       <h1 className="text-xl font-display font-semibold text-ink">{title}</h1>
       <p className="text-[12px] text-muted mt-1">Effective {LEGAL_EFFECTIVE_DATE}</p>
       <div className="mt-4 space-y-5">{children}</div>
-      <div className="mt-8 pt-4 border-t border-white/10 text-[12px] text-muted">
+      <div className="mt-8 pt-4 border-t border-ink/10 text-[12px] text-muted">
         See also:{" "}
         <Link href="/privacy" className="text-amber underline">Privacy Policy</Link> ·{" "}
         <Link href="/terms" className="text-amber underline">Terms of Service</Link> ·{" "}

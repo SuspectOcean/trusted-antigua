@@ -44,10 +44,10 @@ const isExternal = (href) => !!href && (href.startsWith("mailto:") || href.start
 // (currently "Advertise your business here"). Normal cards stay compact.
 function HouseCard({ card, promo }) {
   const body = (
-    <div className={`bg-surface border rounded-2xl shadow-card ${promo ? "border-amber/30 p-5 text-center h-full flex flex-col items-center justify-center" : "border-white/10 p-3"}`}>
+    <div className={`bg-surface border rounded-md shadow-card ${promo ? "border-amber/30 p-5 text-center h-full flex flex-col items-center justify-center" : "border-ink/10 p-3"}`}>
       {card.image_url ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={card.image_url} alt="" className="w-full rounded-xl mb-2" loading="lazy" />
+        <img src={card.image_url} alt="" className="w-full rounded-md mb-2" loading="lazy" />
       ) : card.icon ? (
         <div className={promo ? "text-3xl leading-none" : "text-lg leading-none"}>{card.icon}</div>
       ) : null}
@@ -88,7 +88,7 @@ export default function AdSlot({ slotKey, variant = "rail", houseFallback = true
 
   if (ad) {
     // eslint-disable-next-line @next/next/no-img-element
-    const img = <img src={ad.image_url} alt={ad.alt_text || ad.sponsor || "Advertisement"} className="w-full rounded-2xl border border-white/10" loading="lazy" />;
+    const img = <img src={ad.image_url} alt={ad.alt_text || ad.sponsor || "Advertisement"} className="w-full rounded-md border border-ink/10" loading="lazy" />;
     return (
       <div>
         <div className="text-[9px] uppercase tracking-[0.12em] text-muted mb-1 text-center">Sponsored</div>

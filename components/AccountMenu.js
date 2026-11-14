@@ -44,7 +44,7 @@ export default function AccountMenu() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 text-xs border border-white/15 text-ink font-medium pl-2 pr-2.5 py-1.5 rounded-full hover:border-amber/50"
+        className="flex items-center gap-1.5 text-xs border border-ink/15 text-ink font-medium pl-2 pr-2.5 py-1.5 rounded-full hover:border-amber/50"
         aria-expanded={open}
       >
         <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber/20 text-amber text-[10px] font-semibold">
@@ -55,7 +55,7 @@ export default function AccountMenu() {
       </button>
 
       {open ? (
-        <div className="absolute right-0 mt-2 w-52 bg-surface border border-white/10 rounded-xl shadow-pop p-1.5 z-50">
+        <div className="absolute right-0 mt-2 w-52 bg-surface border border-ink/10 rounded-md shadow-pop p-1.5 z-50">
           <Item href="/account">My Profile</Item>
           <Item href="/account#my-reviews">My Reviews</Item>
           <Item href="/list-me">List myself as a provider</Item>
@@ -63,11 +63,11 @@ export default function AccountMenu() {
           <Item disabled>Notifications</Item>
           {isAdmin ? (
             <>
-              <div className="h-px bg-white/10 my-1" />
+              <div className="h-px bg-ink/10 my-1" />
               <Item href="/admin">Admin Dashboard</Item>
             </>
           ) : null}
-          <div className="h-px bg-white/10 my-1" />
+          <div className="h-px bg-ink/10 my-1" />
           <Item onClick={async () => { setOpen(false); await signOut(); }}>Log out</Item>
         </div>
       ) : null}

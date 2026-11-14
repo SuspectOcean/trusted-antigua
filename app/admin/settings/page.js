@@ -7,7 +7,7 @@ import { GROUPS, CATEGORIES } from "@/lib/categories";
 
 function Row({ label, value, note }) {
   return (
-    <div className="bg-surface border border-white/10 rounded-xl p-2.5">
+    <div className="bg-surface border border-ink/10 rounded-md p-2.5">
       <div className="flex items-center justify-between gap-2">
         <span className="text-[12px] text-muted">{label}</span>
         <span className="text-[13px] text-ink text-right truncate">{value}</span>

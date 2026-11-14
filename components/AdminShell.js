@@ -46,7 +46,7 @@ export default function AdminShell({ title, subtitle, children }) {
               key={n.href}
               href={n.href}
               className={`whitespace-nowrap inline-flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-full border ${
-                active ? "bg-amber text-navy border-amber font-medium" : "bg-surface2 text-ink border-white/15"
+                active ? "bg-amber text-navy border-amber font-medium" : "bg-surface2 text-ink border-ink/15"
               }`}
             >
               <span className="leading-none">{n.icon}</span> {n.label}
@@ -64,7 +64,7 @@ export default function AdminShell({ title, subtitle, children }) {
 /* Small shared bits so every section looks the same. */
 export function Flash({ msg }) {
   if (!msg) return null;
-  return <div className="mt-3 bg-surface2 border border-white/10 rounded-xl p-2.5 text-[13px] text-slate2">{msg}</div>;
+  return <div className="mt-3 bg-surface2 border border-ink/10 rounded-md p-2.5 text-[13px] text-slate2">{msg}</div>;
 }
 
 export function Panel({ title, action, children }) {
@@ -80,4 +80,4 @@ export function Panel({ title, action, children }) {
 }
 
 export const inputCls =
-  "w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2 text-[14px] focus:outline-none focus:border-amber";
+  "w-full rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-2 text-[14px] focus:outline-none focus:border-amber";

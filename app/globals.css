@@ -2,11 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body { background: #0C1526; color: #EEF2F8; -webkit-tap-highlight-color: transparent; }
+html, body { background: #F3EEE4; color: #1C1A17; -webkit-tap-highlight-color: transparent; }
 .safe-bottom { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
 
 /* Skeleton shimmer for loading states */
-.skel { background: linear-gradient(90deg, #1a2942 25%, #22334f 37%, #1a2942 63%); background-size: 400% 100%; animation: sh 1.4s ease infinite; border-radius: 8px; }
+.skel { background: linear-gradient(90deg, #E6DECF 25%, #EFE9DD 37%, #E6DECF 63%); background-size: 400% 100%; animation: sh 1.4s ease infinite; border-radius: 8px; }
 @keyframes sh { 0% { background-position: 100% 0 } 100% { background-position: -100% 0 } }
 
 .spin { animation: spin 1s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }

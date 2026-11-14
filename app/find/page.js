@@ -14,7 +14,7 @@ function SkeletonList() {
   return (
     <div className="space-y-2.5">
       {[0, 1, 2].map((i) => (
-        <div key={i} className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+        <div key={i} className="bg-surface border border-ink/10 rounded-md p-4 shadow-card">
           <div className="skel h-4 w-1/2" />
           <div className="skel h-3 w-1/3 mt-2" />
           <div className="skel h-3 w-2/5 mt-3" />
@@ -26,7 +26,7 @@ function SkeletonList() {
 
 function EmptyState({ addHref = "/add" }) {
   return (
-    <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
+    <div className="bg-surface border border-ink/10 rounded-md p-6 text-center shadow-card">
       <div className="text-3xl mb-2">🔍</div>
       <p className="text-[14px] text-slate2">No one listed here yet.</p>
       <p className="text-[13px] text-muted mt-1">Know someone good? Add them in seconds.</p>
@@ -169,7 +169,7 @@ function FindInner() {
           onChange={(e) => setInput(e.target.value)}
           type="search"
           placeholder="Search name, trade or area"
-          className="w-full rounded-full border border-white/15 bg-surface2 text-ink placeholder-muted pl-11 pr-4 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30"
+          className="w-full rounded-full border border-ink/15 bg-surface2 text-ink placeholder-muted pl-11 pr-4 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30"
         />
         <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <circle cx="11" cy="11" r="7" />
@@ -186,9 +186,9 @@ function FindInner() {
           <Link
             key={g.id}
             href={`/find?group=${g.id}`}
-            className={`whitespace-nowrap inline-flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-full border ${activeGroup === g.id ? "bg-amber text-navy border-amber font-medium" : `bg-surface2 text-ink ${emptyGroup(g.id) ? "border-err/30" : "border-white/15"}`}`}
+            className={`whitespace-nowrap inline-flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-full border ${activeGroup === g.id ? "bg-amber text-navy border-amber font-medium" : `bg-surface2 text-ink ${emptyGroup(g.id) ? "border-err/30" : "border-ink/15"}`}`}
           >
-            <span className="leading-none">{g.emoji}</span> {g.name}
+            {g.name}
           </Link>
         ))}
       </div>
@@ -198,7 +198,7 @@ function FindInner() {
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4">
           <Link
             href={`/find?group=${activeGroup}`}
-            className={`whitespace-nowrap text-[13px] px-3 py-1.5 rounded-full border ${!cat ? "bg-teal/20 text-teal border-teal/40 font-medium" : "bg-surface2 text-muted border-white/15"}`}
+            className={`whitespace-nowrap text-[13px] px-3 py-1.5 rounded-full border ${!cat ? "bg-teal/20 text-teal border-teal/40 font-medium" : "bg-surface2 text-muted border-ink/15"}`}
           >
             All {GROUP[activeGroup]?.name}
           </Link>
@@ -206,7 +206,7 @@ function FindInner() {
             <Link
               key={c.id}
               href={`/find?cat=${c.id}`}
-              className={`whitespace-nowrap inline-flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-full border ${cat === c.id ? "bg-amber text-navy border-amber font-medium" : `bg-surface2 text-ink ${emptyCat(c.id) ? "border-err/30" : "border-white/15"}`}`}
+              className={`whitespace-nowrap inline-flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-full border ${cat === c.id ? "bg-amber text-navy border-amber font-medium" : `bg-surface2 text-ink ${emptyCat(c.id) ? "border-err/30" : "border-ink/15"}`}`}
             >
               <CategoryIcon id={c.id} className="w-3.5 h-3.5" /> {c.name}
             </Link>
@@ -222,7 +222,7 @@ function FindInner() {
         <Link
           href={matHref}
           aria-pressed={mat}
-          className={`inline-flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-full border ${mat ? "bg-teal/20 text-teal border-teal/40 font-medium" : "bg-surface2 text-slate2 border-white/15"}`}
+          className={`inline-flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-full border ${mat ? "bg-teal/20 text-teal border-teal/40 font-medium" : "bg-surface2 text-slate2 border-ink/15"}`}
         >
           {mat ? "✓ " : ""}Supplies own materials
         </Link>
@@ -231,7 +231,7 @@ function FindInner() {
       {rows === null ? (
         <SkeletonList />
       ) : error ? (
-        <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
+        <div className="bg-surface border border-ink/10 rounded-md p-6 text-center shadow-card">
           <div className="text-3xl mb-2">📶</div>
           <p className="text-[14px] text-slate2">Couldn&apos;t load the directory.</p>
           <p className="text-[13px] text-muted mt-1">Check your connection and try again.</p>
@@ -259,7 +259,7 @@ function FindInner() {
               </div>
             );
           }) : mat && rows.length ? (
-            <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
+            <div className="bg-surface border border-ink/10 rounded-md p-6 text-center shadow-card">
               <p className="text-[14px] text-slate2">No one here is recorded as supplying their own materials yet.</p>
               <p className="text-[13px] text-muted mt-1">That does not mean they don&apos;t. Ask before you agree the job.</p>
               <Link href={matHref} className="inline-block mt-3 bg-amber text-navy font-semibold text-sm px-4 py-2 rounded-full">Show everyone</Link>
@@ -270,7 +270,7 @@ function FindInner() {
 
       {/* Someone missing? Direct route to add them. Shown once results have loaded. */}
       {shown && shown.length ? (
-        <Link href={addHref} className="mt-4 block bg-surface border border-white/10 rounded-2xl p-4 text-center shadow-card active:scale-[.99] transition">
+        <Link href={addHref} className="mt-4 block bg-surface border border-ink/10 rounded-md p-4 text-center shadow-card active:scale-[.99] transition">
           <span className="text-[13px] text-slate2">Can&apos;t find who you&apos;re looking for? </span>
           <span className="text-[13px] text-amber font-semibold">Add a tradesperson ›</span>
         </Link>

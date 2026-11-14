@@ -17,7 +17,7 @@ const ERR = {
 const ROLE_STYLE = {
   owner: "bg-teal/20 text-teal",
   admin: "bg-amber/15 text-amber",
-  moderator: "bg-white/10 text-slate2",
+  moderator: "bg-ink/10 text-slate2",
 };
 
 export default function AdminUsersPage() {
@@ -60,7 +60,7 @@ export default function AdminUsersPage() {
             {staff.map((a) => {
               const role = a.role || "admin";
               return (
-                <div key={a.id} className="bg-surface border border-white/10 rounded-xl p-2.5 flex items-center gap-2">
+                <div key={a.id} className="bg-surface border border-ink/10 rounded-md p-2.5 flex items-center gap-2">
                   <span className="text-[13px] text-ink flex-1 truncate">{a.email}{a.id === user?.id ? " (you)" : ""}</span>
                   <span className={`text-[11px] uppercase tracking-wide px-2 py-0.5 rounded-full ${ROLE_STYLE[role] || ""}`}>{role}</span>
                   {role !== "owner" && isOwner && a.id !== user?.id ? (
@@ -80,7 +80,7 @@ export default function AdminUsersPage() {
           {filtered.slice(0, 100).map((r) => {
             const role = r.is_admin ? (r.role || "admin") : null;
             return (
-              <div key={r.id} className="bg-surface border border-white/10 rounded-xl p-2.5">
+              <div key={r.id} className="bg-surface border border-ink/10 rounded-md p-2.5">
                 <div className="flex items-center gap-2">
                   <span className="text-[13px] text-ink flex-1 truncate">{r.email}</span>
                   {role ? <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full ${ROLE_STYLE[role] || ""}`}>{role}</span> : null}
@@ -97,8 +97,8 @@ export default function AdminUsersPage() {
                       ) : null
                     ) : (
                       <>
-                        <button disabled={busy === r.id} onClick={() => setAdmin(r.id, true, "admin")} className="px-3 py-1 rounded-full border border-white/15 text-ink text-[11px] disabled:opacity-50">Make admin</button>
-                        <button disabled={busy === r.id} onClick={() => setAdmin(r.id, true, "moderator")} className="px-3 py-1 rounded-full border border-white/15 text-ink text-[11px] disabled:opacity-50">Make moderator</button>
+                        <button disabled={busy === r.id} onClick={() => setAdmin(r.id, true, "admin")} className="px-3 py-1 rounded-full border border-ink/15 text-ink text-[11px] disabled:opacity-50">Make admin</button>
+                        <button disabled={busy === r.id} onClick={() => setAdmin(r.id, true, "moderator")} className="px-3 py-1 rounded-full border border-ink/15 text-ink text-[11px] disabled:opacity-50">Make moderator</button>
                       </>
                     )}
                   </div>

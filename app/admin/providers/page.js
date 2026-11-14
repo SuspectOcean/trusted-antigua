@@ -61,7 +61,7 @@ export default function AdminProvidersPage() {
         {!claims.length ? <div className="text-[13px] text-muted">Nothing waiting.</div> : (
           <div className="space-y-2.5">
             {claims.map((c) => (
-              <div key={c.id} className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+              <div key={c.id} className="bg-surface border border-ink/10 rounded-md p-4 shadow-card">
                 <div className="flex items-center justify-between">
                   <Link href={`/provider?id=${encodeURIComponent(c.provider_id)}`} className="font-display font-semibold text-ink">{c.providers?.alias || c.providers?.name || "Provider"}</Link>
                   <span className="text-[11px] text-muted">{CAT[c.providers?.category_id]?.name || ""}</span>
@@ -71,7 +71,7 @@ export default function AdminProvidersPage() {
                 {c.submitted_contact ? <div className="text-[13px] text-slate2">Contact: {c.submitted_contact}</div> : null}
                 <div className="mt-3 flex gap-2">
                   <button disabled={busyId === c.id} onClick={() => decideClaim(c.id, true)} className="flex-1 py-2 rounded-full bg-ok text-white font-semibold text-[13px] disabled:opacity-60">Approve</button>
-                  <button disabled={busyId === c.id} onClick={() => decideClaim(c.id, false)} className="flex-1 py-2 rounded-full border border-white/15 text-ink text-[13px] disabled:opacity-60">Reject</button>
+                  <button disabled={busyId === c.id} onClick={() => decideClaim(c.id, false)} className="flex-1 py-2 rounded-full border border-ink/15 text-ink text-[13px] disabled:opacity-60">Reject</button>
                 </div>
               </div>
             ))}
@@ -86,7 +86,7 @@ export default function AdminProvidersPage() {
             {approved.map((c) => {
               const lvl = c.providers?.trust_level;
               return (
-                <div key={c.id} className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+                <div key={c.id} className="bg-surface border border-ink/10 rounded-md p-4 shadow-card">
                   <div className="flex items-center justify-between">
                     <Link href={`/provider?id=${encodeURIComponent(c.provider_id)}`} className="font-display font-semibold text-ink">{c.providers?.alias || c.providers?.name}</Link>
                     <span className="text-[11px] text-slate2">{TRUST[lvl]?.label || lvl}</span>
@@ -96,7 +96,7 @@ export default function AdminProvidersPage() {
                       <button disabled={busyId === c.provider_id} onClick={() => promote(c.provider_id, "verified_business")} className="py-2 px-3 rounded-full bg-amber text-navy font-semibold text-[13px] disabled:opacity-60">Promote to Verified Business</button>
                     ) : null}
                     {lvl === "verified_business" ? (
-                      <button disabled={busyId === c.provider_id} onClick={() => promote(c.provider_id, "claimed")} className="py-2 px-3 rounded-full border border-white/15 text-ink text-[13px] disabled:opacity-60">Downgrade to Claimed</button>
+                      <button disabled={busyId === c.provider_id} onClick={() => promote(c.provider_id, "claimed")} className="py-2 px-3 rounded-full border border-ink/15 text-ink text-[13px] disabled:opacity-60">Downgrade to Claimed</button>
                     ) : null}
                     <button disabled={busyId === c.provider_id} onClick={() => revoke(c.provider_id)} className="py-2 px-3 rounded-full border border-err/40 text-err text-[13px] disabled:opacity-60">Revoke claim</button>
                   </div>
@@ -123,7 +123,7 @@ export default function AdminProvidersPage() {
               .map((p) => {
                 const hidden = p.status !== "listed";
                 return (
-                  <div key={p.id} className={`bg-surface border rounded-2xl p-3.5 shadow-card ${hidden ? "border-err/30 opacity-80" : "border-white/10"}`}>
+                  <div key={p.id} className={`bg-surface border rounded-md p-3.5 shadow-card ${hidden ? "border-err/30 opacity-80" : "border-ink/10"}`}>
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
                         {hidden
@@ -137,7 +137,7 @@ export default function AdminProvidersPage() {
                     </div>
                     <div className="mt-2.5">
                       {hidden ? (
-                        <button disabled={busyId === p.id} onClick={() => setStatus(p.id, "listed")} className="py-1.5 px-3 rounded-full border border-white/15 text-ink text-[12px] disabled:opacity-60">Restore listing</button>
+                        <button disabled={busyId === p.id} onClick={() => setStatus(p.id, "listed")} className="py-1.5 px-3 rounded-full border border-ink/15 text-ink text-[12px] disabled:opacity-60">Restore listing</button>
                       ) : confirmId === p.id ? (
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-[12px] text-err">Hide this listing from everyone?</span>

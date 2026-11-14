@@ -8,7 +8,7 @@ export default function MaterialsBadge({ m, className = "" }) {
   const d = materialsDisplay(m);
   if (!d) return null;
   return (
-    <span className={`inline-flex items-center gap-1 text-[11px] bg-surface2 text-slate2 border border-white/10 px-2 py-0.5 rounded-full ${className}`}>
+    <span className={`inline-flex items-center gap-1 text-[11px] bg-surface2 text-slate2 border border-ink/10 px-2 py-0.5 rounded-full ${className}`}>
       {d.label}
       <span className="text-muted">· {d.sourceShort}</span>
     </span>

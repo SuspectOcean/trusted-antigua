@@ -9,7 +9,7 @@ import { api } from "@/lib/data";
 function Stat({ label, value, href, urgent }) {
   const n = value === null || value === undefined ? "…" : String(value);
   const body = (
-    <div className={`bg-surface border rounded-2xl p-3 h-full ${urgent && Number(value) > 0 ? "border-amber/50" : "border-white/10"}`}>
+    <div className={`bg-surface border rounded-md p-3 h-full ${urgent && Number(value) > 0 ? "border-amber/50" : "border-ink/10"}`}>
       <div className={`font-display font-semibold text-[22px] leading-none ${urgent && Number(value) > 0 ? "text-amber" : "text-ink"}`}>{n}</div>
       <div className="text-[12px] text-muted mt-1">{label}</div>
     </div>
@@ -55,7 +55,7 @@ export default function AdminDashboardPage() {
       <Panel title="All sections">
         <div className="grid grid-cols-2 gap-2">
           {ADMIN_NAV.filter((n) => n.href !== "/admin").map((n) => (
-            <Link key={n.href} href={n.href} className="bg-surface2 border border-white/10 rounded-xl p-2.5 text-[13px] text-ink">
+            <Link key={n.href} href={n.href} className="bg-surface2 border border-ink/10 rounded-md p-2.5 text-[13px] text-ink">
               <span className="mr-1.5">{n.icon}</span>{n.label}
             </Link>
           ))}

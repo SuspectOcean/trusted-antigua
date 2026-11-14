@@ -18,10 +18,10 @@ function AdAvatar({ src, name }) {
   const initial = (name || "?").trim().charAt(0).toUpperCase();
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt="" className="w-11 h-11 rounded-xl object-cover shrink-0 border border-white/10" />;
+    return <img src={src} alt="" className="w-11 h-11 rounded-md object-cover shrink-0 border border-ink/10" />;
   }
   return (
-    <div className="w-11 h-11 rounded-xl shrink-0 bg-surface2 border border-white/10 flex items-center justify-center text-slate2 font-bold">
+    <div className="w-11 h-11 rounded-md shrink-0 bg-surface2 border border-ink/10 flex items-center justify-center text-slate2 font-bold">
       {initial}
     </div>
   );
@@ -35,7 +35,7 @@ export default function NativeAdCard({ ad }) {
 
   const inner = (
     // Same rounded card as a listing, but an amber hairline so it reads as distinct.
-    <div className="bg-surface border border-amber/30 rounded-2xl p-4 shadow-card">
+    <div className="bg-surface border border-amber/30 rounded-md p-4 shadow-card">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
           <AdAvatar src={ad.image_url} name={name} />

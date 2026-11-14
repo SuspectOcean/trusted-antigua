@@ -21,7 +21,7 @@ export default function NotFound() {
         <Link href="/find" className="bg-amber text-navy font-semibold text-sm py-3 rounded-full">
           Find a tradesperson
         </Link>
-        <Link href="/" className="border border-white/15 text-ink font-semibold text-sm py-3 rounded-full">
+        <Link href="/" className="border border-ink/15 text-ink font-semibold text-sm py-3 rounded-full">
           Go to the home page
         </Link>
       </div>

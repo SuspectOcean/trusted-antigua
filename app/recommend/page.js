@@ -16,7 +16,7 @@ const EMPTY = Object.fromEntries(RATING_CATEGORIES.map((c) => [c.key, null]));
 
 function ScoreRow({ label, hint, value, onChange }) {
   return (
-    <div className="py-2.5 border-b border-white/5">
+    <div className="py-2.5 border-b border-ink/5">
       <div className="flex items-center justify-between">
         <span className="text-[14px] text-ink">{label}</span>
         {value == null
@@ -57,7 +57,7 @@ function RecommendInner() {
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const setScore = (k, v) => setForm((f) => ({ ...f, scores: { ...f.scores, [k]: v } }));
   const toggleWork = (w) => setForm((f) => ({ ...f, work_types: f.work_types.includes(w) ? f.work_types.filter((x) => x !== w) : [...f.work_types, w] }));
-  const inputCls = "w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30";
+  const inputCls = "w-full rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30";
 
   // Search the existing directory so a review always attaches to a real listing.
   // Reviewing and adding are deliberately separate: adding someone new lives in
@@ -105,7 +105,7 @@ function RecommendInner() {
   if (!user) {
     return (
       <div className="pt-6">
-        <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
+        <div className="bg-surface border border-ink/10 rounded-md p-6 text-center shadow-card">
           <div className="text-3xl mb-2">🤝</div>
           <h1 className="text-lg font-display font-semibold text-ink">Review a provider</h1>
           <p className="text-[14px] text-slate2 mt-1">Sign in to leave a review. It keeps reviews honest and accountable.</p>
@@ -212,7 +212,7 @@ function RecommendInner() {
             type="search"
             autoFocus
             placeholder="Search by name, trade or area"
-            className="w-full rounded-full border border-white/15 bg-surface2 text-ink placeholder-muted pl-11 pr-4 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30"
+            className="w-full rounded-full border border-ink/15 bg-surface2 text-ink placeholder-muted pl-11 pr-4 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30"
           />
           <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" />
@@ -234,7 +234,7 @@ function RecommendInner() {
               <Link
                 key={p.id}
                 href={`/recommend?pid=${encodeURIComponent(p.id)}&pname=${encodeURIComponent(p.alias || p.name)}&cat=${encodeURIComponent(p.category_id || "")}`}
-                className="block bg-surface border border-white/10 rounded-2xl p-3.5 shadow-card active:scale-[.99] transition"
+                className="block bg-surface border border-ink/10 rounded-md p-3.5 shadow-card active:scale-[.99] transition"
               >
                 <div className="font-display font-semibold text-ink">{p.alias || p.name}</div>
                 <div className="text-[12px] text-slate2 mt-0.5">
@@ -249,7 +249,7 @@ function RecommendInner() {
             and routes new people through /add's phone de-duplication check. */}
         <Link
           href="/add"
-          className="mt-5 block bg-surface border border-dashed border-amber/40 rounded-2xl p-4 text-center active:scale-[.99] transition"
+          className="mt-5 block bg-surface border border-dashed border-amber/40 rounded-md p-4 text-center active:scale-[.99] transition"
         >
           <span className="text-[13px] text-slate2">Can&apos;t find them? </span>
           <span className="text-[13px] text-amber font-semibold">Add them first ›</span>
@@ -271,7 +271,7 @@ function RecommendInner() {
 
         {/* Deliberate, informed conversion of legacy reviews — never silent. */}
         {wasLegacy ? (
-          <div className="bg-amber/10 border border-amber/30 rounded-xl p-3 text-[13px] text-slate2">
+          <div className="bg-amber/10 border border-amber/30 rounded-md p-3 text-[13px] text-slate2">
             <b className="text-amber">This review was created under our previous rating system.</b>{" "}
             To update it, complete the new ten-category Trust Rating below. Your written review is kept.
             Your old rating is not carried over, and nothing changes unless you save. If you leave this
@@ -280,7 +280,7 @@ function RecommendInner() {
         ) : null}
 
         {/* Step 1: the ten scores */}
-        <div className="bg-surface border border-white/10 rounded-xl p-3">
+        <div className="bg-surface border border-ink/10 rounded-md p-3">
           <div className="flex items-center justify-between mb-1">
             <label className="text-[13px] font-semibold text-ink">Score your experience <span className="text-err">*</span></label>
             <span className={`text-[12px] font-semibold ${scored === 10 ? "text-ok" : "text-muted"}`}>
@@ -293,7 +293,7 @@ function RecommendInner() {
         </div>
 
         {/* Step 2: the written review */}
-        <div className="bg-surface border border-white/10 rounded-xl p-3 space-y-3">
+        <div className="bg-surface border border-ink/10 rounded-md p-3 space-y-3">
           <div>
             <label className="block text-[13px] font-semibold text-ink mb-1">Tell people what happened</label>
             <textarea value={form.reason} onChange={(e) => set("reason", e.target.value)} rows={3} placeholder="What was the job, and how did it go?" className={inputCls} />
@@ -302,7 +302,7 @@ function RecommendInner() {
             <label className="block text-[13px] text-slate2 mb-1.5">What type of work was it?</label>
             <div className="flex flex-wrap gap-2">
               {worktypes.map((w) => (
-                <button type="button" key={w} onClick={() => toggleWork(w)} className={`text-[13px] px-3 py-1.5 rounded-full border ${form.work_types.includes(w) ? "bg-teal/15 text-teal border-teal/40" : "bg-surface2 text-slate2 border-white/15"}`}>{w}</button>
+                <button type="button" key={w} onClick={() => toggleWork(w)} className={`text-[13px] px-3 py-1.5 rounded-full border ${form.work_types.includes(w) ? "bg-teal/15 text-teal border-teal/40" : "bg-surface2 text-slate2 border-ink/15"}`}>{w}</button>
               ))}
             </div>
           </div>
@@ -313,7 +313,7 @@ function RecommendInner() {
               <label className="block text-[13px] text-slate2 mb-1.5">Did you have to buy the materials yourself? <span className="text-muted">(optional)</span></label>
               <div className="flex flex-wrap gap-2">
                 {MATERIALS_ANSWERS.map((a) => (
-                  <button type="button" key={a.value} onClick={() => set("materials", form.materials === a.value ? "" : a.value)} className={`text-[13px] px-3 py-1.5 rounded-full border ${form.materials === a.value ? "bg-teal/15 text-teal border-teal/40" : "bg-surface2 text-slate2 border-white/15"}`}>{a.label}</button>
+                  <button type="button" key={a.value} onClick={() => set("materials", form.materials === a.value ? "" : a.value)} className={`text-[13px] px-3 py-1.5 rounded-full border ${form.materials === a.value ? "bg-teal/15 text-teal border-teal/40" : "bg-surface2 text-slate2 border-ink/15"}`}>{a.label}</button>
                 ))}
               </div>
             </div>
@@ -323,7 +323,7 @@ function RecommendInner() {
               <label className="block text-[13px] text-slate2 mb-1.5">Were you shown the receipts for the materials? <span className="text-muted">(optional)</span></label>
               <div className="flex flex-wrap gap-2">
                 {RECEIPT_ANSWERS.map((a) => (
-                  <button type="button" key={a.value} onClick={() => set("receipts", form.receipts === a.value ? "" : a.value)} className={`text-[13px] px-3 py-1.5 rounded-full border ${form.receipts === a.value ? "bg-teal/15 text-teal border-teal/40" : "bg-surface2 text-slate2 border-white/15"}`}>{a.label}</button>
+                  <button type="button" key={a.value} onClick={() => set("receipts", form.receipts === a.value ? "" : a.value)} className={`text-[13px] px-3 py-1.5 rounded-full border ${form.receipts === a.value ? "bg-teal/15 text-teal border-teal/40" : "bg-surface2 text-slate2 border-ink/15"}`}>{a.label}</button>
                 ))}
               </div>
             </div>
@@ -343,7 +343,7 @@ function RecommendInner() {
             </>
           ) : null}
 
-          <div className="border-t border-white/10 pt-3">
+          <div className="border-t border-ink/10 pt-3">
             <label className="block text-[13px] text-slate2 mb-1">Private note or warning</label>
             <p className="text-[11px] text-muted mb-1">Only our team sees this. It is never shown publicly.</p>
             <textarea value={form.private_note} onChange={(e) => set("private_note", e.target.value)} rows={2} placeholder="Anything we should quietly know?" className={inputCls} />

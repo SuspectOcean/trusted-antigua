@@ -42,7 +42,7 @@ function ClaimInner() {
   if (!user) {
     return (
       <div className="pt-6 text-center">
-        <div className="bg-surface border border-white/10 rounded-2xl p-6 shadow-card">
+        <div className="bg-surface border border-ink/10 rounded-md p-6 shadow-card">
           <h1 className="text-lg font-display font-semibold text-ink">Claim {p.alias || p.name}</h1>
           <p className="text-[14px] text-slate2 mt-1">Sign in to claim your business profile.</p>
           <button onClick={() => openSignIn("Sign in to claim your business profile.")} className="mt-4 bg-amber text-navy font-semibold px-5 py-2.5 rounded-full text-[15px]">Sign in / Create profile</button>
@@ -54,7 +54,7 @@ function ClaimInner() {
   if (isClaimed(p.trust_level)) {
     return (
       <div className="pt-6">
-        <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
+        <div className="bg-surface border border-ink/10 rounded-md p-6 text-center shadow-card">
           <h1 className="text-lg font-display font-semibold text-ink">This profile is already claimed</h1>
           <p className="text-[14px] text-slate2 mt-1">If you believe this is a mistake, use the private concern link on the profile and our team will review it.</p>
           <Link href={`/provider/${encodeURIComponent(p.id)}`} className="mt-4 inline-block text-amber font-semibold text-[14px]">‹ Back to profile</Link>
@@ -66,7 +66,7 @@ function ClaimInner() {
   if (done || (existing && existing.status === "pending")) {
     return (
       <div className="pt-6">
-        <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
+        <div className="bg-surface border border-ink/10 rounded-md p-6 text-center shadow-card">
           <div className="text-3xl mb-2">⏳</div>
           <h1 className="text-lg font-display font-semibold text-ink">Claim submitted</h1>
           <p className="text-[14px] text-slate2 mt-1">Thanks, your claim for <b>{p.alias || p.name}</b> is now with our team for review. You&apos;ll be able to edit the profile once it&apos;s approved.</p>
@@ -77,7 +77,7 @@ function ClaimInner() {
   }
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-  const inputCls = "w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30";
+  const inputCls = "w-full rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30";
 
   async function submit(e) {
     e.preventDefault();
@@ -104,7 +104,7 @@ function ClaimInner() {
     <div className="pt-2">
       <Link href={`/provider/${encodeURIComponent(p.id)}`} className="text-[13px] text-slate2">‹ Back to profile</Link>
       <h1 className="text-xl font-display font-semibold text-ink mt-2">Claim this profile</h1>
-      <div className="mt-2 bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+      <div className="mt-2 bg-surface border border-ink/10 rounded-md p-4 shadow-card">
         <div className="font-display font-semibold text-ink">{p.alias || p.name}</div>
         <div className="flex items-center gap-1.5 text-[13px] text-slate2">
           {cat ? <CategoryIcon id={cat.id} className="w-3.5 h-3.5 shrink-0 text-muted" /> : null}
@@ -135,7 +135,7 @@ function ClaimInner() {
           <p className="text-[11px] text-muted mt-1">Helps us verify your claim. Only shown publicly once approved.</p>
         </div>
 
-        <div className="bg-surface2 border border-white/10 rounded-xl p-3 text-[12px] text-muted">
+        <div className="bg-surface2 border border-ink/10 rounded-md p-3 text-[12px] text-muted">
           Claiming lets you edit your description, photo, and service areas, and post one public reply to each review. It does <b>not</b> let you edit, hide, or remove reviews. Those stay controlled by the community.
         </div>
 

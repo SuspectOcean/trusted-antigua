@@ -30,9 +30,9 @@ export default function FeaturedProviders({ limit = 3 }) {
 
   return (
     <section className="mt-7">
-      <div className="flex items-baseline justify-between gap-2 flex-wrap">
-        <h2 className="font-display font-semibold text-[17px] text-ink">Featured</h2>
-        <span className="text-[11px] text-muted">Chosen by our team. Not paid placement.</span>
+      <div className="border-b-2 border-ink pb-1 flex items-baseline justify-between gap-2 flex-wrap">
+        <h2 className="font-display font-bold uppercase text-[18px] text-ink">Picked by us</h2>
+        <span className="text-[12px] text-muted">Nobody pays to be here.</span>
       </div>
 
       <div className="mt-2.5 space-y-2.5">
@@ -43,19 +43,18 @@ export default function FeaturedProviders({ limit = 3 }) {
             <Link
               key={p.provider_id}
               href={`/provider/${encodeURIComponent(p.provider_id)}`}
-              className="block bg-surface border border-teal/30 rounded-2xl p-4 shadow-card active:scale-[.99] transition"
+              className="block bg-surface border border-ink/15 rounded p-4 active:bg-surface2"
             >
               <div className="flex items-start gap-3">
                 {p.photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.photo_url} alt="" className="w-12 h-12 rounded-xl object-cover border border-white/10 shrink-0" />
+                  <img src={p.photo_url} alt="" className="w-12 h-12 rounded-md object-cover border border-ink/10 shrink-0" />
                 ) : (
-                  <div className="w-12 h-12 rounded-xl bg-surface2 border border-white/10 flex items-center justify-center text-slate2 text-lg font-bold shrink-0">{initial}</div>
+                  <div className="w-12 h-12 rounded-md bg-surface2 border border-ink/10 flex items-center justify-center text-slate2 text-lg font-bold shrink-0">{initial}</div>
                 )}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-display font-semibold text-ink text-[15px] leading-tight">{p.alias || p.name}</span>
-                    <span className="text-[10px] uppercase tracking-wide bg-teal/15 text-teal px-2 py-0.5 rounded-full">Featured</span>
+                    <span className="font-display font-semibold text-ink text-[19px] leading-tight">{p.alias || p.name}</span>
                   </div>
                   <div className="mt-0.5 flex items-center gap-1.5 text-[13px] text-slate2">
                     {cat ? <CategoryIcon id={cat.id} className="w-3.5 h-3.5 shrink-0 text-muted" /> : null}

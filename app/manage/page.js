@@ -14,7 +14,7 @@ const MAX_SECONDARY = 4;
 
 function Check({ done }) {
   return (
-    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] shrink-0 ${done ? "bg-ok text-white" : "bg-surface2 border border-white/15 text-muted"}`}>
+    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] shrink-0 ${done ? "bg-ok text-white" : "bg-surface2 border border-ink/15 text-muted"}`}>
       {done ? "✓" : ""}
     </span>
   );
@@ -78,7 +78,7 @@ function ManageInner() {
   }
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-  const inputCls = "w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30";
+  const inputCls = "w-full rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30";
 
   const toggleArea = (a) =>
     setForm((f) => ({ ...f, service_areas: f.service_areas.includes(a) ? f.service_areas.filter((x) => x !== a) : [...f.service_areas, a] }));
@@ -201,7 +201,7 @@ function ManageInner() {
       </div>
 
       {/* Onboarding checklist */}
-      <div className="mt-3 bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+      <div className="mt-3 bg-surface border border-ink/10 rounded-md p-4 shadow-card">
         <div className="font-semibold text-ink text-[15px]">Complete your profile</div>
         <div className="mt-3 space-y-2.5 text-[14px]">
           <div className="flex items-center gap-2 text-slate2"><Check done={hasPhoto} /> Add a profile photo</div>
@@ -214,12 +214,12 @@ function ManageInner() {
       </div>
 
       {/* Photo */}
-      <div className="mt-4 bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+      <div className="mt-4 bg-surface border border-ink/10 rounded-md p-4 shadow-card">
         <div className="flex items-center gap-3">
           {p.photo_url
             // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={p.photo_url} alt="" className="w-16 h-16 rounded-2xl object-cover border border-white/10" />
-            : <div className="w-16 h-16 rounded-2xl bg-surface2 border border-white/10 flex items-center justify-center text-slate2 text-2xl font-bold">{(form?.alias || p.name || "?").charAt(0).toUpperCase()}</div>}
+            ? <img src={p.photo_url} alt="" className="w-16 h-16 rounded-md object-cover border border-ink/10" />
+            : <div className="w-16 h-16 rounded-md bg-surface2 border border-ink/10 flex items-center justify-center text-slate2 text-2xl font-bold">{(form?.alias || p.name || "?").charAt(0).toUpperCase()}</div>}
           <div>
             <div className="text-[14px] font-semibold text-ink">Profile photo</div>
             <label className="mt-1 inline-block text-[13px] text-amber font-semibold cursor-pointer">
@@ -233,7 +233,7 @@ function ManageInner() {
 
       {/* Who supplies the materials: the provider's own statement. */}
       {showMaterials ? (
-        <div className="mt-4 bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+        <div className="mt-4 bg-surface border border-ink/10 rounded-md p-4 shadow-card">
           <div className="font-semibold text-ink text-[15px]">Who supplies the materials?</div>
           <p className="text-[12px] text-muted mt-0.5">
             Customers want to know before they hire. This shows on your profile as your own statement. Once {MATERIALS_MIN_REPORTS} customers have answered the same question in their reviews, their answers are shown instead.
@@ -245,7 +245,7 @@ function ManageInner() {
                 key={k}
                 disabled={matBusy}
                 onClick={() => chooseMaterials(k)}
-                className={`w-full text-left px-3 py-2.5 rounded-xl border text-[14px] font-semibold disabled:opacity-60 ${materials === k ? "bg-amber text-navy border-amber" : "bg-surface2 text-ink border-white/15"}`}
+                className={`w-full text-left px-3 py-2.5 rounded-md border text-[14px] font-semibold disabled:opacity-60 ${materials === k ? "bg-amber text-navy border-amber" : "bg-surface2 text-ink border-ink/15"}`}
               >
                 {MATERIALS_STATES[k].owner}
               </button>
@@ -255,7 +255,7 @@ function ManageInner() {
 
           {/* Fee and receipts: only when the provider supplies materials. */}
           {feeApplies(materials) ? (
-            <div className="mt-4 pt-4 border-t border-white/10">
+            <div className="mt-4 pt-4 border-t border-ink/10">
               <label htmlFor="mat-fee" className="block text-[14px] font-semibold text-ink">What&apos;s your fee percentage for supplying materials?</label>
               <p className="text-[12px] text-muted mt-0.5">This covers you paying for the materials up front on the customer&apos;s behalf, sourcing them and bringing them to the job. Type a number from 0 to 100. Customers see it as: receipt cost plus your percentage.</p>
               <div className="mt-2 flex items-center gap-2">
@@ -263,24 +263,24 @@ function ManageInner() {
                 <span className="text-[15px] text-slate2">%</span>
               </div>
               {feeNum != null && feeNum >= FEE_WARN_FROM ? (
-                <div className="mt-2 bg-amber/10 border border-amber/30 rounded-xl p-3 text-[13px] text-slate2">
+                <div className="mt-2 bg-amber/10 border border-amber/30 rounded-md p-3 text-[13px] text-slate2">
                   <b className="text-amber">This is considered a very high fee for supplying materials.</b> You may not get as many jobs.
                 </div>
               ) : null}
               {feeCharged ? (
-                <div className="mt-2 bg-surface2 border border-white/10 rounded-xl p-3 text-[13px] text-slate2">
+                <div className="mt-2 bg-surface2 border border-ink/10 rounded-md p-3 text-[13px] text-slate2">
                   <b className="text-ink">Receipts must be shown.</b> If you charge a supply fee, show the customer the receipt for everything you buy. Customers are asked in their review whether they saw receipts. If you don&apos;t show them, you are at risk of bad reviews.
                 </div>
               ) : (
                 <div className="mt-3">
                   <div className="text-[13px] text-slate2 mb-1.5">Do you show customers the receipts?</div>
                   <div className="grid grid-cols-2 gap-2">
-                    <button type="button" onClick={() => { setReceipts(receipts === true ? null : true); setTermsMsg(null); }} className={`py-2.5 rounded-xl border text-[14px] font-semibold ${receipts === true ? "bg-amber text-navy border-amber" : "bg-surface2 text-ink border-white/15"}`}>Yes</button>
-                    <button type="button" onClick={() => { setReceipts(receipts === false ? null : false); setTermsMsg(null); }} className={`py-2.5 rounded-xl border text-[14px] font-semibold ${receipts === false ? "bg-amber text-navy border-amber" : "bg-surface2 text-ink border-white/15"}`}>No</button>
+                    <button type="button" onClick={() => { setReceipts(receipts === true ? null : true); setTermsMsg(null); }} className={`py-2.5 rounded-md border text-[14px] font-semibold ${receipts === true ? "bg-amber text-navy border-amber" : "bg-surface2 text-ink border-ink/15"}`}>Yes</button>
+                    <button type="button" onClick={() => { setReceipts(receipts === false ? null : false); setTermsMsg(null); }} className={`py-2.5 rounded-md border text-[14px] font-semibold ${receipts === false ? "bg-amber text-navy border-amber" : "bg-surface2 text-ink border-ink/15"}`}>No</button>
                   </div>
                 </div>
               )}
-              <button type="button" onClick={saveTerms} disabled={termsBusy} className="mt-3 w-full bg-surface2 border border-white/15 text-ink font-semibold py-2.5 rounded-xl text-[14px] disabled:opacity-60">{termsBusy ? "Saving…" : "Save fee and receipts"}</button>
+              <button type="button" onClick={saveTerms} disabled={termsBusy} className="mt-3 w-full bg-surface2 border border-ink/15 text-ink font-semibold py-2.5 rounded-md text-[14px] disabled:opacity-60">{termsBusy ? "Saving…" : "Save fee and receipts"}</button>
               {termsMsg ? <p className={`text-[13px] mt-2 ${termsMsg.ok ? "text-ok" : "text-err"}`}>{termsMsg.text}</p> : null}
             </div>
           ) : null}
@@ -305,13 +305,13 @@ function ManageInner() {
         <div>
           <label className="block text-[13px] font-semibold text-ink mb-1.5">Service areas</label>
           <div className="grid grid-cols-2 gap-2 mb-2">
-            <button type="button" onClick={() => set("area_scope", "islandwide")} className={`py-2.5 rounded-xl border text-[14px] font-semibold ${form.area_scope === "islandwide" ? "bg-amber text-navy border-amber" : "bg-surface2 text-ink border-white/15"}`}>Island-wide</button>
-            <button type="button" onClick={() => set("area_scope", "selected")} className={`py-2.5 rounded-xl border text-[14px] font-semibold ${form.area_scope === "selected" ? "bg-amber text-navy border-amber" : "bg-surface2 text-ink border-white/15"}`}>Selected areas</button>
+            <button type="button" onClick={() => set("area_scope", "islandwide")} className={`py-2.5 rounded-md border text-[14px] font-semibold ${form.area_scope === "islandwide" ? "bg-amber text-navy border-amber" : "bg-surface2 text-ink border-ink/15"}`}>Island-wide</button>
+            <button type="button" onClick={() => set("area_scope", "selected")} className={`py-2.5 rounded-md border text-[14px] font-semibold ${form.area_scope === "selected" ? "bg-amber text-navy border-amber" : "bg-surface2 text-ink border-ink/15"}`}>Selected areas</button>
           </div>
           {form.area_scope === "selected" ? (
             <div className="flex flex-wrap gap-2">
               {SELECTABLE_AREAS.map((a) => (
-                <button type="button" key={a} onClick={() => toggleArea(a)} className={`text-[13px] px-3 py-1.5 rounded-full border ${form.service_areas.includes(a) ? "bg-teal/15 text-teal border-teal/40" : "bg-surface2 text-slate2 border-white/15"}`}>{a}</button>
+                <button type="button" key={a} onClick={() => toggleArea(a)} className={`text-[13px] px-3 py-1.5 rounded-full border ${form.service_areas.includes(a) ? "bg-teal/15 text-teal border-teal/40" : "bg-surface2 text-slate2 border-ink/15"}`}>{a}</button>
               ))}
             </div>
           ) : null}
@@ -350,7 +350,7 @@ function ManageInner() {
       </form>
 
       {/* Category change request */}
-      <div className="mt-6 bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+      <div className="mt-6 bg-surface border border-ink/10 rounded-md p-4 shadow-card">
         <div className="font-semibold text-ink text-[15px]">Category</div>
         <p className="text-[12px] text-muted mt-0.5">You appear under <b className="text-slate2">{CAT[p.category_id]?.name || p.category_id}</b>. To keep search accurate, category changes are reviewed by our team.</p>
         {existingCatReq ? (
@@ -368,13 +368,13 @@ function ManageInner() {
                 ) : null;
               })}
             </select>
-            <button type="button" onClick={submitCatReq} className="shrink-0 bg-surface2 border border-white/15 text-ink font-semibold text-[13px] px-3 rounded-xl">Request</button>
+            <button type="button" onClick={submitCatReq} className="shrink-0 bg-surface2 border border-ink/15 text-ink font-semibold text-[13px] px-3 rounded-md">Request</button>
           </div>
         )}
         {catMsg ? <p className={`text-[13px] mt-2 ${catMsg.ok ? "text-ok" : "text-err"}`}>{catMsg.text}</p> : null}
       </div>
 
-      <div className="mt-6 bg-surface2 border border-white/10 rounded-xl p-3 text-[12px] text-muted">
+      <div className="mt-6 bg-surface2 border border-ink/10 rounded-md p-3 text-[12px] text-muted">
         You control how you&apos;re described. The community controls how you&apos;re rated. Recommendations and ratings can&apos;t be edited here.
       </div>
       <div className="h-4" />

@@ -137,7 +137,7 @@ function SignInSheet({ msg, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/55 flex items-end sm:items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-surface border border-white/10 w-full max-w-xl rounded-t-2xl sm:rounded-2xl p-5 shadow-pop">
+      <div className="bg-surface border border-ink/10 w-full max-w-xl rounded-t-2xl sm:rounded-md p-5 shadow-pop">
         <div className="flex items-center justify-between">
           <h3 className="font-display font-semibold text-ink text-lg">{title}</h3>
           <button onClick={onClose} className="text-muted text-xl leading-none px-2" aria-label="Close">×</button>
@@ -150,22 +150,22 @@ function SignInSheet({ msg, onClose }) {
         {social.length ? (
           <div className="mt-4 space-y-2">
             {social.map((p) => (
-              <button key={p.id} onClick={p.go} className="w-full py-3 rounded-xl bg-amber text-navy text-[15px] font-semibold">{p.label}</button>
+              <button key={p.id} onClick={p.go} className="w-full py-3 rounded-md bg-amber text-navy text-[15px] font-semibold">{p.label}</button>
             ))}
-            <div className="flex items-center gap-3 my-1"><div className="h-px bg-white/10 flex-1" /><span className="text-[11px] text-muted">or</span><div className="h-px bg-white/10 flex-1" /></div>
+            <div className="flex items-center gap-3 my-1"><div className="h-px bg-ink/10 flex-1" /><span className="text-[11px] text-muted">or</span><div className="h-px bg-ink/10 flex-1" /></div>
           </div>
         ) : null}
 
         <form onSubmit={submit} className={social.length ? "space-y-2" : "mt-4 space-y-2"}>
           <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email" autoComplete="email" placeholder="Your email address"
-            className="w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30" />
+            className="w-full rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30" />
           {mode !== "forgot" ? (
             <input value={password} onChange={(e) => setPassword(e.target.value)} type="password"
               autoComplete={mode === "signup" ? "new-password" : "current-password"}
               placeholder={mode === "signup" ? "Create a password (6+ characters)" : "Password"}
-              className="w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30" />
+              className="w-full rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30" />
           ) : null}
-          <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-amber text-navy text-[15px] font-semibold disabled:opacity-60">{cta}</button>
+          <button type="submit" disabled={busy} className="w-full py-3 rounded-md bg-amber text-navy text-[15px] font-semibold disabled:opacity-60">{cta}</button>
           {err ? <p className="text-[13px] text-err">{err}</p> : null}
           {info ? <p className="text-[13px] text-ok">{info}</p> : null}
         </form>
@@ -201,12 +201,12 @@ function SetPasswordSheet({ onDone }) {
   }
   return (
     <div className="fixed inset-0 z-[70] bg-black/60 flex items-end sm:items-center justify-center">
-      <div className="bg-surface border border-white/10 w-full max-w-xl rounded-t-2xl sm:rounded-2xl p-5 shadow-pop">
+      <div className="bg-surface border border-ink/10 w-full max-w-xl rounded-t-2xl sm:rounded-md p-5 shadow-pop">
         <h3 className="font-display font-semibold text-ink text-lg">Set a new password</h3>
         <p className="text-[13px] text-slate2 mt-1">Choose a new password for your account.</p>
         <form onSubmit={save} className="mt-4 space-y-3">
           <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" autoComplete="new-password" placeholder="New password (6+ characters)"
-            className="w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30" />
+            className="w-full rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-3 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30" />
           <button type="submit" disabled={busy} className="w-full bg-amber text-navy font-bold py-3 rounded-full text-[15px] disabled:opacity-60">{busy ? "Saving…" : "Save password"}</button>
           {err ? <p className="text-[13px] text-err text-center">{err}</p> : null}
         </form>
@@ -240,19 +240,19 @@ function CompleteProfile({ user, onDone }) {
 
   return (
     <div className="fixed inset-0 z-[70] bg-black/60 flex items-end sm:items-center justify-center">
-      <div className="bg-surface border border-white/10 w-full max-w-xl rounded-t-2xl sm:rounded-2xl p-5 shadow-pop">
+      <div className="bg-surface border border-ink/10 w-full max-w-xl rounded-t-2xl sm:rounded-md p-5 shadow-pop">
         <h3 className="font-display font-semibold text-ink text-lg">Almost there, set up your profile</h3>
         <p className="text-[13px] text-slate2 mt-1">Just two things. This is how you&apos;ll appear on recommendations.</p>
         <form onSubmit={save} className="mt-4 space-y-3">
           <div>
             <label className="block text-[13px] font-semibold text-ink mb-1.5">First name</label>
             <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="e.g. Marcus"
-              className="w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30" />
+              className="w-full rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30" />
           </div>
           <div>
             <label className="block text-[13px] font-semibold text-ink mb-1.5">Area</label>
             <select value={area} onChange={(e) => setArea(e.target.value)}
-              className="w-full rounded-xl border border-white/15 bg-surface2 text-ink px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30">
+              className="w-full rounded-md border border-ink/15 bg-surface2 text-ink px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber focus:ring-2 focus:ring-amber/30">
               <option value="">Choose your area…</option>
               {AREAS.map((a) => <option key={a} value={a}>{a}</option>)}
             </select>

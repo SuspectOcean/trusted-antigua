@@ -17,7 +17,7 @@ const STATUS_STYLE = {
   pending: "bg-amber/15 text-amber",
   accepted: "bg-ok/15 text-ok",
   revoked: "bg-err/15 text-err",
-  expired: "bg-white/10 text-muted",
+  expired: "bg-ink/10 text-muted",
 };
 
 // Invitations attach by email at sign-in, with any auth provider.
@@ -77,14 +77,14 @@ export default function AdminInvitationsPage() {
         {!isOwner ? (
           <p className="text-[13px] text-muted">Only the owner can send or revoke invitations. You can view them below.</p>
         ) : (
-          <form onSubmit={invite} className="bg-surface border border-white/10 rounded-2xl p-3 space-y-2">
+          <form onSubmit={invite} className="bg-surface border border-ink/10 rounded-md p-3 space-y-2">
             <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="their@email.com" className={inputCls} />
             <div className="flex gap-2">
               <select value={role} onChange={(e) => setRole(e.target.value)} className={inputCls}>
                 <option value="moderator">Moderator (review moderation only)</option>
                 <option value="admin">Admin (full control centre)</option>
               </select>
-              <button disabled={busy || !email.trim()} className="shrink-0 px-4 rounded-xl bg-amber text-navy font-semibold text-[13px] disabled:opacity-50">Invite</button>
+              <button disabled={busy || !email.trim()} className="shrink-0 px-4 rounded-md bg-amber text-navy font-semibold text-[13px] disabled:opacity-50">Invite</button>
             </div>
             <p className="text-[11px] text-muted">Single use, expires in 7 days. Every invitation and role change is recorded in the audit trail.</p>
           </form>
@@ -95,10 +95,10 @@ export default function AdminInvitationsPage() {
         {!rows.length ? <div className="text-[13px] text-muted">No invitations yet.</div> : (
           <div className="space-y-1.5">
             {rows.map((r) => (
-              <div key={r.id} className="bg-surface border border-white/10 rounded-xl p-2.5">
+              <div key={r.id} className="bg-surface border border-ink/10 rounded-md p-2.5">
                 <div className="flex items-center gap-2">
                   <span className="text-[13px] text-ink flex-1 truncate">{r.email}</span>
-                  <span className="text-[10px] uppercase tracking-wide bg-white/10 text-slate2 px-2 py-0.5 rounded-full">{r.role}</span>
+                  <span className="text-[10px] uppercase tracking-wide bg-ink/10 text-slate2 px-2 py-0.5 rounded-full">{r.role}</span>
                   <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full ${STATUS_STYLE[r.status] || ""}`}>{r.status}</span>
                 </div>
                 <div className="flex items-center justify-between mt-1">
@@ -122,7 +122,7 @@ export default function AdminInvitationsPage() {
           {!audit.length ? <div className="text-[13px] text-muted">No permission changes recorded yet.</div> : (
             <div className="space-y-1.5">
               {audit.map((a) => (
-                <div key={a.id} className="bg-surface2 rounded-xl p-2.5 text-[12px] text-slate2">
+                <div key={a.id} className="bg-surface2 rounded-md p-2.5 text-[12px] text-slate2">
                   <b className="text-ink">{a.action.replace(/_/g, " ")}</b>
                   {a.role ? ` · ${a.role}` : ""}
                   {a.target_email ? ` · ${a.target_email}` : ""}

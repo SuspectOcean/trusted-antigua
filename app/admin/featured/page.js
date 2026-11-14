@@ -67,7 +67,7 @@ export default function AdminFeaturedPage() {
           <>
             <form onSubmit={search} className="flex gap-2">
               <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search providers by name or trade" className={inputCls} />
-              <button className="shrink-0 px-3 rounded-xl bg-amber text-navy font-semibold text-[13px]">Search</button>
+              <button className="shrink-0 px-3 rounded-md bg-amber text-navy font-semibold text-[13px]">Search</button>
             </form>
             {results.length ? (
               <div className="mt-2 space-y-1.5">
@@ -75,7 +75,7 @@ export default function AdminFeaturedPage() {
                   <button
                     key={p.id}
                     onClick={() => setDraft({ provider_id: p.id, name: p.alias || p.name, headline: "", note: "", priority: 0, active: true })}
-                    className="w-full text-left bg-surface border border-white/10 rounded-xl p-2.5 hover:border-amber/40"
+                    className="w-full text-left bg-surface border border-ink/10 rounded-md p-2.5 hover:border-amber/40"
                   >
                     <span className="text-[14px] text-ink font-medium">{p.alias || p.name}</span>
                     <span className="text-[12px] text-muted"> · {CAT[p.category_id]?.name || p.category_id}{p.area ? ` · ${p.area}` : ""}</span>
@@ -85,13 +85,13 @@ export default function AdminFeaturedPage() {
             ) : null}
           </>
         ) : (
-          <div className="bg-surface border border-teal/30 rounded-2xl p-3 space-y-2">
+          <div className="bg-surface border border-teal/30 rounded-md p-3 space-y-2">
             <div className="text-[14px] text-ink font-medium">{draft.name || "Selected provider"}</div>
             <input value={draft.headline} onChange={(e) => setDraft({ ...draft, headline: e.target.value })} placeholder="Headline (e.g. Trusted by neighbours)" className={inputCls} />
             <textarea value={draft.note} onChange={(e) => setDraft({ ...draft, note: e.target.value })} rows={2} placeholder="Why are you highlighting them?" className={inputCls} />
             <div className="flex gap-2">
               <input value={draft.priority} onChange={(e) => setDraft({ ...draft, priority: e.target.value })} type="number" placeholder="Priority" className={inputCls} />
-              <button disabled={busy} onClick={save} className="shrink-0 px-4 rounded-xl bg-amber text-navy font-semibold text-[13px] disabled:opacity-60">Save</button>
+              <button disabled={busy} onClick={save} className="shrink-0 px-4 rounded-md bg-amber text-navy font-semibold text-[13px] disabled:opacity-60">Save</button>
             </div>
           </div>
         )}
@@ -101,7 +101,7 @@ export default function AdminFeaturedPage() {
         {!rows.length ? <div className="text-[13px] text-muted">Nothing featured yet.</div> : (
           <div className="space-y-2">
             {rows.map((r) => (
-              <div key={r.id} className={`bg-surface border rounded-2xl p-3 ${r.active ? "border-teal/30" : "border-white/10 opacity-60"}`}>
+              <div key={r.id} className={`bg-surface border rounded-md p-3 ${r.active ? "border-teal/30" : "border-ink/10 opacity-60"}`}>
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-display font-semibold text-ink text-[14px]">{r.providers?.alias || r.providers?.name || "Provider"}</span>
                   <span className="text-[11px] text-muted">priority {r.priority}</span>
@@ -109,8 +109,8 @@ export default function AdminFeaturedPage() {
                 {r.headline ? <div className="text-[13px] text-ink mt-0.5">{r.headline}</div> : null}
                 {r.note ? <p className="text-[12px] text-muted mt-0.5">{r.note}</p> : null}
                 <div className="mt-2 flex gap-2">
-                  <button disabled={busy} onClick={() => toggle(r)} className="px-3 py-1.5 rounded-full border border-white/15 text-ink text-[12px] disabled:opacity-60">{r.active ? "Deactivate" : "Activate"}</button>
-                  <button disabled={busy} onClick={() => setDraft({ id: r.id, provider_id: r.provider_id, name: r.providers?.alias || r.providers?.name, headline: r.headline || "", note: r.note || "", priority: r.priority, active: r.active })} className="px-3 py-1.5 rounded-full border border-white/15 text-ink text-[12px] disabled:opacity-60">Edit</button>
+                  <button disabled={busy} onClick={() => toggle(r)} className="px-3 py-1.5 rounded-full border border-ink/15 text-ink text-[12px] disabled:opacity-60">{r.active ? "Deactivate" : "Activate"}</button>
+                  <button disabled={busy} onClick={() => setDraft({ id: r.id, provider_id: r.provider_id, name: r.providers?.alias || r.providers?.name, headline: r.headline || "", note: r.note || "", priority: r.priority, active: r.active })} className="px-3 py-1.5 rounded-full border border-ink/15 text-ink text-[12px] disabled:opacity-60">Edit</button>
                   <button disabled={busy} onClick={() => remove(r.id)} className="px-3 py-1.5 rounded-full border border-err/40 text-err text-[12px] disabled:opacity-60">Remove</button>
                 </div>
               </div>

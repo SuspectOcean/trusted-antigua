@@ -26,7 +26,7 @@ export default function Error({ error, reset }) {
         <button onClick={() => reset()} className="bg-amber text-navy font-semibold text-sm py-3 rounded-full">
           Try again
         </button>
-        <Link href="/find" className="border border-white/15 text-ink font-semibold text-sm py-3 rounded-full">
+        <Link href="/find" className="border border-ink/15 text-ink font-semibold text-sm py-3 rounded-full">
           Back to the directory
         </Link>
       </div>

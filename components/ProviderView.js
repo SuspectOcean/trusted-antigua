@@ -51,10 +51,10 @@ function ReplyForm({ reviewId, existing, onSaved }) {
   }
   return (
     <div className="mt-2">
-      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2} maxLength={1000} placeholder="Your public response as the business…" className="w-full rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2 text-[13px]" />
+      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2} maxLength={1000} placeholder="Your public response as the business…" className="w-full rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-2 text-[13px]" />
       <div className="flex gap-2 mt-1.5">
         <button disabled={busy} onClick={save} className="px-3 py-1.5 rounded-full bg-amber text-navy font-semibold text-[12px] disabled:opacity-60">{busy ? "Saving…" : "Post reply"}</button>
-        <button disabled={busy} onClick={() => setOpen(false)} className="px-3 py-1.5 rounded-full border border-white/15 text-ink text-[12px]">Cancel</button>
+        <button disabled={busy} onClick={() => setOpen(false)} className="px-3 py-1.5 rounded-full border border-ink/15 text-ink text-[12px]">Cancel</button>
       </div>
       {err ? <p className="text-[12px] text-err mt-1">{err}</p> : null}
     </div>
@@ -72,7 +72,7 @@ function RecCard({ r, providerLabel, reply, isOwner, isMine, isAdmin, reported, 
     finally { setRbusy(false); setConfirm(null); }
   }
   return (
-    <div className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+    <div className="bg-surface border border-ink/10 rounded-md p-4 shadow-card">
       <div className="flex items-center justify-between">
         <div className="text-[13px] font-display font-semibold text-ink">{r.recommender_display || "A resident"}</div>
         {r.rating_version === 2 && r.total_score != null ? (
@@ -158,20 +158,20 @@ function ReportModal({ review, isOwner, onClose, onDone }) {
   }
   return (
     <div className="fixed inset-0 z-50 bg-black/55 flex items-end sm:items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-surface border border-white/10 w-full max-w-xl rounded-t-2xl sm:rounded-2xl p-4 shadow-pop">
+      <div className="bg-surface border border-ink/10 w-full max-w-xl rounded-t-2xl sm:rounded-md p-4 shadow-pop">
         <h3 className="font-display font-semibold text-ink">{isOwner ? "Dispute this review" : "Report this review"}</h3>
         <p className="text-[12px] text-muted mt-1">
           {isOwner
             ? "Our team will check it against the Review Guidelines. Reviews stay visible while under review. Disputes are a request for moderation, not a delete button."
             : "Tell us what's wrong and our team will take a look."}
         </p>
-        <select value={reason} onChange={(e) => setReason(e.target.value)} className="w-full mt-3 rounded-xl border border-white/15 bg-surface2 text-ink px-3 py-2.5 text-[14px]">
+        <select value={reason} onChange={(e) => setReason(e.target.value)} className="w-full mt-3 rounded-md border border-ink/15 bg-surface2 text-ink px-3 py-2.5 text-[14px]">
           <option value="">Choose a reason…</option>
           {REPORT_REASONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
-        <textarea value={details} onChange={(e) => setDetails(e.target.value)} rows={3} maxLength={2000} className="w-full mt-2 rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[14px]" placeholder="Anything that helps us assess it (optional)" />
+        <textarea value={details} onChange={(e) => setDetails(e.target.value)} rows={3} maxLength={2000} className="w-full mt-2 rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[14px]" placeholder="Anything that helps us assess it (optional)" />
         <div className="flex gap-2 mt-3">
-          <button disabled={busy} onClick={onClose} className="flex-1 py-2.5 rounded-full border border-white/15 text-ink text-[14px]">Cancel</button>
+          <button disabled={busy} onClick={onClose} className="flex-1 py-2.5 rounded-full border border-ink/15 text-ink text-[14px]">Cancel</button>
           <button disabled={busy} onClick={send} className="flex-1 py-2.5 rounded-full bg-amber text-navy font-semibold text-[14px] disabled:opacity-60">{busy ? "Sending…" : "Send"}</button>
         </div>
         {msg ? <p className={`text-center text-[13px] mt-2 ${msg.ok ? "text-ok" : "text-err"}`}>{msg.text}</p> : null}
@@ -184,9 +184,9 @@ function Avatar({ src, name }) {
   const initial = (name || "?").trim().charAt(0).toUpperCase();
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt="" className="w-16 h-16 rounded-2xl object-cover border border-white/10 shrink-0" />;
+    return <img src={src} alt="" className="w-16 h-16 rounded-md object-cover border border-ink/10 shrink-0" />;
   }
-  return <div className="w-16 h-16 rounded-2xl bg-surface2 border border-white/10 flex items-center justify-center text-slate2 text-2xl font-bold shrink-0">{initial}</div>;
+  return <div className="w-16 h-16 rounded-md bg-surface2 border border-ink/10 flex items-center justify-center text-slate2 text-2xl font-bold shrink-0">{initial}</div>;
 }
 
 function WarningModal({ provider, onClose }) {
@@ -200,12 +200,12 @@ function WarningModal({ provider, onClose }) {
   }
   return (
     <div className="fixed inset-0 z-50 bg-black/55 flex items-end sm:items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-surface border border-white/10 w-full max-w-xl rounded-t-2xl sm:rounded-2xl p-4 shadow-pop">
+      <div className="bg-surface border border-ink/10 w-full max-w-xl rounded-t-2xl sm:rounded-md p-4 shadow-pop">
         <h3 className="font-display font-semibold text-ink">Share a private concern</h3>
         <p className="text-[12px] text-muted mt-1">This goes only to our team for review. We never post public complaints about anyone.</p>
-        <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} className="w-full mt-3 rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px]" placeholder="What happened?" />
+        <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} className="w-full mt-3 rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px]" placeholder="What happened?" />
         <div className="flex gap-2 mt-3">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-full border border-white/15 text-ink text-[14px]">Cancel</button>
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-full border border-ink/15 text-ink text-[14px]">Cancel</button>
           <button onClick={send} className="flex-1 py-2.5 rounded-full bg-amber text-navy font-semibold text-[14px]">Send privately</button>
         </div>
         {msg ? <p className={`text-center text-[13px] mt-2 ${msg.ok ? "text-ok" : "text-err"}`}>{msg.text}</p> : null}
@@ -351,12 +351,12 @@ export default function ProviderView({ id }) {
         <Link href="/find" className="inline-flex items-center gap-1 text-[13px] text-slate2">‹ Back</Link>
         <ShareButton provider={p} />
       </div>
-      <div className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+      <div className="bg-surface border border-ink/10 rounded-md p-4 shadow-card">
         <div className="flex items-start gap-3">
           <Avatar src={p.photo_url} name={p.alias || p.name} />
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-display font-semibold text-ink leading-tight">{p.alias || p.name}</h1>
+              <h1 className="text-[28px] font-display font-bold uppercase text-ink leading-[1.05]">{p.alias || p.name}</h1>
               <TrustBadge level={p.trust_level} size="md" tappable />
             </div>
             {p.alias ? <div className="text-[13px] text-muted">{p.name}</div> : null}
@@ -367,7 +367,7 @@ export default function ProviderView({ id }) {
             {Array.isArray(p.secondary_categories) && p.secondary_categories.length ? (
               <div className="mt-1.5 flex flex-wrap gap-1">
                 {p.secondary_categories.map((sid) => CAT[sid] ? (
-                  <span key={sid} className="text-[11px] bg-surface2 text-muted px-2 py-0.5 rounded-full border border-white/10">{CAT[sid].name}</span>
+                  <span key={sid} className="text-[11px] bg-surface2 text-muted px-2 py-0.5 rounded-full border border-ink/10">{CAT[sid].name}</span>
                 ) : null)}
               </div>
             ) : null}
@@ -380,7 +380,7 @@ export default function ProviderView({ id }) {
             source is always stated: customer reports replace the provider's own
             statement once there are enough of them. */}
         {mat || matEarly ? (
-          <div className="mt-3 bg-surface2 border border-white/10 rounded-xl px-3 py-2.5">
+          <div className="mt-3 bg-surface2 border border-ink/10 rounded-md px-3 py-2.5">
             <div className="text-[10px] uppercase tracking-wide text-muted">Materials</div>
             {mat ? (
               <>
@@ -400,7 +400,7 @@ export default function ProviderView({ id }) {
               </div>
             ) : null}
             {matTerms ? (
-              <div className="mt-2 pt-2 border-t border-white/10">
+              <div className="mt-2 pt-2 border-t border-ink/10">
                 <div className="text-[13px] text-ink">{matTerms.line}</div>
                 {matTerms.example ? <div className="text-[12px] text-muted mt-0.5">{matTerms.example}</div> : null}
                 {matTerms.receipts ? <div className="text-[12px] text-slate2 mt-0.5">{matTerms.receipts}</div> : null}
@@ -418,22 +418,22 @@ export default function ProviderView({ id }) {
         {/* Ratings & reviews are gated: logged-out visitors get a sign-in prompt
             instead of the numbers. Ten-category (v2) only; legacy shown separately. */}
         {!user ? (
-          <div className="mt-3 bg-surface2 border border-white/10 rounded-xl p-4 text-center">
+          <div className="mt-3 bg-surface2 border border-ink/10 rounded-md p-4 text-center">
             <div className="text-[13px] text-slate2">Ratings and reviews are for members.</div>
             <button onClick={() => openSignIn("Sign in to see ratings and read reviews.")} className="mt-3 bg-amber text-navy font-semibold text-[13px] px-4 py-2 rounded-full">Sign in to see the rating</button>
           </div>
         ) : ratings?.r10_count ? (
           <>
             <div className="mt-3 grid grid-cols-3 gap-2">
-              <div className="bg-surface2 rounded-xl p-3 text-center">
+              <div className="bg-surface2 rounded-md p-3 text-center">
                 <div className="text-lg font-bold text-amber">{ratings.trust_pct}%</div>
                 <div className="text-[10px] uppercase tracking-wide text-muted">trust rating</div>
               </div>
-              <div className="bg-surface2 rounded-xl p-3 text-center">
+              <div className="bg-surface2 rounded-md p-3 text-center">
                 <div className="text-lg font-bold text-ink">{Number(ratings.avg_out_of_10).toFixed(1)}</div>
                 <div className="text-[10px] uppercase tracking-wide text-muted">avg / 10</div>
               </div>
-              <div className="bg-surface2 rounded-xl p-3 text-center">
+              <div className="bg-surface2 rounded-md p-3 text-center">
                 <div className="text-lg font-bold text-ok">{ratings.r10_count}</div>
                 <div className="text-[10px] uppercase tracking-wide text-muted">rating{ratings.r10_count === 1 ? "" : "s"}</div>
               </div>
@@ -447,7 +447,7 @@ export default function ProviderView({ id }) {
                 return v != null ? (
                   <div key={c.key} className="flex items-center gap-2 text-[13px]">
                     <span className="text-slate2 flex-1">{c.label}</span>
-                    <div className="w-24 h-1.5 rounded-full bg-white/10 overflow-hidden"><div className="h-full bg-amber" style={{ width: `${Number(v) * 10}%` }} /></div>
+                    <div className="w-24 h-1.5 rounded-full bg-ink/10 overflow-hidden"><div className="h-full bg-amber" style={{ width: `${Number(v) * 10}%` }} /></div>
                     <span className="text-ink font-semibold w-9 text-right">{Number(v).toFixed(1)}</span>
                   </div>
                 ) : null;
@@ -456,11 +456,11 @@ export default function ProviderView({ id }) {
           </>
         ) : (
           <div className="mt-3 grid grid-cols-2 gap-3">
-            <div className="bg-surface2 rounded-xl p-3 text-center">
+            <div className="bg-surface2 rounded-md p-3 text-center">
               <div className="text-lg font-bold text-amber">{count}</div>
               <div className="text-[10px] uppercase tracking-wide text-muted">review{count === 1 ? "" : "s"}</div>
             </div>
-            <div className="bg-surface2 rounded-xl p-3 text-center">
+            <div className="bg-surface2 rounded-md p-3 text-center">
               <div className="text-lg font-bold text-ok">{count ? wha + "%" : "N/A"}</div>
               <div className="text-[10px] uppercase tracking-wide text-muted">would hire again</div>
             </div>
@@ -499,7 +499,7 @@ export default function ProviderView({ id }) {
         {user && wa ? (
           <div className="mt-4 flex gap-2">
             <a href={wa} target="_blank" rel="noopener noreferrer" className="flex-1 text-center bg-[#25D366] text-white font-semibold text-sm py-2.5 rounded-full">WhatsApp</a>
-            {contact ? <a href={`tel:${contact}`} className="flex-1 text-center bg-navy border border-white/15 text-ink font-semibold text-sm py-2.5 rounded-full">Call</a> : null}
+            {contact ? <a href={`tel:${contact}`} className="flex-1 text-center bg-navy border border-ink/15 text-ink font-semibold text-sm py-2.5 rounded-full">Call</a> : null}
           </div>
         ) : user && !wa ? (
           <div className="mt-4 text-center text-[13px] text-muted py-2.5">No contact on file for this provider.</div>
@@ -519,15 +519,15 @@ export default function ProviderView({ id }) {
 
       {/* Claim / manage strip */}
       {isOwner ? (
-        <Link href={`/manage?id=${encodeURIComponent(p.id)}`} className="mt-3 block bg-surface2 border border-amber/30 rounded-2xl p-3 text-center text-[13px] text-amber font-semibold">
+        <Link href={`/manage?id=${encodeURIComponent(p.id)}`} className="mt-3 block bg-surface2 border border-amber/30 rounded-md p-3 text-center text-[13px] text-amber font-semibold">
           You manage this profile · Edit ›
         </Link>
       ) : pendingClaim ? (
-        <div className="mt-3 bg-surface border border-white/10 rounded-2xl p-3 text-center text-[13px] text-slate2">
+        <div className="mt-3 bg-surface border border-ink/10 rounded-md p-3 text-center text-[13px] text-slate2">
           ⏳ Your claim for this profile is awaiting review.
         </div>
       ) : !claimed ? (
-        <div className="mt-3 bg-surface border border-white/10 rounded-2xl p-3 flex items-center justify-between gap-2">
+        <div className="mt-3 bg-surface border border-ink/10 rounded-md p-3 flex items-center justify-between gap-2">
           <span className="text-[13px] text-slate2">Is this your business?</span>
           {user ? (
             <Link href={`/claim?id=${encodeURIComponent(p.id)}`} className="text-[13px] bg-amber text-navy font-semibold px-3 py-1.5 rounded-full whitespace-nowrap">Claim this profile</Link>
@@ -539,7 +539,7 @@ export default function ProviderView({ id }) {
 
       <h2 className="font-display font-semibold text-[17px] text-ink mt-5 mb-2">Reviews</h2>
       {!user ? (
-        <div className="bg-surface border border-white/10 rounded-2xl p-5 text-center shadow-card">
+        <div className="bg-surface border border-ink/10 rounded-md p-5 text-center shadow-card">
           {/* Logged-out visitors cannot read review data at all, so we never claim
               "No reviews yet" here: that would be a guess, and a wrong one whenever
               reviews exist. Say what is true and offer the way in. */}
@@ -563,7 +563,7 @@ export default function ProviderView({ id }) {
               onDelete={removeMine}
               onAdminRemove={removeAsAdmin}
             />
-          )) : <div className="bg-surface border border-white/10 rounded-2xl p-5 text-center text-[13px] text-slate2 shadow-card">No recommendations yet. If you&apos;ve hired them, be the first to vouch.</div>}
+          )) : <div className="bg-surface border border-ink/10 rounded-md p-5 text-center text-[13px] text-slate2 shadow-card">No recommendations yet. If you&apos;ve hired them, be the first to vouch.</div>}
         </div>
       )}
 

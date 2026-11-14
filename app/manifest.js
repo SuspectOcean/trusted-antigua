@@ -9,8 +9,8 @@ export default function manifest() {
       "Find honest, reliable tradespeople and service providers in Antigua & Barbuda, recommended by real residents.",
     start_url: "/",
     display: "standalone",
-    background_color: "#0C1526",
-    theme_color: "#0C1526",
+    background_color: "#F3EEE4",
+    theme_color: "#FFFFFF",
     icons: [
       { src: "/icon.png", sizes: "512x512", type: "image/png" },
       { src: "/icon.png", sizes: "192x192", type: "image/png" },

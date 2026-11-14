@@ -21,7 +21,7 @@ function TradeSelect({ value, onChange, exclude = [], placeholder }) {
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-xl border border-white/15 bg-surface2 text-ink px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber"
+      className="w-full rounded-md border border-ink/15 bg-surface2 text-ink px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber"
     >
       <option value="">{placeholder}</option>
       {GROUPS.map((g) => {
@@ -122,7 +122,7 @@ export default function ListMePage() {
   if (!user) {
     return (
       <div className="pt-6 text-center">
-        <div className="bg-surface border border-white/10 rounded-2xl p-6 shadow-card">
+        <div className="bg-surface border border-ink/10 rounded-md p-6 shadow-card">
           <h1 className="text-lg font-display font-semibold text-ink">List yourself as a provider</h1>
           <p className="text-[14px] text-slate2 mt-1">Sign in first, then add your trade(s) so people can find and recommend you.</p>
           <button onClick={() => openSignIn("Sign in to list yourself as a provider.")} className="mt-4 bg-amber text-navy font-semibold px-5 py-2.5 rounded-full text-[15px]">Sign in</button>
@@ -135,7 +135,7 @@ export default function ListMePage() {
   if (done) {
     return (
       <div className="pt-2 pb-8">
-        <div className="bg-surface border border-white/10 rounded-2xl p-5 shadow-card text-center">
+        <div className="bg-surface border border-ink/10 rounded-md p-5 shadow-card text-center">
           <div className="text-3xl mb-1">✅</div>
           <h1 className="font-display font-semibold text-ink text-[18px]">You&apos;re listed on Trusted Antigua</h1>
           <p className="text-[13px] text-slate2 mt-1.5">
@@ -162,25 +162,25 @@ export default function ListMePage() {
         <div>
           <label className="text-[12px] text-muted">Your name</label>
           <input value={name} onChange={(e) => setName(e.target.value)} type="text" placeholder="e.g. Roscoe Bloomfield"
-            className="w-full mt-1 rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber" />
+            className="w-full mt-1 rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber" />
         </div>
 
         <div>
           <label className="text-[12px] text-muted">Business name <span className="text-muted/60">(optional)</span></label>
           <input value={alias} onChange={(e) => setAlias(e.target.value)} type="text" placeholder="e.g. Bloomfield Charters"
-            className="w-full mt-1 rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber" />
+            className="w-full mt-1 rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber" />
         </div>
 
         <div>
           <label className="text-[12px] text-muted">Your phone / WhatsApp</label>
           <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" placeholder="e.g. 464 1234"
-            className={`w-full mt-1 rounded-xl border bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none ${dupe ? "border-amber" : "border-white/15 focus:border-amber"}`} />
+            className={`w-full mt-1 rounded-md border bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none ${dupe ? "border-amber" : "border-ink/15 focus:border-amber"}`} />
           {checking ? <p className="text-[11px] text-muted mt-1">Checking if this number is already listed…</p> : null}
         </div>
 
         {/* Already listed → claim it instead of duplicating. */}
         {dupe ? (
-          <div className="bg-surface border border-amber/40 rounded-2xl p-3">
+          <div className="bg-surface border border-amber/40 rounded-md p-3">
             <div className="text-[12px] text-amber font-semibold">This number is already on Trusted Antigua</div>
             <div className="mt-1.5 font-display font-semibold text-ink">{dupe.alias || dupe.name}</div>
             <div className="text-[12px] text-slate2">
@@ -224,7 +224,7 @@ export default function ListMePage() {
         <div>
           <label className="text-[12px] text-muted">Area <span className="text-muted/60">(optional)</span></label>
           <input value={area} onChange={(e) => setArea(e.target.value)} type="text" placeholder="e.g. Jolly Harbour"
-            className="w-full mt-1 rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber" />
+            className="w-full mt-1 rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber" />
           <p className="text-[11px] text-muted mt-1">You can set detailed service areas after, when you tidy up your profile.</p>
         </div>
 

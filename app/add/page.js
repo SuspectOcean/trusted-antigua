@@ -127,7 +127,7 @@ export default function AddProviderPage() {
   if (done) {
     return (
       <div className="pt-2 pb-8">
-        <div className="bg-surface border border-white/10 rounded-2xl p-5 shadow-card text-center">
+        <div className="bg-surface border border-ink/10 rounded-md p-5 shadow-card text-center">
           <div className="text-3xl mb-1">✅</div>
           <h1 className="font-display font-semibold text-ink text-[18px]">{done.name} is now on Trusted Antigua</h1>
           <p className="text-[13px] text-slate2 mt-1.5">
@@ -162,7 +162,7 @@ export default function AddProviderPage() {
       {supported ? (
         <button
           onClick={pickFromContacts}
-          className="w-full mt-4 flex items-center justify-center gap-2 bg-surface2 border border-white/15 text-ink font-semibold text-sm py-3 rounded-full active:scale-[.99] transition"
+          className="w-full mt-4 flex items-center justify-center gap-2 bg-surface2 border border-ink/15 text-ink font-semibold text-sm py-3 rounded-full active:scale-[.99] transition"
         >
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 11h-6M19 8v6" /></svg>
           Pick from my contacts
@@ -175,25 +175,25 @@ export default function AddProviderPage() {
         <div>
           <label className="text-[12px] text-muted">Their name</label>
           <input value={name} onChange={(e) => setName(e.target.value)} type="text" placeholder="e.g. John Baptiste"
-            className="w-full mt-1 rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber" />
+            className="w-full mt-1 rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber" />
         </div>
 
         <div>
           <label className="text-[12px] text-muted">Business name <span className="text-muted/60">(optional)</span></label>
           <input value={alias} onChange={(e) => setAlias(e.target.value)} type="text" placeholder="e.g. JB Electrical"
-            className="w-full mt-1 rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber" />
+            className="w-full mt-1 rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber" />
         </div>
 
         <div>
           <label className="text-[12px] text-muted">Phone number</label>
           <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" placeholder="e.g. 464 1234"
-            className={`w-full mt-1 rounded-xl border bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none ${dupe ? "border-amber" : "border-white/15 focus:border-amber"}`} />
+            className={`w-full mt-1 rounded-md border bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none ${dupe ? "border-amber" : "border-ink/15 focus:border-amber"}`} />
           {checking ? <p className="text-[11px] text-muted mt-1">Checking if they&apos;re already listed…</p> : null}
         </div>
 
         {/* Duplicate: number already belongs to someone — link, don't duplicate. */}
         {dupe ? (
-          <div className="bg-surface border border-amber/40 rounded-2xl p-3">
+          <div className="bg-surface border border-amber/40 rounded-md p-3">
             <div className="text-[12px] text-amber font-semibold">This number is already on Trusted Antigua</div>
             <div className="mt-1.5 font-display font-semibold text-ink">{dupe.alias || dupe.name}</div>
             <div className="text-[12px] text-slate2">
@@ -209,7 +209,7 @@ export default function AddProviderPage() {
         <div>
           <label className="text-[12px] text-muted">Trade</label>
           <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full mt-1 rounded-xl border border-white/15 bg-surface2 text-ink px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber">
+            className="w-full mt-1 rounded-md border border-ink/15 bg-surface2 text-ink px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber">
             <option value="">Choose a trade…</option>
             {GROUPS.map((g) => (
               <optgroup key={g.id} label={g.name}>
@@ -225,7 +225,7 @@ export default function AddProviderPage() {
                 onChange={(e) => setSuggestedTrade(e.target.value)}
                 type="text"
                 placeholder="What's their trade? e.g. Locksmith"
-                className="w-full rounded-xl border border-amber/40 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber"
+                className="w-full rounded-md border border-amber/40 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber"
               />
               <p className="text-[11px] text-muted mt-1">We&apos;ll add them under &ldquo;Other&rdquo; for now and review your suggested trade to add it properly.</p>
             </div>
@@ -235,7 +235,7 @@ export default function AddProviderPage() {
         <div>
           <label className="text-[12px] text-muted">Area <span className="text-muted/60">(optional)</span></label>
           <input value={area} onChange={(e) => setArea(e.target.value)} type="text" placeholder="e.g. Jolly Harbour"
-            className="w-full mt-1 rounded-xl border border-white/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber" />
+            className="w-full mt-1 rounded-md border border-ink/15 bg-surface2 text-ink placeholder-muted px-3 py-2.5 text-[15px] focus:outline-none focus:border-amber" />
         </div>
 
         {err ? <p className="text-[13px] text-err">{err}</p> : null}

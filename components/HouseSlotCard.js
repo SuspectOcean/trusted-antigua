@@ -30,10 +30,10 @@ export default function HouseSlotCard({ card }) {
   const inner = (
     // Same rounded card as a listing, but a DASHED amber hairline so it reads as
     // available space rather than a booked advert.
-    <div className="bg-surface border border-dashed border-amber/40 rounded-2xl p-4 shadow-card">
+    <div className="bg-surface border border-dashed border-amber/40 rounded-md p-4 shadow-card">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <div className="w-11 h-11 rounded-xl shrink-0 bg-amber/10 border border-dashed border-amber/40 flex items-center justify-center text-lg">
+          <div className="w-11 h-11 rounded-md shrink-0 bg-amber/10 border border-dashed border-amber/40 flex items-center justify-center text-lg">
             {card.icon || "📣"}
           </div>
           <div className="min-w-0">

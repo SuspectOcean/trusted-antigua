@@ -81,7 +81,7 @@ export default function AdminAdsPage() {
           : <button onClick={() => setDraft({ ...BLANK_CAMPAIGN })} className="px-3 py-1.5 rounded-full bg-amber text-navy font-semibold text-[12px]">Add campaign</button>}
       >
         {draft ? (
-          <div className="bg-surface border border-white/10 rounded-2xl p-3 space-y-2">
+          <div className="bg-surface border border-ink/10 rounded-md p-3 space-y-2">
             <input value={draft.advertiser_name} onChange={(e) => setDraft({ ...draft, advertiser_name: e.target.value })} placeholder="Advertiser name" className={inputCls} />
             <input value={draft.advertiser_contact} onChange={(e) => setDraft({ ...draft, advertiser_contact: e.target.value })} placeholder="Contact (internal only, never shown)" className={inputCls} />
             <div className="flex gap-2">
@@ -97,7 +97,7 @@ export default function AdminAdsPage() {
                 <option value="archived">Archived</option>
               </select>
             </div>
-            <button disabled={busy} onClick={saveCampaign} className="w-full py-2 rounded-xl bg-amber text-navy font-semibold text-[13px] disabled:opacity-60">Save campaign</button>
+            <button disabled={busy} onClick={saveCampaign} className="w-full py-2 rounded-md bg-amber text-navy font-semibold text-[13px] disabled:opacity-60">Save campaign</button>
           </div>
         ) : null}
       </Panel>
@@ -106,7 +106,7 @@ export default function AdminAdsPage() {
         {!campaigns.length ? <div className="text-[13px] text-muted">No campaigns yet. House content is filling every slot.</div> : (
           <div className="space-y-2">
             {campaigns.map((c) => (
-              <div key={c.id} className="bg-surface border border-white/10 rounded-2xl p-3">
+              <div key={c.id} className="bg-surface border border-ink/10 rounded-md p-3">
                 <button onClick={() => setOpenId(openId === c.id ? null : c.id)} className="w-full text-left">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-display font-semibold text-ink text-[14px]">{c.advertiser_name}</span>
@@ -115,10 +115,10 @@ export default function AdminAdsPage() {
                 </button>
 
                 {openId === c.id ? (
-                  <div className="mt-3 space-y-3 border-t border-white/10 pt-3">
+                  <div className="mt-3 space-y-3 border-t border-ink/10 pt-3">
                     <CreativeAdder busy={busy} onAdd={(f, u, a) => addCreative(c.id, f, u, a)} />
                     {(c.ad_creatives || []).map((cr) => (
-                      <div key={cr.id} className="flex items-center gap-2 bg-surface2 rounded-xl p-2">
+                      <div key={cr.id} className="flex items-center gap-2 bg-surface2 rounded-md p-2">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={cr.image_url} alt="" className="w-16 h-10 object-cover rounded" />
                         <span className="text-[11px] text-muted truncate flex-1">{cr.click_url || "no link"}</span>
@@ -128,7 +128,7 @@ export default function AdminAdsPage() {
 
                     <PlacementAdder slots={slots} busy={busy} onAdd={(s, st, en) => addPlacement(c.id, s, st, en)} />
                     {(c.ad_placements || []).map((pl) => (
-                      <div key={pl.id} className="flex items-center gap-2 bg-surface2 rounded-xl p-2">
+                      <div key={pl.id} className="flex items-center gap-2 bg-surface2 rounded-md p-2">
                         <span className="text-[12px] text-ink flex-1">{pl.slot_key}</span>
                         <span className="text-[11px] text-muted">{pl.starts_at ? String(pl.starts_at).slice(0, 10) : "now"} → {pl.ends_at ? String(pl.ends_at).slice(0, 10) : "open"}</span>
                         <button disabled={busy} onClick={() => del("placement", pl.id)} className="text-[11px] text-err underline">Remove</button>
@@ -136,7 +136,7 @@ export default function AdminAdsPage() {
                     ))}
 
                     <div className="flex gap-2">
-                      <button disabled={busy} onClick={() => setDraft({ ...c, starts_at: c.starts_at ? String(c.starts_at).slice(0, 10) : "", ends_at: c.ends_at ? String(c.ends_at).slice(0, 10) : "" })} className="px-3 py-1.5 rounded-full border border-white/15 text-ink text-[12px]">Edit campaign</button>
+                      <button disabled={busy} onClick={() => setDraft({ ...c, starts_at: c.starts_at ? String(c.starts_at).slice(0, 10) : "", ends_at: c.ends_at ? String(c.ends_at).slice(0, 10) : "" })} className="px-3 py-1.5 rounded-full border border-ink/15 text-ink text-[12px]">Edit campaign</button>
                       <button disabled={busy} onClick={() => del("campaign", c.id)} className="px-3 py-1.5 rounded-full border border-err/40 text-err text-[12px]">Delete campaign</button>
                     </div>
                   </div>
@@ -150,7 +150,7 @@ export default function AdminAdsPage() {
       <Panel title="Slots">
         <div className="space-y-1.5">
           {slots.map((s) => (
-            <div key={s.key} className="bg-surface2 rounded-xl p-2.5 text-[12px] text-slate2">
+            <div key={s.key} className="bg-surface2 rounded-md p-2.5 text-[12px] text-slate2">
               <b className="text-ink">{s.name}</b> · <span className="text-muted">{s.key} · {s.width}×{s.height}</span>
             </div>
           ))}

@@ -12,12 +12,12 @@ export const metadata = {
 
 function Level({ chip, tone, title, means, notMeans }) {
   const tones = {
-    slate: "bg-white/10 text-slate2 border-white/15",
+    slate: "bg-ink/10 text-slate2 border-ink/15",
     amber: "bg-amber/15 text-amber border-amber/40",
-    none: "bg-transparent text-muted border-white/15",
+    none: "bg-transparent text-muted border-ink/15",
   };
   return (
-    <div className="bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+    <div className="bg-surface border border-ink/10 rounded-md p-4 shadow-card">
       <div className="flex items-center gap-2 flex-wrap">
         <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border ${tones[tone]}`}>
           {chip}
@@ -64,7 +64,7 @@ export default function TrustPage() {
         />
       </div>
 
-      <div className="mt-6 bg-surface2 border border-white/10 rounded-2xl p-4">
+      <div className="mt-6 bg-surface2 border border-ink/10 rounded-md p-4">
         <h2 className="font-display font-semibold text-ink text-[15px]">Three things that are always true</h2>
         <ul className="mt-2 space-y-2 text-[13px] text-slate2 list-disc pl-5">
           <li><b className="text-ink">Badges cannot be bought.</b> Not through advertising, not through any paid tier, not at any price.</li>
