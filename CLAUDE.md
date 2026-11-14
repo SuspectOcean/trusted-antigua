@@ -175,3 +175,34 @@ The operator's other project; proven pattern to replicate for Trusted Antigua.
 7. **Path-based, shareable, server-rendered provider pages are the destination** — don't deepen the query-param URL dependency.
 8. **Ask before deleting or overwriting any file. Never handle secret keys or enter credentials.** The anon key is public by design.
 9. **Legal before growth:** no marketing push until legal pages are live and the takedown path works.
+
+---
+
+## 13. Update log: 6 October 2026 (launch readiness pass)
+
+Where this section disagrees with anything above, this section is correct.
+
+- **Auth is email + password with Google sign-in live.** Magic link is no longer the sign-in method (sections 2 and 5 are stale on this).
+- **Outage 2 Aug to 6 Oct 2026:** the free Supabase project auto-paused after 7 days without traffic; the directory showed zero providers. Resume was blocked because the Gmail account was an Owner of the Tourism Platform org and already had 2 active free projects. Fix: Gmail downgraded to Developer in that org, project resumed. Hotmail is the only Owner.
+- **Keep-alive:** `app/api/keepalive/route.js` plus a daily Vercel cron in `vercel.json` (09:17 UTC) reads one public row so the project is never idle for 7 days. If the cron is removed, the pause returns.
+- **Next.js 14.2.35** (was 14.2.15, security patch).
+- **Migrations applied:** `db/2026-10-06-launch-hardening.sql` (TRUNCATE/REFERENCES/TRIGGER revoked from client roles, duplicate and already-claimed claims blocked, profiles delete policy) and `db/2026-10-06-admin-provider-moderation.sql` (`admin_providers_list`, `admin_set_provider_status`).
+- **Admin > Providers > All listings:** hide or restore any listing. Hide sets `providers.status = 'hidden'`; the `providers_read` policy only returns `listed`. Nothing is deleted.
+- **Account page:** "Delete my profile" really deletes the profile row and says exactly what it does. Erasing the login and reviews is by email request (matches the Privacy page).
+- **`api.providers()` now throws on error** instead of returning `[]`; callers must catch. `withTimeout(p, ms, fallback)` in `lib/helpers.js` resolves to the fallback on error or timeout.
+- **`waLink`** adds 1-268 to 7-digit and 268-prefixed numbers.
+- **Deploy from Cowork:** GitHub web upload works with files staged in the session uploads folder. The Supabase SQL editor rejects nothing but its Monaco editor can freeze on multi-line `setValue`; flatten SQL to one line.
+- **Both existing accounts are admins**, so non-admin behaviour has not been tested end to end since Phase 0. A plain test account is needed for that.
+- **Open items:** see the launch summary of 6 Oct 2026 (seed providers, real sign-up email test, non-admin test pass, og:image, review form length, CI, lawyer review).
+
+---
+
+## 14. Update log: 14 November 2026 (materials indicator)
+
+- **Feature:** "Who supplies the materials?" shown on profiles and Find cards, plus a Find filter (`/find?mat=1`).
+- **Two sources, kept apart:** provider's own statement (`provider_materials.declared`: supplies | customer | varies, set on /manage) and reviewer answers (`recommendations.materials_by_customer`: yes | no | partly, one optional tap in the review form). With 3 or more reviewer reports the customer majority is the headline; below 3 the provider statement shows, labelled "provider says". Reviewer-derived data is returned to signed-in users only.
+- **Deliberately not a column on `providers`** (column-grant trap, section 7). No existing function was replaced. `submit_review_v2` is untouched; the answer is written afterwards by `set_review_materials`.
+- **Only asked for groups** building, home, marine, automotive (`lib/materials.js`). Never affects Trust Rating or sort order.
+- **Migration:** `db/2026-11-14-materials-indicator.sql` (additive, idempotent, rollback at the bottom). Every frontend call falls back to "show nothing" if the functions are missing.
+- **New:** `lib/materials.js`, `components/MaterialsBadge.js`, the migration. **Changed:** `lib/data.js`, `components/ProviderCard.js`, `components/ProviderView.js`, `app/find/page.js`, `app/manage/page.js`, `app/recommend/page.js`. All esbuild syntax-checked.
+- **Deployed 14 Nov 2026:** migration applied and function-tested in a rolled-back transaction (owner, non-owner, bad value, no review, anonymous). The 3-report customer override was not exercised live: no provider has 3 reviews yet.

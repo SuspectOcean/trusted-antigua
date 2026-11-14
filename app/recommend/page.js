@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CAT } from "@/lib/categories";
 import { RATING_CATEGORIES, TIMEFRAMES, workTypesFor } from "@/lib/reviews";
+import { MATERIALS_ANSWERS, materialsApplies } from "@/lib/materials";
 import { api } from "@/lib/data";
 import { withTimeout } from "@/lib/helpers";
 import { useAuth } from "@/components/AuthProvider";
@@ -41,6 +42,7 @@ function RecommendInner() {
     category_id: presetCat, name: presetName,
     contact: "", area: "", reason: "", timeframe: "", private_note: "",
     scores: { ...EMPTY }, work_types: [],
+    materials: "", // "Did you have to buy the materials yourself?" yes | no | partly | ""
   });
   const [editing, setEditing] = useState(false);
   const [wasLegacy, setWasLegacy] = useState(false); // editing a previous-system review
@@ -95,6 +97,7 @@ function RecommendInner() {
         scores,
       }));
     });
+    api.myReviewMaterials(presetPid).then((m) => { if (m) setForm((f) => ({ ...f, materials: f.materials || m })); });
   }, [user, presetPid]);
 
   if (!user) {
@@ -148,6 +151,12 @@ function RecommendInner() {
         }),
         15000
       );
+      // Materials answer rides on the saved review (one per customer per provider).
+      // Non-fatal: the review itself is already saved.
+      if (askMaterials) {
+        try { await api.setReviewMaterials(providerId, form.materials || null); }
+        catch (m) { console.warn("[review] materials answer failed (non-fatal)", m); }
+      }
       if (form.private_note.trim()) {
         try { await api.addWarning({ provider_id: providerId, provider_name: name, warning: form.private_note.trim() }); }
         catch (w) { console.warn("[review] private note failed (non-fatal)", w); }
@@ -173,6 +182,7 @@ function RecommendInner() {
   }
 
   const worktypes = workTypesFor(form.category_id || presetCat);
+  const askMaterials = materialsApplies(form.category_id || presetCat);
   const title = editing ? "Update your review" : presetName ? `Review ${presetName}` : "Review a provider";
 
   // ---------------------------------------------------------------
@@ -290,6 +300,18 @@ function RecommendInner() {
               ))}
             </div>
           </div>
+          {/* One optional tap, no slider. Only asked for trades where a job uses
+              parts or materials. Tap the chosen answer again to clear it. */}
+          {askMaterials ? (
+            <div>
+              <label className="block text-[13px] text-slate2 mb-1.5">Did you have to buy the materials yourself? <span className="text-muted">(optional)</span></label>
+              <div className="flex flex-wrap gap-2">
+                {MATERIALS_ANSWERS.map((a) => (
+                  <button type="button" key={a.value} onClick={() => set("materials", form.materials === a.value ? "" : a.value)} className={`text-[13px] px-3 py-1.5 rounded-full border ${form.materials === a.value ? "bg-teal/15 text-teal border-teal/40" : "bg-surface2 text-slate2 border-white/15"}`}>{a.label}</button>
+                ))}
+              </div>
+            </div>
+          ) : null}
           <div>
             <label className="block text-[13px] text-slate2 mb-1">When was the work done?</label>
             <select value={form.timeframe} onChange={(e) => set("timeframe", e.target.value)} className={inputCls}>

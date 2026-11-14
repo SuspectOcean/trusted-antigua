@@ -75,10 +75,12 @@ function FindInner() {
   const cat = params.get("cat") || "";
   const group = params.get("group") || "";
   const q = params.get("q") || "";
+  const mat = params.get("mat") === "1"; // only providers who supply their own materials
 
   const [rows, setRows] = useState(null);
   const [counts, setCounts] = useState({});
   const [ratings, setRatings] = useState({});
+  const [materials, setMaterials] = useState({}); // who supplies materials, keyed by provider id
   const [input, setInput] = useState(q);
   const [error, setError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -118,11 +120,12 @@ function FindInner() {
       withTimeout(api.providers({ category: cat, group, q }), 12000, null),
       withTimeout(api.recCounts(), 12000, {}),
       withTimeout(api.providerRatingsAll(), 12000, {}),
+      withTimeout(api.materialsAll(), 12000, {}),
     ])
-      .then(([r, c, rt]) => {
+      .then(([r, c, rt, mt]) => {
         if (!active) return;
         if (r === null) { setRows([]); setError(true); }
-        else { setRows(sortByRating(r, rt || {})); setCounts(c || {}); setRatings(rt || {}); }
+        else { setRows(sortByRating(r, rt || {})); setCounts(c || {}); setRatings(rt || {}); setMaterials(mt || {}); }
       })
       .catch(() => { if (active) { setRows([]); setError(true); } });
     return () => { active = false; };
@@ -134,6 +137,19 @@ function FindInner() {
   }
 
   const retry = () => setReloadKey((k) => k + 1);
+
+  // "Supplies own materials" filter. It narrows the list and never reorders it:
+  // the materials status has no effect on ranking. Kept in the URL so a filtered
+  // list can be shared.
+  const shown = rows && mat ? rows.filter((p) => materials[p.id]?.status === "supplies") : rows;
+  const matHref = (() => {
+    const sp = new URLSearchParams();
+    if (cat) sp.set("cat", cat); else if (group) sp.set("group", group);
+    if (q) sp.set("q", q);
+    if (!mat) sp.set("mat", "1");
+    const qs = sp.toString();
+    return qs ? `/find?${qs}` : "/find";
+  })();
 
   const activeGroup = group || (cat ? groupOf(cat) : "");
   const title = cat ? CAT[cat]?.name || "" : group ? GROUP[group]?.name || "" : q ? `Results for "${q}"` : "All providers";
@@ -199,8 +215,18 @@ function FindInner() {
       ) : null}
 
       <h2 className="font-display font-semibold text-[17px] text-ink mt-1 mb-2">
-        {title} <span className="text-muted font-sans font-normal text-[14px]">{rows ? `(${rows.length})` : ""}</span>
+        {title} <span className="text-muted font-sans font-normal text-[14px]">{shown ? `(${shown.length})` : ""}</span>
       </h2>
+
+      <div className="mb-2.5">
+        <Link
+          href={matHref}
+          aria-pressed={mat}
+          className={`inline-flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-full border ${mat ? "bg-teal/20 text-teal border-teal/40 font-medium" : "bg-surface2 text-slate2 border-white/15"}`}
+        >
+          {mat ? "✓ " : ""}Supplies own materials
+        </Link>
+      </div>
 
       {rows === null ? (
         <SkeletonList />
@@ -213,7 +239,7 @@ function FindInner() {
         </div>
       ) : (
         <div className="space-y-2.5">
-          {rows.length ? rows.map((p, i) => {
+          {shown.length ? shown.map((p, i) => {
             // An advertising slot sits after every 4th result (positions 4, 8, 12…),
             // in the same list as the tradespeople. A booked advert always wins;
             // otherwise we show the house "advertise here" card so the placement is
@@ -225,17 +251,23 @@ function FindInner() {
             const house = isSlot && !ad && houseCards.length ? houseCards[slotIndex % houseCards.length] : null;
             return (
               <div key={p.id}>
-                <ProviderCard p={p} counts={counts} ratings={ratings} gated={!user} />
+                <ProviderCard p={p} counts={counts} ratings={ratings} materials={materials[p.id]} gated={!user} />
                 {ad ? <div className="pt-2.5"><NativeAdCard ad={ad} /></div> : null}
                 {house ? <div className="pt-2.5"><HouseSlotCard card={house} /></div> : null}
               </div>
             );
-          }) : <EmptyState addHref={addHref} />}
+          }) : mat && rows.length ? (
+            <div className="bg-surface border border-white/10 rounded-2xl p-6 text-center shadow-card">
+              <p className="text-[14px] text-slate2">No one here is recorded as supplying their own materials yet.</p>
+              <p className="text-[13px] text-muted mt-1">That does not mean they don&apos;t. Ask before you agree the job.</p>
+              <Link href={matHref} className="inline-block mt-3 bg-amber text-navy font-semibold text-sm px-4 py-2 rounded-full">Show everyone</Link>
+            </div>
+          ) : <EmptyState addHref={addHref} />}
         </div>
       )}
 
       {/* Someone missing? Direct route to add them. Shown once results have loaded. */}
-      {rows && rows.length ? (
+      {shown && shown.length ? (
         <Link href={addHref} className="mt-4 block bg-surface border border-white/10 rounded-2xl p-4 text-center shadow-card active:scale-[.99] transition">
           <span className="text-[13px] text-slate2">Can&apos;t find who you&apos;re looking for? </span>
           <span className="text-[13px] text-amber font-semibold">Add a tradesperson ›</span>

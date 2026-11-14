@@ -11,6 +11,7 @@ import CategoryIcon from "@/components/CategoryIcon";
 import AdSlot from "@/components/AdSlot";
 import { isClaimed } from "@/lib/trust";
 import { CORE_DIMENSIONS, DIMENSION_THRESHOLD, RATING_CATEGORIES, timeframeLabel as tfLabel } from "@/lib/reviews";
+import { materialsDisplay, MATERIALS_MIN_REPORTS } from "@/lib/materials";
 
 const STAT_TAGS = [
   ["reliable_count", "Reliable"],
@@ -250,6 +251,7 @@ export default function ProviderView({ id }) {
   const [p, setP] = useState(undefined);
   const [stats, setStats] = useState(null);
   const [ratings, setRatings] = useState(null); // ten-category aggregates (v2 reviews only)
+  const [materials, setMaterials] = useState(null); // who supplies the materials
   const [contact, setContact] = useState(null);
   const [recs, setRecs] = useState([]);
   const [isOwner, setIsOwner] = useState(false);
@@ -285,6 +287,15 @@ export default function ProviderView({ id }) {
     api.repliesForProvider(id).then(setReplies);
     api.myOpenReports(user.id).then(setReportedIds);
   }, [id, user]);
+
+  // Who supplies the materials. Depends on sign-in (customer reports are members
+  // only), so it reloads when the user changes. A failure simply shows nothing.
+  useEffect(() => {
+    if (!id) { setMaterials(null); return; }
+    let active = true;
+    api.materialsFor(id).then((m) => { if (active) setMaterials(m); });
+    return () => { active = false; };
+  }, [id, user, reloadKey]);
 
   // Author deletes their own review; admin removes any review. Both soft-delete
   // server-side (delete_my_review / admin_remove_review). Remove from the list
@@ -325,6 +336,11 @@ export default function ProviderView({ id }) {
   const households = stats?.households || 0;
   const scored = stats?.scored_count || 0;
   const showDimensions = scored >= DIMENSION_THRESHOLD;
+  const mat = materialsDisplay(materials);
+  // Provider's statement and customer reports disagree: show both, plainly.
+  const matDeclared = mat && mat.fromCustomers && materials.declared && materials.declared !== materials.status ? materialsDisplay({ status: materials.declared, source: "provider" }) : null;
+  // Customer reports exist but are below the threshold: say so, without a verdict.
+  const matEarly = materials && materials.source !== "customers" && materials.n_reports > 0 ? materials.n_reports : 0;
 
   return (
     <>
@@ -356,6 +372,32 @@ export default function ProviderView({ id }) {
         </div>
 
         {p.description ? <p className="mt-3 text-[14px] text-slate2 leading-relaxed">{p.description}</p> : null}
+
+        {/* Who supplies the materials. Neutral information, never a rating. The
+            source is always stated: customer reports replace the provider's own
+            statement once there are enough of them. */}
+        {mat || matEarly ? (
+          <div className="mt-3 bg-surface2 border border-white/10 rounded-xl px-3 py-2.5">
+            <div className="text-[10px] uppercase tracking-wide text-muted">Materials</div>
+            {mat ? (
+              <>
+                <div className="text-[14px] font-semibold text-ink mt-0.5">{mat.label}</div>
+                <div className="text-[12px] text-muted mt-0.5">{mat.sourceLong}</div>
+                {mat.fromCustomers ? (
+                  <div className="text-[12px] text-slate2 mt-1">
+                    Supplied by provider: {materials.n_no} · Partly: {materials.n_partly} · Customer bought: {materials.n_yes}
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+            {matDeclared ? <div className="text-[12px] text-muted mt-1">The provider describes it as: {matDeclared.label.toLowerCase()}.</div> : null}
+            {matEarly ? (
+              <div className="text-[12px] text-muted mt-1">
+                {matEarly} customer report{matEarly === 1 ? "" : "s"} so far. Shown once there are {MATERIALS_MIN_REPORTS}.
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         {/* Ratings & reviews are gated: logged-out visitors get a sign-in prompt
             instead of the numbers. Ten-category (v2) only; legacy shown separately. */}

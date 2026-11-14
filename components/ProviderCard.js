@@ -3,6 +3,7 @@ import { CAT } from "@/lib/categories";
 import TrustBadge from "@/components/TrustBadge";
 import CategoryIcon from "@/components/CategoryIcon";
 import RatingBadge from "@/components/RatingBadge";
+import MaterialsBadge from "@/components/MaterialsBadge";
 
 function Avatar({ src, name }) {
   const initial = (name || "?").trim().charAt(0).toUpperCase();
@@ -17,7 +18,7 @@ function Avatar({ src, name }) {
   );
 }
 
-export default function ProviderCard({ p, counts = {}, ratings = {}, gated = false }) {
+export default function ProviderCard({ p, counts = {}, ratings = {}, materials = null, gated = false }) {
   const c = counts[p.id] || { count: 0, yes: 0 };
   const cat = CAT[p.category_id];
   return (
@@ -36,6 +37,7 @@ export default function ProviderCard({ p, counts = {}, ratings = {}, gated = fal
             {cat ? <CategoryIcon id={cat.id} className="w-3.5 h-3.5 shrink-0 text-muted" /> : null}
             <span className="truncate">{cat ? cat.name : ""}{p.area ? ` · ${p.area}` : ""}</span>
           </div>
+          {materials ? <div className="mt-1.5"><MaterialsBadge m={materials} /></div> : null}
         </div>
       </div>
     </Link>

@@ -7,6 +7,7 @@ import { api } from "@/lib/data";
 import { withTimeout } from "@/lib/helpers";
 import { useAuth } from "@/components/AuthProvider";
 import { TRUST } from "@/lib/trust";
+import { MATERIALS_STATES, MATERIALS_ORDER, MATERIALS_MIN_REPORTS, materialsApplies } from "@/lib/materials";
 
 const DESC_MAX = 250;
 const MAX_SECONDARY = 4;
@@ -31,6 +32,9 @@ function ManageInner() {
   const [existingCatReq, setExistingCatReq] = useState(null);
   const [catMsg, setCatMsg] = useState(null);
   const [addTrade, setAddTrade] = useState("");
+  const [materials, setMaterials] = useState(null); // provider's own statement: supplies | customer | varies | null
+  const [matBusy, setMatBusy] = useState(false);
+  const [matMsg, setMatMsg] = useState(null);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -50,6 +54,7 @@ function ManageInner() {
       })
       .catch((e) => { console.error("[manage] load failed", e); setP(null); });
     api.myCategoryRequest(id, user.id).then(setExistingCatReq).catch(() => {});
+    api.materialsFor(id).then((m) => setMaterials(m?.declared || null));
   }, [id, user]);
 
   if (loading || (user && p === undefined)) return <div className="py-16 text-center text-muted">Loading…</div>;
@@ -129,6 +134,18 @@ function ManageInner() {
     finally { setBusy(false); }
   }
 
+  // Saves on tap. Tapping the selected option again clears it.
+  async function chooseMaterials(v) {
+    const next = materials === v ? null : v;
+    setMatBusy(true); setMatMsg(null);
+    try {
+      await api.setProviderMaterials(p.id, next);
+      setMaterials(next);
+      setMatMsg({ ok: true, text: next ? "Saved." : "Cleared." });
+    } catch (e2) { console.error(e2); setMatMsg({ ok: false, text: "Couldn't save. Please try again." }); }
+    finally { setMatBusy(false); }
+  }
+
   async function submitCatReq() {
     if (!catReq || catReq === p.category_id) { setCatMsg({ ok: false, text: "Pick a different category." }); return; }
     setCatMsg(null);
@@ -144,6 +161,7 @@ function ManageInner() {
   const hasDesc = !!(form?.description || "").trim();
   const hasArea = form?.area_scope === "islandwide" || (form?.service_areas || []).length > 0;
   const level = TRUST[p.trust_level]?.label || "Listed";
+  const showMaterials = materialsApplies([p.category_id, ...(form?.secondary_categories || [])]);
 
   return (
     <div className="pt-2">
@@ -160,6 +178,7 @@ function ManageInner() {
           <div className="flex items-center gap-2 text-slate2"><Check done={hasPhoto} /> Add a profile photo</div>
           <div className="flex items-center gap-2 text-slate2"><Check done={hasDesc} /> Write a short description</div>
           <div className="flex items-center gap-2 text-slate2"><Check done={hasArea} /> Confirm your service areas</div>
+          {showMaterials ? <div className="flex items-center gap-2 text-slate2"><Check done={!!materials} /> Say who supplies the materials</div> : null}
           <div className="flex items-center gap-2 text-slate2"><Check done={false} /> Request a category change (only if needed)</div>
           <Link href={`/provider?id=${encodeURIComponent(p.id)}`} className="flex items-center gap-2 text-amber"><Check done={false} /> Review your public profile ›</Link>
         </div>
@@ -182,6 +201,30 @@ function ManageInner() {
           </div>
         </div>
       </div>
+
+      {/* Who supplies the materials: the provider's own statement. */}
+      {showMaterials ? (
+        <div className="mt-4 bg-surface border border-white/10 rounded-2xl p-4 shadow-card">
+          <div className="font-semibold text-ink text-[15px]">Who supplies the materials?</div>
+          <p className="text-[12px] text-muted mt-0.5">
+            Customers want to know before they hire. This shows on your profile as your own statement. Once {MATERIALS_MIN_REPORTS} customers have answered the same question in their reviews, their answers are shown instead.
+          </p>
+          <div className="mt-3 space-y-2">
+            {MATERIALS_ORDER.map((k) => (
+              <button
+                type="button"
+                key={k}
+                disabled={matBusy}
+                onClick={() => chooseMaterials(k)}
+                className={`w-full text-left px-3 py-2.5 rounded-xl border text-[14px] font-semibold disabled:opacity-60 ${materials === k ? "bg-amber text-navy border-amber" : "bg-surface2 text-ink border-white/15"}`}
+              >
+                {MATERIALS_STATES[k].owner}
+              </button>
+            ))}
+          </div>
+          {matMsg ? <p className={`text-[13px] mt-2 ${matMsg.ok ? "text-ok" : "text-err"}`}>{matMsg.text}</p> : null}
+        </div>
+      ) : null}
 
       {/* Edit form */}
       <form onSubmit={save} className="mt-4 space-y-4">
