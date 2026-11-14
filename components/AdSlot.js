@@ -68,7 +68,9 @@ function HouseCard({ card, promo }) {
 }
 
 // slotKey: an ad_slots.key. variant: "rail" (stacked) or "inline" (single banner).
-export default function AdSlot({ slotKey, variant = "rail" }) {
+// houseFallback=false: show only a paid advert, never our own "advertise here"
+// card, so an unsold slot simply disappears.
+export default function AdSlot({ slotKey, variant = "rail", houseFallback = true }) {
   const [ads, setAds] = useState(null);
   const [house, setHouse] = useState(null);
 
@@ -98,6 +100,7 @@ export default function AdSlot({ slotKey, variant = "rail" }) {
     );
   }
 
+  if (!houseFallback) return null;
   const cards = pickHouse(house, variant === "inline" ? 1 : 2, slotKey);
   if (!cards.length) return null;
 

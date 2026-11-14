@@ -248,7 +248,9 @@ function FindInner() {
             const slotIndex = Math.floor(i / 4);
             const isSlot = (i + 1) % 4 === 0;
             const ad = isSlot && ads.length ? ads[slotIndex % ads.length] : null;
-            const house = isSlot && !ad && houseCards.length ? houseCards[slotIndex % houseCards.length] : null;
+            // Our own "advertise here" card appears once per list at most, so an
+            // unsold site never reads as a wall of placeholders.
+            const house = isSlot && !ad && slotIndex === 0 && houseCards.length ? houseCards[0] : null;
             return (
               <div key={p.id}>
                 <ProviderCard p={p} counts={counts} ratings={ratings} materials={materials[p.id]} gated={!user} />

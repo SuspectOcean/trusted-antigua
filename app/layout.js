@@ -71,7 +71,7 @@ export default function RootLayout({ children }) {
             {/* Desktop left rail: advert or house content. Hidden on mobile. */}
             <aside className="hidden lg:block flex-1 max-w-[340px] min-w-0 pt-6" aria-label="Advertising">
               {/* Fills the visible screen height, minus header and a little breathing room. */}
-              <div className="sticky top-[72px] h-[calc(100vh-88px)]"><AdSlot slotKey="desktop-rail-left" /></div>
+              <div className="sticky top-[72px] h-[calc(100vh-88px)]"><AdSlot slotKey="desktop-rail-left" houseFallback={false} /></div>
             </aside>
 
             <main className="w-full max-w-xl mx-auto px-4 pt-4 safe-bottom">
@@ -105,7 +105,7 @@ export default function RootLayout({ children }) {
 
             {/* Desktop right rail. Hidden on mobile. */}
             <aside className="hidden lg:block flex-1 max-w-[340px] min-w-0 pt-6" aria-label="Advertising">
-              <div className="sticky top-[72px] h-[calc(100vh-88px)]"><AdSlot slotKey="desktop-rail-right" /></div>
+              <div className="sticky top-[72px] h-[calc(100vh-88px)]"><AdSlot slotKey="desktop-rail-right" houseFallback={false} /></div>
             </aside>
           </div>
           <BottomNav />

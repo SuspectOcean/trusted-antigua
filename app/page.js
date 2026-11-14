@@ -11,8 +11,6 @@ import FeaturedProviders from "@/components/FeaturedProviders";
 // search understands slang before you've typed a word.
 const SEARCH_EXAMPLES = ["current man", "AC man", "leak fix", "mason", "gardener", "deep clean"];
 
-const [featured, ...rest] = GROUPS;
-
 export default function Home() {
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -35,8 +33,10 @@ export default function Home() {
     return () => { active = false; };
   }, []);
 
-  // Only mark once loaded, so nothing flashes red on first paint.
-  const isEmptyGroup = (id) => populatedGroups !== null && !populatedGroups.has(id);
+  // Only categories with at least one listing are shown. Until the list has
+  // loaded (or if it fails) every group shows, so nothing flashes or vanishes.
+  const visible = populatedGroups && populatedGroups.size ? GROUPS.filter((g) => populatedGroups.has(g.id)) : GROUPS;
+  const [featured, ...rest] = visible;
 
   function onSearch(e) {
     e.preventDefault();
@@ -78,16 +78,14 @@ export default function Home() {
       {/* Asymmetric: one wide entry point, then a tighter grid, not identical boxes. */}
       <Link
         href={`/find?group=${featured.id}`}
-        className={`block bg-surface border rounded-2xl p-4 shadow-card flex items-center gap-4 active:scale-[.99] transition mb-2.5 ${isEmptyGroup(featured.id) ? "border-err/30" : "border-white/10"}`}
+        className="block bg-surface border border-white/10 rounded-2xl p-4 shadow-card flex items-center gap-4 active:scale-[.99] transition mb-2.5"
       >
         <span className="inline-flex items-center justify-center w-12 h-12 shrink-0 rounded-full bg-amber/12 text-2xl leading-none">
           {featured.emoji}
         </span>
         <span className="min-w-0">
           <span className="block font-semibold text-ink text-[15px] leading-tight">{featured.name}</span>
-          {isEmptyGroup(featured.id)
-            ? <span className="block text-[12px] text-err/80">No listings yet — be the first to add</span>
-            : <span className="block text-[12px] text-muted">{featured.blurb}</span>}
+          <span className="block text-[12px] text-muted">{featured.blurb}</span>
         </span>
         <span className="ml-auto text-amber text-lg shrink-0">›</span>
       </Link>
@@ -97,18 +95,16 @@ export default function Home() {
           <Link
             key={c.id}
             href={`/find?group=${c.id}`}
-            className={`bg-surface border rounded-2xl p-3 shadow-card flex items-center gap-3 active:scale-[.99] transition ${
-              isEmptyGroup(c.id) ? "border-err/30" : "border-white/10"
-            } ${i === rest.length - 1 && rest.length % 2 === 1 ? "col-span-2" : ""}`}
+            className={`bg-surface border border-white/10 rounded-2xl p-3 shadow-card flex items-center gap-3 active:scale-[.99] transition ${
+              i === rest.length - 1 && rest.length % 2 === 1 ? "col-span-2" : ""
+            }`}
           >
             <span className="inline-flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-amber/12 text-xl leading-none">
               {c.emoji}
             </span>
             <span className="min-w-0">
               <span className="block font-semibold text-ink text-[14px] leading-tight">{c.name}</span>
-              {isEmptyGroup(c.id)
-                ? <span className="block text-[11px] text-err/75 truncate">Be the first to add</span>
-                : <span className="block text-[11px] text-muted truncate">{c.blurb}</span>}
+              <span className="block text-[11px] text-muted truncate">{c.blurb}</span>
             </span>
           </Link>
         ))}
@@ -122,7 +118,7 @@ export default function Home() {
         <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full border-2 border-navy/15" aria-hidden="true" />
         <h3 className="font-display font-semibold text-navy text-[19px] relative">Know someone good?</h3>
         <p className="text-[13px] text-navy/80 mt-1 relative max-w-[36ch]">
-          Recommending a tradesperson takes 20 seconds and helps your whole community spend wisely.
+          Review a tradesperson you have used. It helps your whole community spend wisely.
         </p>
         <Link href="/recommend" className="inline-block mt-3 bg-navy text-ink font-semibold text-sm px-4 py-2 rounded-full relative">
           Recommend someone
@@ -134,7 +130,7 @@ export default function Home() {
         <h3 className="font-semibold text-ink text-[13px] uppercase tracking-wide text-muted">What is Trusted Antigua?</h3>
         <p className="text-[13px] text-slate2 mt-1.5 leading-relaxed">
           A simple, community-built register of honest, reliable service providers across Antigua &amp; Barbuda.
-          Recommendations are public. Concerns are shared privately with our team for review; we never post public attacks on anyone.
+          Reviews are for members, so every one is tied to a real account. Private concerns go only to our team and are never published.
         </p>
         <Link href="/about" className="inline-block mt-2 text-[13px] text-amber font-semibold">More about Trusted Antigua ›</Link>
       </div>
